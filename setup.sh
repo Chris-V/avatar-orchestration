@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 echo "Installing binaries..."
-pacman -Syu btrfs-progs sudo ssh nftables ethtool vim fish docker docker-compose
+pacman -Syu sudo ssh nftables ethtool vim fish docker docker-compose
 
 git clone https://aur.archlinux.org/yay.git
 ( cd yay ; makepkg -si )
