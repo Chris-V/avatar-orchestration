@@ -1,6 +1,6 @@
 version: "3.7"
 
-x-linuxserver-env: &localtime-volume
+x-linuxserver-env: &linuxserver-env
   TZ: America/Toronto
   PUID: 1000
   PGID: 1000
@@ -11,6 +11,8 @@ x-common-volumes: &common-volumes
 networks:
   media:
 
+# TODO: Glances
+
 services:
   vpn:
     container_name: vpn
@@ -20,7 +22,7 @@ services:
     cap_add:
       - NET_ADMIN
     environment:
-      CRYPTOSTORM_USERNAME: 
+      CRYPTOSTORM_USERNAME: ${CRYPTOSTORM_USERNAME}
       CRYPTOSTORM_CONFIG_FILE: CA-Montreal_UDP.ovpn
       FORWARDING_PORT: ${DELUGE_INCOMING_PORT}
     volumes:
@@ -46,8 +48,8 @@ services:
     volumes:
       <<: *common-volumes
       - ${CONFIGS_DIR}/plex:/config
-      - ${MEDIA_DIR}/series:/data/tvshows
-      - ${MEDIA_DIR}/movies:/data/movies
+      - ${SERIES_DIR}:/data/tvshows
+      - ${MOVIES_DIR}:/data/movies
       - ${PLEX_TRANSCODE_DIR}:/transcode
 
   jackett:
@@ -64,7 +66,7 @@ services:
     volumes:
       <<: *common-volumes
       - ${CONFIGS_DIR}/jackett:/config
-      - ${DOWNLOADS_DIR}/blackhole:/downloads
+      - ${DOWNLOADS_DIR}/jackett:/downloads
 
   deluge:
     container_name: deluge
@@ -88,7 +90,7 @@ services:
       <<: *common-volumes
       - ${CONFIGS_DIR}/deluge:/config
       - ${DOWNLOADS_DIR}/torrents:/downloads
-        
+
   sonarr:
     container_name: sonarr
     image: linuxserver/sonarr:preview
@@ -106,7 +108,7 @@ services:
     volumes:
       <<: *common-volumes
       - ${CONFIGS_DIR}/sonarr:/config
-      - ${MEDIA_DIR}/series:/tv
+      - ${SERIES_DIR}:/tv
       - ${DOWNLOADS_DIR}/sonarr:/downloads
 
   radarr:
@@ -126,6 +128,5 @@ services:
     volumes:
       <<: *common-volumes
       - ${CONFIGS_DIR}/radarr:/config
-      - ${MEDIA_DIR}/movies:/movies
+      - ${MOVIES_DIR}:/movies
       - ${DOWNLOADS_DIR}/radarr:/downloads
-

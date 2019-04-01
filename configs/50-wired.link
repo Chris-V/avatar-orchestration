@@ -1,0 +1,7 @@
+[Match]
+MACAddress=48:5B:39:6C:21:04
+
+[Link]
+NamePolicy=kernel database onboard slot path
+MACAddressPolicy=persistent
+WakeOnLan=magic
