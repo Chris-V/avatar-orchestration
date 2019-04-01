@@ -12,20 +12,20 @@ echo "Configuring permissions..."
 groupadd poweroff
 groupadd ssh
 
-echo '%poweroff ALL=NOPASSWD:/usr/bin/poweroff' > /etc/sudoers.d/poweroff
-echo '%wheel ALL=(ALL) ALL' > /etc/sudoers.d/wheel
+cat ./configs/etc/sudoers.d/poweroff > /etc/sudoers.d/poweroff
+cat ./configs/etc/sudoers.d/wheel > /etc/sudoers.d/wheel
 chmod 0440 /etc/sudoers.d/poweroff /etc/sudoers.d/wheel
 
 
 echo "Configuring WOL..."
 ethtool -s enp2s0 wol g
-cat ./configs/50-wired.link > /etc/systemd/network/50-wired.link
+cat ./configs/etc/systemd/network/50-wired.link > /etc/systemd/network/50-wired.link
 
 echo "Configuring ssh daemon..."
-cat ./configs/sshd_config  > /etc/ssh/sshd_config
+cat ./configs/etc/ssh/sshd_config > /etc/ssh/sshd_config
 
 echo "Configuring NFTables..."
-cat ./configs/nftables.conf > /etc/nftables.conf
+cat ./configs/etc/nftables.conf > /etc/nftables.conf
 
 
 echo "Setting up 'avatar'..."
@@ -42,11 +42,11 @@ omf i sudope archlinux colored-man-pages bobthefish;
 mkdir -p /home/avatar/.ssh;
 touch /home/avatar/.ssh/authorized_keys;
 
-chmod u=rwx,g=,o= /home/avatar/.ssh;
-chmod u=rw,g=,o= /home/avatar/.ssh/authorized_keys;
+chmod 700 /home/avatar/.ssh;
+chmod 600 /home/avatar/.ssh/authorized_keys;
 EOF
 
-cat ./configs/avatar-authorized_keys > /home/avatar/.ssh/authorized_keys
+cat ./configs/home/avatar/.ssh/authorized_keys > /home/avatar/.ssh/authorized_keys
 
 echo 'avatar setup complete!'
 
@@ -62,11 +62,11 @@ su avatar -c <<EOF
 mkdir -p /home/homeassistant/.ssh;
 touch /home/homeassistant/.ssh/authorized_keys;
 
-chmod u=rwx,g=,o= /home/homeassistant/.ssh;
-chmod u=rw,g=,o= /home/homeassistant/.ssh/authorized_keys;
+chmod 700 /home/homeassistant/.ssh;
+chmod 600 /home/homeassistant/.ssh/authorized_keys;
 EOF
 
-cat ./configs/homeassistant-authorized_keys > /home/homeassistant/.ssh/authorized_keys
+cat ./configs/home/homeassistant/.ssh/authorized_keys > /home/homeassistant/.ssh/authorized_keys
 
 echo 'homeassistant setup complete! Make sure to `ssh avatar-automate-hass "ssh media | yes"`.'
 
@@ -74,8 +74,7 @@ echo 'homeassistant setup complete! Make sure to `ssh avatar-automate-hass "ssh 
 echo "Setting up storage disks..."
 # TODO: /data and /storage
 #  Partition other hard drives
-#  Install and configure mergerfs
-#  Install and configure snapraid
+#  mergerfs and snapraid
 #  Update fstab
 #  Initialize media folders
 
