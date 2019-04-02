@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
 echo "Installing binaries..."
+
+# TODO: All the following stuff should be possible for ansible
+
 pacman -Syu sudo ssh nftables ethtool vim fish docker docker-compose
 
 git clone https://aur.archlinux.org/yay.git

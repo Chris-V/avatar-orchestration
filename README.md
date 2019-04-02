@@ -1,14 +1,14 @@
-# Media server's bootstrap configuration
+# Avatar-Media Management Scripts
 
-This repository contains bootstrapping scripts to get the media server up and running.
+This repository contains scripts to install and maintain avatar-media.
 
-## Arch Linux install
+## Install
 
-1. Boot live environment
-1. Setup network
-1. Clone this repository on the live environment
-1. Run `install.sh`
-1. Once rebooted, run `setup.sh`
+1. `sudo ./installer/make-iso.sh`
+1. `dd` generated iso file.
+1. Boot on it.
+1. Follow install instructions displayed on screen.
+1. TODO: Once rebooted, do Ansible stuff
 
 ## Partition summary
 
@@ -21,6 +21,9 @@ Mount | Size | FS | Parity | Comments
 /storage | 18&nbsp;TB | XFS| Y | (high read, low write)<br>movies, series, music, ebooks, custom backups.<br>**Max 6 disks** pooled by **MergerFS**.
 /storageparity | \<*> | XFS | - | Managed by **Snapraid**.<br>Disk size is the **biggest disk from /storage**
 
-## Resources
+## Links
 
-https://wiki.archlinux.org/index.php/installation_guide
+* Official installation guide: https://wiki.archlinux.org/index.php/installation_guide
+* Official archiso guides: https://wiki.archlinux.org/index.php/Archiso
+* Nice init script: https://github.com/altercation/archinit/blob/master/archinit
+* Look, a custom PKGBUILD to settup system... https://github.com/Earnestly/pkgbuilds/tree/master/system-config
