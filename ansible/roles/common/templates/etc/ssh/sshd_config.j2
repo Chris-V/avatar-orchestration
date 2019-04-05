@@ -1,0 +1,11 @@
+Port {{ ssh_port }}
+
+AllowGroups ssh
+AuthorizedKeysFile .ssh/authorized_keys
+ChallengeResponseAuthentication no
+PasswordAuthentication no
+PermitRootLogin no
+PrintMotd no
+UsePAM yes
+
+Subsystem sftp /usr/lib/ssh/sftp-server

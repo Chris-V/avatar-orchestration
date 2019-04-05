@@ -1,0 +1,68 @@
+- name: Install Fish
+  pacman:
+    name: fish
+    state: present
+
+- name: Create groups
+  group:
+    name: '{{ item }}'
+    state: present
+  loop:
+    - ssh
+    - poweroff
+
+- name: Create sudoer rule for wheel
+  lineinfile:
+    path: /etc/sudoers.d/20-wheel
+    line: '%wheel ALL=(ALL) ALL'
+    create: yes
+    owner: root
+    group: root
+    mode: 0440
+    validate: 'visudo -cf %s'
+- name: Create sudoer rule for poweroff
+  lineinfile:
+    path: /etc/sudoers.d/30-poweroff
+    line: '%poweroff ALL=NOPASSWD:/usr/bin/poweroff'
+    create: yes
+    owner: root
+    group: root
+    mode: 0440
+    validate: 'visudo -cf %s'
+
+- name: Create user ansible
+  user:
+    name: ansible
+    groups: ssh
+    append: no
+    state: present
+- name: Create user avatar
+  user:
+    name: avatar
+    groups: wheel,ssh,poweroff
+    append: yes
+    create_home: yes
+    state: present
+    shell: /usr/bin/fish
+    password: '{{ avatar_password }}'
+- name: Create user homeassistant
+  user:
+    name: homeassistant
+    groups: ssh,poweroff
+    append: no
+    create_home: yes
+    state: present
+    shell: /bin/bash
+    password: '{{ homeassistant_password }}'
+
+- name: Add authorized keys to avatar
+  authorized_key:
+    user: avatar
+    state: present
+    key: '{{ avatar_public_key }}'
+- name: Add authorized keys to homeassistant
+  authorized_key:
+    exclusive: yes
+    state: present
+    user: homeassistant
+    key: '{{ homeassistant_public_key }}'

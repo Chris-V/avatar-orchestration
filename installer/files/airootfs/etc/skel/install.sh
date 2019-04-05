@@ -14,9 +14,12 @@ SRV_UUID=2F2DD333-0858-4634-89BD-EB10FCF3990D
 
 MOUNT=/mnt
 
+PACKAGES="base base-devel syslinux gptfdisk openssh sudo python"
+
 hostname=avatar-media
 install_disk=
 root_password=
+ssh_port=
 
 function prompt {
     local options=$1
@@ -27,7 +30,7 @@ function prompt {
 
     function __ask {
         result=$(dialog --stdout --title "$title" ${options} "Enter $label" "$DIALOG_HEIGHT" "$DIALOG_WIDTH" "$default") || return $?
-        result=${result//[^a-zA-Z_-]/}
+        result=${result//[^a-zA-Z0-9_-]/}
     }
 
     __ask || return $?
@@ -63,6 +66,7 @@ function prompt_password {
 function prompt_settings {
     hostname=$(prompt "--inputbox" "hostname" "$hostname")
     root_password=$(prompt_password "root password")
+    ssh_port=$(prompt "--inputbox" "SSH port" "22")
 
     available_disks=$(lsblk -dplnx size -o name,size | grep -Ev "boot|rpmb|loop" | tac)
     install_disk=$(dialog --stdout --title "Installation disk" --default-item "$install_disk" --menu "Select installation disk" "$DIALOG_HEIGHT" "$DIALOG_WIDTH" 0 ${available_disks})
@@ -74,7 +78,7 @@ while : ; do
     dialog --stdout --colors --title "Confirm settings" --defaultno --extra-button --extra-label "Modify" --ok-label "Yes" --yesno "
     Hostname: ${hostname}
     Installation disk: ${install_disk}
-    Root user: root
+    SSH port: ${ssh_port}
 
     \Zb\Z1The installation disk will be wiped.\Zn
 
@@ -138,7 +142,7 @@ curl -s "https://www.archlinux.org/mirrorlist/?country=CA&country=US&protocol=ht
 > /etc/pacman.d/mirrorlist
 
 echo "Copying OS files..."
-pacstrap $MOUNT base base-devel syslinux gptfdisk openssh sudo fish
+pacstrap $MOUNT $PACKAGES
 
 echo "Generating fstab..."
 genfstab -t PARTLABEL $MOUNT >> $MOUNT/etc/fstab
@@ -226,29 +230,47 @@ LABEL poweroff
 EOF
 
 echo
-echo "--- Configure services ---"
+echo "--- Configure SSH ---"
 echo
 
+echo "Port ${ssh_port}" >> /mnt/etc/ssh/sshd_config
 chrooted systemctl enable sshd.service
+
+echo
+echo "--- Configure network ---"
+echo
+
+chrooted echo '
+[Match]
+
+[Network]
+DHCP=yes
+' >> /etc/systemd/network/20-all.network
+chrooted systemctl enable systemd-networkd.service
+chrooted systemctl enable systemd-resolved.service
 
 echo
 echo "--- Configure users and groups ---"
 echo
 
-groupadd --root $MOUNT ssh
-useradd --root $MOUNT -m -G ssh,wheel -s /bin/bash ansible
-useradd --root $MOUNT -m -G ssh,wheel -s /usr/bin/fish avatar
+useradd --root $MOUNT -m -s /bin/bash ansible
 
 echo "root:${root_password}
-ansible:${root_password}
-avatar:${root_password}" | chpasswd --root $MOUNT
+ansible:${root_password}" | chpasswd --root $MOUNT
 
-# TODO: is ansible capable of doing that after first boot? Or maybe ansible requires NOPASSWD?
 tmpfile=$(mktemp)
-echo "%wheel ALL=(ALL) ALL" > $tmpfile
+echo "ansible ALL=(ALL) NOPASSWD: ALL" > $tmpfile
 visudo -cf $tmpfile \
-    && mv $tmpfile $MOUNT/etc/sudoers.d/wheel \
+    && mv $tmpfile $MOUNT/etc/sudoers.d/ansible \
     || echo "ERROR updating sudoers: no change made."
+chmod 440 $MOUNT/etc/sudoers.d/ansible
+
+mkdir -p /mnt/home/ansible/.ssh
+cp ansible_rsa.pub /mnt/home/ansible/.ssh/authorized_keys
+
+chrooted chown -R ansible:ansible /home/ansible/.ssh
+chmod 700 /mnt/home/ansible/.ssh
+chmod 600 /mnt/home/ansible/.ssh/authorized_keys
 
 echo
 echo "--- DONE! ---"

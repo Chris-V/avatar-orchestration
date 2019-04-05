@@ -1,0 +1,16 @@
+- name: Install ethernet tools
+  pacman:
+    name: ethtool
+    state: present
+
+- name: Activate WOL
+  command: "ethtool -s {{ ansible_facts['default_ipv4']['interface'] }} wol g"
+
+- name: Copy WOL config
+  template:
+    src: etc/systemd/network/15-wired.link.j2
+    dest: /etc/systemd/network/15-wired.link
+    force: yes
+    owner: root
+    group: root
+    mode: 0644

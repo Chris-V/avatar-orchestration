@@ -1,0 +1,10 @@
+- name: Copy SSH daemon configs
+  template:
+    src: etc/ssh/sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    force: yes
+    owner: root
+    group: root
+    mode: 0644
+    validate: '/usr/bin/sshd -t -f %s'
+  notify: reload sshd

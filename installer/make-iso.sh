@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-set -e -u -o pipefail
-trap 's=$?; echo "$0: Error on line "$LINENO": $BASH_COMMAND"; exit $s' ERR
+set -e -u
 
 SOURCE_FILE="${BASH_SOURCE[0]}"
 while [[ -h "$SOURCE_FILE" ]]; do # resolve $SOURCE until the file is no longer a symlink
@@ -25,8 +24,6 @@ exec 1> >(tee "${SOURCE_DIR}/build/stdout.log")
 exec 2> >(tee "${SOURCE_DIR}/build/stderr.log")
 
 # ---
-
-pacman -Sy archiso --noconfirm --needed
 
 cp -r /usr/share/archiso/configs/releng/ "${SOURCE_DIR}/build/files"
 

@@ -1,0 +1,15 @@
+- name: Update pacman cache
+  pacman:
+    update_cache: yes
+
+- name: Install common libraries
+  pacman:
+    name: git nftables openssh python sudo vim
+    state: present
+
+- name: Install Yay (AUR wrapper)
+  become: no
+  aur:
+    name: yay
+    use: makepkg
+    skip_installed: yes
