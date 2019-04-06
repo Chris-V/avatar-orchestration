@@ -2,4 +2,4 @@ avatar:
   children:
     media:
       hosts:
-        avatar-media-staging:
+        avatar-media:

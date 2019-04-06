@@ -1,0 +1,13 @@
+# TODO: Should be actual mounts once prod storage is figured out
+#   Also need mergerfs, snapraid and fstab configs here
+
+- name: Create mounts
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  loop:
+    - { path: '{{ data_mount }}' }
+    - { path: '{{ media_mount }}' }

@@ -1,3 +1,4 @@
-- import_tasks: wol.yml
-- import_tasks: nftables.yml
-#- import_tasks: docker.yml
+- import_tasks: users.yml
+- import_tasks: mounts.yml
+- import_tasks: network.yml
+- import_tasks: docker.yml

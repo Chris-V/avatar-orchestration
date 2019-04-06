@@ -30,6 +30,9 @@ cp -r /usr/share/archiso/configs/releng/ "${SOURCE_DIR}/build/files"
 cp -r "${SOURCE_DIR}/files/airootfs/etc/skel/" "${SOURCE_DIR}/build/files/airootfs/etc/skel/"
 cat "${SOURCE_DIR}/files/packages.x86_64" >> "${SOURCE_DIR}/build/files/packages.x86_64"
 
+echo "Time to do manual customizations."
+read -n 1 -s -r -p "Press any key to continue."
+
 "${SOURCE_DIR}/build/files/build.sh" -v \
     -N archlinux-media \
     -L "ARCH_MEDIA_$(date +%Y%m)" \

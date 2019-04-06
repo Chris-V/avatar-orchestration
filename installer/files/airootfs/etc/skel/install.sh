@@ -240,12 +240,12 @@ echo
 echo "--- Configure network ---"
 echo
 
-chrooted echo '
+echo '
 [Match]
 
 [Network]
 DHCP=yes
-' >> /etc/systemd/network/20-all.network
+' >> /mnt/etc/systemd/network/20-all.network
 chrooted systemctl enable systemd-networkd.service
 chrooted systemctl enable systemd-resolved.service
 

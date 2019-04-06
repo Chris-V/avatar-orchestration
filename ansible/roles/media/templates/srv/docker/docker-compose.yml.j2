@@ -1,0 +1,190 @@
+version: "3.7"
+
+x-localtime-volume: &localtime-volume "/etc/localtime:/etc/localtime:ro"
+x-timezone: &timezone "America/Toronto"
+x-proxy-enabled: &proxy-enabled
+  traefik.enable: "true"
+  traefik.docker.network: "proxy"
+
+networks:
+  proxy:
+
+services:
+  proxy:
+    container_name: proxy
+    image: "traefik:alpine"
+    restart: unless-stopped
+    labels:
+      <<: *proxy-enabled
+      traefik.proxy.backend: proxy
+      traefik.proxy.port: 8080
+      traefik.proxy.frontend.rule: "Host:traefik.{{ media_host }}"
+    networks:
+      proxy:
+        aliases:
+          - deluge.docker.localhost
+          - jackett.docker.localhost
+          - radarr.docker.localhost
+          - sonarr.docker.localhost
+          - plex.docker.localhost
+    ports:
+      - "80:80"
+    volumes:
+      - *localtime-volume
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "{{ docker_appdata_dir }}/traefik.toml:/traefik.toml:ro"
+
+  glances:
+    container_name: glances
+    image: "nicolargo/glances:latest-alpine"
+    pid: host
+    restart: unless-stopped
+    environment:
+      GLANCES_OPT: -w
+    labels:
+      <<: *proxy-enabled
+      traefik.glances.backend: glances
+      traefik.glances.port: 61208
+      traefik.glances.frontend.rule: "Host:glances.{{ media_host }}"
+    networks:
+      proxy:
+    volumes:
+      - *localtime-volume
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "{{ docker_appdata_dir }}/glances.conf:/glances/conf/glances.conf:ro"
+
+  vpn:
+    container_name: vpn
+    image: "microbug/cryptostorm-client:latest"
+    restart: unless-stopped
+    cap_add:
+      - NET_ADMIN
+    environment:
+      CRYPTOSTORM_USERNAME: "{{ cryptostorm_username }}"
+      CRYPTOSTORM_CONFIG_FILE: "CA-Montreal_UDP.ovpn"
+      CONNECTION_PORT: 443
+      FORWARDING_PORT: {{ deluge_incoming_port }}
+    networks:
+      proxy:
+    volumes:
+      - *localtime-volume
+
+  deluge:
+    container_name: deluge
+    image: "linuxserver/deluge:latest"
+    network_mode: "service:vpn"
+    restart: unless-stopped
+    depends_on:
+      - proxy
+      - vpn
+    environment:
+      TZ: *timezone
+      PUID: {{ system_appdata_uid }}
+      PGID: {{ system_data_gid }}
+      UMASK_SET: 022
+    labels:
+      <<: *proxy-enabled
+      traefik.deluge.backend: vpn
+      traefik.deluge.port: 8112
+      traefik.deluge.frontend.rule: "Host:deluge.docker.localhost,deluge.{{ media_host }}"
+    volumes:
+      - *localtime-volume
+      - "{{ deluge_config_dir }}:/config"
+      - "{{ downloads_dir }}:/downloads"
+
+  plex:
+    container_name: plex
+    image: "linuxserver/plex:latest"
+    restart: unless-stopped
+    devices:
+      - "/dev/dri:/dev/dri"
+    environment:
+      TZ: *timezone
+      PUID: {{ system_appdata_uid }}
+      PGID: {{ system_media_gid }}
+      VERSION: docker
+    labels:
+      <<: *proxy-enabled
+      traefik.plex.backend: plex
+      traefik.plex.port: 32400
+      traefik.plex.frontend.rule: "Host:plex.docker.localhost,plex.{{ media_host }}"
+    networks:
+      proxy:
+    ports:
+      - "32400:32400"
+    volumes:
+      - *localtime-volume
+      - "{{ plex_config_dir }}:/config"
+      - "{{ series_dir }}:/data/series:ro"
+      - "{{ movies_dir }}:/data/movies:ro"
+      - "{{ plex_transcode_dir }}:/transcode"
+
+  jackett:
+    container_name: jackett
+    image: "linuxserver/jackett:latest"
+    restart: unless-stopped
+    environment:
+      TZ: *timezone
+      PUID: {{ system_appdata_uid }}
+      PGID: {{ system_data_gid }}
+    labels:
+      <<: *proxy-enabled
+      traefik.jackett.backend: jackett
+      traefik.jackett.port: 9117
+      traefik.jackett.frontend.rule: "Host:jackett.docker.localhost,jackett.{{ media_host }}"
+    networks:
+      proxy:
+    volumes:
+      - *localtime-volume
+      - "{{ jackett_config_dir }}:/config"
+      - "{{ jackett_downloads_dir }}:/downloads"
+
+  sonarr:
+    container_name: sonarr
+    image: "linuxserver/sonarr:preview"
+    restart: unless-stopped
+    depends_on:
+      - deluge
+      - jackett
+      - proxy
+    environment:
+      TZ: *timezone
+      PUID: {{ system_appdata_uid }}
+      PGID: {{ system_media_gid }}
+    labels:
+      <<: *proxy-enabled
+      traefik.sonarr.backend: sonarr
+      traefik.sonarr.port: 8989
+      traefik.sonarr.frontend.rule: "Host:sonarr.docker.localhost,sonarr.{{ media_host }}"
+    networks:
+      proxy:
+    volumes:
+      - *localtime-volume
+      - "{{ sonarr_config_dir }}:/config"
+      - "{{ series_dir }}:/tv"
+      - "{{ downloads_dir }}:/downloads:ro"
+
+  radarr:
+    container_name: radarr
+    image: "linuxserver/radarr:latest"
+    restart: unless-stopped
+    depends_on:
+      - deluge
+      - jackett
+      - proxy
+    environment:
+      TZ: *timezone
+      PUID: {{ system_appdata_uid }}
+      PGID: {{ system_media_gid }}
+    labels:
+      <<: *proxy-enabled
+      traefik.radarr.backend: radarr
+      traefik.radarr.port: 7878
+      traefik.radarr.frontend.rule: "Host:radarr.docker.localhost,radarr.{{ media_host }}"
+    networks:
+      proxy:
+    volumes:
+      - *localtime-volume
+      - "{{ radarr_config_dir }}:/config"
+      - "{{ movies_dir }}:/movies"
+      - "{{ downloads_dir }}:/downloads:ro"

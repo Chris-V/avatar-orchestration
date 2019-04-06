@@ -12,10 +12,9 @@ This repository contains scripts to install and maintain avatar-media.
     1. Reboot target
 1. `make ansible-prod`
     1. ¯\\\_(ツ)\_/¯
-
-## TODO
-
-* Remove ansible ignored files and vault them
+1. Start apps
+    1. `docker-compose pull`
+    1. `docker-compose up -d`
 
 ## Partition summary
 
@@ -24,9 +23,9 @@ Mount | Size | FS | Parity | Comments
 \[SWAP] | | | | Nope
 /boot | 550&nbsp;MB | ? | N | 
 / | 32&nbsp;GB | Ext4 | N | (system) appdata
-/data | 6&nbsp;TB | BTRFS | N | (high write)<br>tmp, torrents, downloads, extraction, minecraft
-/storage | 18&nbsp;TB | XFS| Y | (high read, low write)<br>movies, series, music, ebooks, custom backups.<br>**Max 6 disks** pooled by **MergerFS**.
-/storageparity | \<*> | XFS | - | Managed by **Snapraid**.<br>Disk size is the **biggest disk from /storage**
+/data | 6&nbsp;TB | BTRFS | N | (high write)<br>tmp, torrents, downloads, extraction, games
+/media | 18&nbsp;TB | XFS| Y | (high read, low write)<br>movies, series, music, ebooks, custom backups.<br>**Max 6 disks** pooled by **MergerFS**.
+/mediaparity | \<*> | XFS | - | Managed by **Snapraid**.<br>Disk size is the **biggest disk from /media**
 
 ## Links
 

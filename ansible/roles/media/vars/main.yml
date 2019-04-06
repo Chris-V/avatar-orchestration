@@ -1,0 +1,36 @@
+# Users
+system_appdata_uid: 876
+system_appdata_gid: 876
+system_media_gid: 877
+system_data_gid: 878
+
+# General directories and mount points
+data_mount: /data
+media_mount: /media
+
+downloads_dir: '{{ data_mount }}/downloads'
+series_dir: '{{ media_mount }}/series'
+movies_dir: '{{ media_mount }}/movies'
+
+# Dockerised setup
+docker_srv_dir: /srv/docker
+docker_appdata_dir: '{{ docker_srv_dir }}/appdata'
+
+# Deluge
+deluge_config_dir: '{{ docker_appdata_dir }}/deluge'
+deluge_downloads_dir: '{{ downloads_dir }}/deluge'
+deluge_completed_dir: '{{ downloads_dir }}/completed'
+
+# Jackett
+jackett_config_dir: '{{ docker_appdata_dir }}/jackett'
+jackett_downloads_dir: '{{ downloads_dir }}/jackett'
+
+# Plex
+plex_config_dir: '{{ docker_appdata_dir }}/plex'
+plex_transcode_dir: '{{ data_mount }}/plex/transcode'
+
+# Radarr
+radarr_config_dir: '{{ docker_appdata_dir }}/radarr'
+
+# Sonarr
+sonarr_config_dir: '{{ docker_appdata_dir }}/sonarr'

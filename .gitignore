@@ -1,8 +1,7 @@
+secret/
 secrets/
 secret.*
 
-ansible/roles/media/templates/etc/nftables.conf.j2
-ansible/roles/media/files/.env
 ansible/**/*.retry
 
 installer/build/

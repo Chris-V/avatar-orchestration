@@ -1,4 +1,4 @@
-- name: Install Docker
+- name: Install packages
   pacman:
     name: docker docker-compose
     state: present
@@ -8,3 +8,62 @@
     name: docker.service
     state: started
     enabled: yes
+
+- name: Create data directories
+  file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "docker-appdata"
+    group: "{{ item.group }}"
+    mode: 0775
+  loop:
+    - { path: '{{ series_dir }}', group: 'media' }
+    - { path: '{{ movies_dir }}', group: 'media' }
+    - { path: '{{ downloads_dir }}', group: 'data' }
+    - { path: '{{ deluge_completed_dir }}', group: 'data' }
+    - { path: '{{ deluge_downloads_dir }}', group: 'data' }
+    - { path: '{{ jackett_downloads_dir }}', group: 'data' }
+    - { path: '{{ plex_transcode_dir }}', group: 'docker-appdata' }
+
+- name: Create docker directories
+  file:
+    path: '{{ item }}'
+    state: directory
+    owner: root
+    group: docker
+    mode: 0770
+  loop:
+    - '{{ docker_srv_dir }}'
+
+- name: Copy docker configurations
+  template:
+    src: srv/docker/docker-compose.yml.j2
+    dest: '{{ docker_srv_dir }}/docker-compose.yml'
+    owner: root
+    group: docker
+    mode: 0660
+    validate: 'docker-compose -f %s config'
+- name: Copy appdata backup script
+  template:
+    src: srv/docker/backup-appdata.sh.j2
+    dest: '{{ docker_srv_dir }}/backup-appdata.sh'
+    owner: 'docker-appdata'
+    group: 'docker-appdata'
+    mode: 0770
+
+- name: Copy docker app configs backup
+  unarchive:
+    creates: '{{ docker_appdata_dir }}'
+    src: '{{ appdata_archive }}'
+    dest: '{{ docker_srv_dir }}'
+
+- name: Copy docker app configs
+  template:
+    src: 'srv/docker/appdata/{{ item.filename }}.j2'
+    dest: '{{ docker_appdata_dir }}/{{ item.filename }}'
+    owner: 'docker-appdata'
+    group: 'docker-appdata'
+    mode: 0640
+  loop:
+    - { filename: 'glances.conf' }
+    - { filename: 'traefik.toml' }

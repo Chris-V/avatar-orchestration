@@ -28,13 +28,13 @@ installer:
 ansible:
 	ansible-playbook \
 		--vault-id default@./secrets/.ansible-vault-password \
-		-i ./ansible/inventories/$(inventory).yml \
+		-i ./ansible/inventories/$(inventory)/inventory.yml \
 		ansible/$(playbook).yml
 
 ansible-check:
 	ansible-playbook \
 		--vault-id default@./secrets/.ansible-vault-password \
-		-i ./ansible/inventories/$(inventory).yml \
+		-i ./ansible/inventories/$(inventory)/inventory.yml \
 		--check
 		ansible/$(playbook).yml
 
