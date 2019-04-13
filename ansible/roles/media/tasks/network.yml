@@ -24,10 +24,11 @@
     group: root
     mode: 0600
     validate: 'nft -c -f %s'
-  notify: reload nftables
+#  notify: reload nftables
 
+# TODO: Fix for docker and enable
 - name: Enable NFTables
   systemd:
     name: nftables.service
-    state: started
-    enabled: yes
+    state: stopped #started
+    enabled: no #yes

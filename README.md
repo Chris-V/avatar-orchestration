@@ -10,7 +10,7 @@ This repository contains scripts to install and maintain avatar-media.
     1. Boot on it.
     1. Follow install instructions displayed on screen.
     1. Reboot target
-1. `make ansible-prod`
+1. `make ansible inventory=production`
     1. ¯\\\_(ツ)\_/¯
 1. Start apps
     1. `docker-compose pull`
@@ -21,11 +21,13 @@ This repository contains scripts to install and maintain avatar-media.
 Mount | Size | FS | Parity | Comments
 --- | --- | --- | --- | ---
 \[SWAP] | | | | Nope
-/boot | 550&nbsp;MB | ? | N | 
-/ | 32&nbsp;GB | Ext4 | N | (system) appdata
-/data | 4&nbsp;TB | BTRFS | N | (high write)<br>tmp, torrents, downloads, extraction, games
-/media | 4x 4&nbsp;TB | XFS| Y | (high read, low write)<br>movies, series, music, ebooks, custom backups.<br>**Max 6 disks** pooled by **MergerFS**.
-/mediaparity | 4 TB | XFS | - | Managed by **Snapraid**.<br>Disk size is the **biggest disk from /media**
+/ | 20 GB | Ext4 | N | OS
+/boot | 550 MB | Ext4 | N | 
+/srv | 32 GB | Ext4 | N | app data
+/data | 4 TB | BTRFS | N | (high read-write)<br>tmp, torrents, downloads, extraction, game servers
+/mnt/storage/disk{n} | 8 TB | XFS| Y | (high read, low write)<br>movies, series, music, ebooks, custom backups.
+/mnt/storage/parity{n} | 8 TB | XFS | - | Parity file from **Snapraid**.<br>Disk size is the biggest disk from `/mnt/storage/disk*`.
+/storage | - | fuse.mergerfs | N | (high read, low write)<br>All disks in `/mnt/storage/disk*` pooled by **MergerFS**.
 
 ## Links
 

@@ -5,15 +5,15 @@ system_media_gid: 877
 system_data_gid: 878
 
 # General directories and mount points
-data_mount: /data
-media_mount: /media
+data_mount: '/data'
+storage_mount: '/storage'
 
 downloads_dir: '{{ data_mount }}/downloads'
-series_dir: '{{ media_mount }}/series'
-movies_dir: '{{ media_mount }}/movies'
+series_dir: '{{ storage_mount }}/series'
+movies_dir: '{{ storage_mount }}/movies'
 
 # Dockerised setup
-docker_srv_dir: /srv/docker
+docker_srv_dir: '/srv/docker'
 docker_appdata_dir: '{{ docker_srv_dir }}/appdata'
 
 # Deluge

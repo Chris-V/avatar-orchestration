@@ -81,7 +81,7 @@ services:
       TZ: *timezone
       PUID: {{ system_appdata_uid }}
       PGID: {{ system_data_gid }}
-      UMASK_SET: 022
+      UMASK_SET: '022'
     labels:
       <<: *proxy-enabled
       traefik.deluge.backend: vpn
