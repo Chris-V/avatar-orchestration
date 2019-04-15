@@ -1,6 +1,5 @@
 version: "3.7"
 
-x-localtime-volume: &localtime-volume "/etc/localtime:/etc/localtime:ro"
 x-timezone: &timezone "America/Toronto"
 x-proxy-enabled: &proxy-enabled
   traefik.enable: "true"
@@ -14,6 +13,8 @@ services:
     container_name: proxy
     image: "traefik:alpine"
     restart: unless-stopped
+    environment:
+      TZ: *timezone
     labels:
       <<: *proxy-enabled
       traefik.proxy.backend: proxy
@@ -30,7 +31,6 @@ services:
     ports:
       - "80:80"
     volumes:
-      - *localtime-volume
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "{{ docker_appdata_dir }}/traefik.toml:/traefik.toml:ro"
 
@@ -40,6 +40,7 @@ services:
     pid: host
     restart: unless-stopped
     environment:
+      TZ: *timezone
       GLANCES_OPT: -w
     labels:
       <<: *proxy-enabled
@@ -49,7 +50,6 @@ services:
     networks:
       proxy:
     volumes:
-      - *localtime-volume
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "{{ docker_appdata_dir }}/glances.conf:/glances/conf/glances.conf:ro"
 
@@ -60,14 +60,13 @@ services:
     cap_add:
       - NET_ADMIN
     environment:
+      TZ: *timezone
       CRYPTOSTORM_USERNAME: "{{ cryptostorm_username }}"
       CRYPTOSTORM_CONFIG_FILE: "CA-Montreal_UDP.ovpn"
       CONNECTION_PORT: 443
       FORWARDING_PORT: {{ deluge_incoming_port }}
     networks:
       proxy:
-    volumes:
-      - *localtime-volume
 
   deluge:
     container_name: deluge
@@ -88,7 +87,6 @@ services:
       traefik.deluge.port: 8112
       traefik.deluge.frontend.rule: "Host:deluge.docker.localhost,deluge.{{ media_host }}"
     volumes:
-      - *localtime-volume
       - "{{ deluge_config_dir }}:/config"
       - "{{ downloads_dir }}:/downloads"
 
@@ -113,7 +111,6 @@ services:
     ports:
       - "32400:32400"
     volumes:
-      - *localtime-volume
       - "{{ plex_config_dir }}:/config"
       - "{{ series_dir }}:/data/series:ro"
       - "{{ movies_dir }}:/data/movies:ro"
@@ -135,7 +132,6 @@ services:
     networks:
       proxy:
     volumes:
-      - *localtime-volume
       - "{{ jackett_config_dir }}:/config"
       - "{{ jackett_downloads_dir }}:/downloads"
 
@@ -159,7 +155,6 @@ services:
     networks:
       proxy:
     volumes:
-      - *localtime-volume
       - "{{ sonarr_config_dir }}:/config"
       - "{{ series_dir }}:/tv"
       - "{{ downloads_dir }}:/downloads:ro"
@@ -184,7 +179,6 @@ services:
     networks:
       proxy:
     volumes:
-      - *localtime-volume
       - "{{ radarr_config_dir }}:/config"
       - "{{ movies_dir }}:/movies"
       - "{{ downloads_dir }}:/downloads:ro"
