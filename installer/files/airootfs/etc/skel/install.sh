@@ -16,7 +16,7 @@ MOUNT=/mnt
 
 PACKAGES="base base-devel syslinux gptfdisk openssh sudo python"
 
-hostname=avatar-media
+hostname=avatar
 install_disk=
 root_password=
 ssh_port=
@@ -153,7 +153,8 @@ echo
 chrooted () { arch-chroot $MOUNT bash -c "$*"; }
 
 echo "Setting up timezone..."
-chrooted ln -sf /usr/share/zoneinfo/America/Montreal /etc/localtime
+chrooted ln -sfn /usr/share/zoneinfo/America/Montreal /etc/localtime
+echo 'America/Montreal' > $MOUNT/etc/timezone
 chrooted hwclock --systohc --utc
 
 echo "Setting up locale..."

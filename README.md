@@ -1,4 +1,4 @@
-# Avatar-Media Management Scripts
+# Avatar Management Scripts
 
 This repository contains scripts to install and maintain avatar-media.
 
@@ -16,7 +16,9 @@ This repository contains scripts to install and maintain avatar-media.
     1. `docker-compose pull`
     1. `docker-compose up -d`
 
-## Partition summary
+## Media
+
+### Partition summary
 
 Mount | Size | FS | Parity | Comments
 --- | --- | --- | --- | ---

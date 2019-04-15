@@ -34,8 +34,8 @@ echo "Time to do manual customizations."
 read -n 1 -s -r -p "Press any key to continue."
 
 "${SOURCE_DIR}/build/files/build.sh" -v \
-    -N archlinux-media \
-    -L "ARCH_MEDIA_$(date +%Y%m)" \
+    -N archlinux-avatar \
+    -L "ARCH_AVATAR_$(date +%Y%m)" \
     -w "${SOURCE_DIR}/build/work" \
     -o "${SOURCE_DIR}/build/out"
 
