@@ -17,6 +17,7 @@
     group: "{{ item.group }}"
     mode: 0775
   loop:
+    - { path: '{{ backups_dir }}', group: 'docker-appdata' }
     - { path: '{{ series_dir }}', group: 'media' }
     - { path: '{{ movies_dir }}', group: 'media' }
     - { path: '{{ downloads_dir }}', group: 'data' }
@@ -35,31 +36,44 @@
   loop:
     - '{{ docker_srv_dir }}'
 
-- name: Copy docker configurations
+- name: Copy docker images
+  copy:
+    src: 'docker-images'
+    dest: '{{ docker_srv_dir }}'
+    owner: root
+    group: docker
+    directory_mode: "ug=rwx,o="
+    mode: "ug+rw,o=" # Preserve exec. bit where applicable
+
+- name: Copy docker compose
   template:
-    src: srv/docker/docker-compose.yml.j2
+    src: "docker-compose.yml.j2"
     dest: '{{ docker_srv_dir }}/docker-compose.yml'
     owner: root
     group: docker
     mode: 0660
     validate: 'docker-compose -f %s config'
-- name: Copy appdata backup script
-  template:
-    src: srv/docker/backup-appdata.sh.j2
-    dest: '{{ docker_srv_dir }}/backup-appdata.sh'
-    owner: 'docker-appdata'
-    group: 'docker-appdata'
-    mode: 0770
 
-- name: Copy docker app configs backup
+- name: Copy initial app configs
   unarchive:
     creates: '{{ docker_appdata_dir }}'
     src: '{{ appdata_archive }}'
     dest: '{{ docker_srv_dir }}'
 
-- name: Copy docker app configs
+- name: Copy managed app configs
+  copy:
+    src: '{{ item.name }}'
+    dest: '{{ docker_appdata_dir }}'
+    owner: docker-appdata
+    group: docker-appdata
+    directory_mode: "u=rwx,g=rx,o="
+    mode: "u+rw,g+r-w,o=" # Preserve exec. bit where applicable
+  loop:
+    - { name: 'appdata/backup-scheduler' }
+
+- name: Populate managed app configs
   template:
-    src: 'srv/docker/appdata/{{ item.filename }}.j2'
+    src: 'appdata/{{ item.filename }}.j2'
     dest: '{{ docker_appdata_dir }}/{{ item.filename }}'
     owner: 'docker-appdata'
     group: 'docker-appdata'

@@ -9,6 +9,7 @@ data_mount: '/data'
 storage_mount: '/storage'
 
 downloads_dir: '{{ data_mount }}/downloads'
+backups_dir: '{{ storage_mount }}/backups'
 series_dir: '{{ storage_mount }}/series'
 movies_dir: '{{ storage_mount }}/movies'
 

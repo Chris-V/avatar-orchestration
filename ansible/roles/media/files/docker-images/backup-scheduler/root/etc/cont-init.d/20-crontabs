@@ -1,0 +1,4 @@
+#!/usr/bin/with-contenv bash
+
+[[ -f /config/crontab ]] && \
+    cat /config/crontab >> /etc/crontabs/root

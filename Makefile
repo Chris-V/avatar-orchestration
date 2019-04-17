@@ -16,7 +16,7 @@ ifndef inventory
 override inventory = staging
 endif
 ifndef playbook
-override playbook = media
+override playbook = all
 endif
 
 prepare:
@@ -29,6 +29,7 @@ ansible:
 	ansible-playbook \
 		--vault-id default@./secrets/.ansible-vault-password \
 		-i ./ansible/inventories/$(inventory)/inventory.yml \
+		$(args) \
 		ansible/$(playbook).yml
 
 ansible-check:

@@ -1,0 +1,1 @@
+30 3 * * * bash -c /config/backup-appdata.sh 2>&1

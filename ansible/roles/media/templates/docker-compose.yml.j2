@@ -182,3 +182,20 @@ services:
       - "{{ radarr_config_dir }}:/config"
       - "{{ movies_dir }}:/movies"
       - "{{ downloads_dir }}:/downloads:ro"
+
+  backup-scheduler:
+    container_name: backup-scheduler
+    build:
+      context: "{{ docker_srv_dir }}/docker-images/backup-scheduler"
+    image: "backup-scheduler"
+    network_mode: "none"
+    restart: "always"
+    environment:
+      TZ: *timezone
+      PUID: {{ system_appdata_uid }}
+      PGID: {{ system_appdata_gid }}
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "{{ docker_appdata_dir }}/backup-scheduler:/config:ro"
+      - "{{ docker_appdata_dir }}:/appdata:ro"
+      - "{{ backups_dir }}:/backups"
