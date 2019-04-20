@@ -183,6 +183,37 @@ services:
       - "{{ movies_dir }}:/movies"
       - "{{ downloads_dir }}:/downloads:ro"
 
+  minecraft:
+    container_name: minecraft
+    image: "itzg/minecraft-server"
+    restart: "unless-stopped"
+    stdin_open: true
+    tty: true
+    user: "{{ system_appdata_uid }}:{{ system_appdata_gid }}"
+    environment:
+      EULA: "TRUE"
+      LEVEL: "Ultimate"
+      SERVER_NAME: "Ultimate"
+      MOTD: "The ultimate Minecraft server"
+      ICON: "https://i.imgur.com/6VOFSL3.jpg"
+      TYPE: "vanilla"
+      VERSION: "latest"
+      INIT_MEMORY: "512M"
+      MAX_MEMORY: "2G"
+      MAX_PLAYERS: 6
+      VIEW_DISTANCE: 12
+      CONSOLE: "false"
+      ENABLE_RCON: "true"
+      RCON_PASSWORD: "{{ rcon_password }}"
+      RCON_PORT: 25575
+      SNOOPER_ENABLED: "false"
+      OPS: "{{ minecraft_username }}"
+      WHITELIST: "{{ minecraft_username }}"
+    ports:
+      - "25565:25565"
+    volumes:
+      - "{{ minecraft_data_dir }}:/data"
+
   backup-scheduler:
     container_name: backup-scheduler
     build:

@@ -26,6 +26,9 @@ deluge_completed_dir: '{{ downloads_dir }}/completed'
 jackett_config_dir: '{{ docker_appdata_dir }}/jackett'
 jackett_downloads_dir: '{{ downloads_dir }}/jackett'
 
+# Minecraft
+minecraft_data_dir: '{{ data_mount }}/minecraft'
+
 # Plex
 plex_config_dir: '{{ docker_appdata_dir }}/plex'
 plex_transcode_dir: '{{ data_mount }}/plex/transcode'

@@ -38,11 +38,14 @@ tar \
     --exclude="${backup_src}/deluge/*.state" \
     --exclude="${backup_src}/deluge/icons" \
     --exclude="${backup_src}/deluge/state" \
+    --exclude="${backup_src}/deluge/plugins/.python-eggs" \
     --exclude="${backup_src}/jackett/Jackett/log.*" \
     --exclude="${backup_src}/sonarr/Backups" \
     --exclude="${backup_src}/sonarr/logs" \
+    --exclude="${backup_src}/sonarr/MediaCover" \
     --exclude="${backup_src}/radarr/Backups" \
     --exclude="${backup_src}/radarr/logs" \
+    --exclude="${backup_src}/radarr/MediaCover" \
     --exclude="${backup_src}/plex/Library/Application Support/Plex Media Server/Cache" \
     --exclude="${backup_src}/plex/Library/Application Support/Plex Media Server/Codecs" \
     --exclude="${backup_src}/plex/Library/Application Support/Plex Media Server/Crash Reports" \

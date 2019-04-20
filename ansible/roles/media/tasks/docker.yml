@@ -15,7 +15,7 @@
     state: directory
     owner: "docker-appdata"
     group: "{{ item.group }}"
-    mode: 0775
+    mode: "{{ item.mode | default(0775) }}"
   loop:
     - { path: '{{ backups_dir }}', group: 'docker-appdata' }
     - { path: '{{ series_dir }}', group: 'media' }
@@ -24,6 +24,7 @@
     - { path: '{{ deluge_completed_dir }}', group: 'data' }
     - { path: '{{ deluge_downloads_dir }}', group: 'data' }
     - { path: '{{ jackett_downloads_dir }}', group: 'data' }
+    - { path: '{{ minecraft_data_dir }}', group: 'docker-appdata', mode: "ug=rwx,o=" }
     - { path: '{{ plex_transcode_dir }}', group: 'docker-appdata' }
 
 - name: Create docker directories
