@@ -1,0 +1,8 @@
+- hosts: relays
+  become: yes
+  become_user: root
+  tasks:
+    - import_role:
+        name: common
+    - import_role:
+        name: relay

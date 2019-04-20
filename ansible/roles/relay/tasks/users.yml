@@ -1,0 +1,8 @@
+- name: Create plantgateway
+  user:
+    name: "plantgateway"
+    groups:
+      - "lp"
+    create_home: no
+    shell: "/usr/bin/nologin"
+    state: "present"

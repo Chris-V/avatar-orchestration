@@ -23,7 +23,7 @@
 - name: Create sudoer rule for poweroff
   lineinfile:
     path: /etc/sudoers.d/30-poweroff
-    line: '%poweroff ALL=NOPASSWD:/usr/bin/poweroff'
+    line: '%poweroff ALL=NOPASSWD: /usr/bin/poweroff, /usr/bin/halt, /usr/bin/reboot'
     create: yes
     owner: root
     group: root
@@ -36,6 +36,7 @@
     groups: ssh
     append: no
     state: present
+
 - name: Create user avatar
   user:
     name: avatar
@@ -45,7 +46,14 @@
     state: present
     shell: /usr/bin/fish
     password: '{{ avatar_password }}'
+- name: Add authorized keys to avatar
+  authorized_key:
+    user: avatar
+    state: present
+    key: '{{ avatar_public_key }}'
+
 - name: Create user homeassistant
+  when: "not inventory_hostname == 'avatar-automate'"
   user:
     name: homeassistant
     groups: ssh,poweroff
@@ -54,13 +62,8 @@
     state: present
     shell: /bin/bash
     password: '{{ homeassistant_password }}'
-
-- name: Add authorized keys to avatar
-  authorized_key:
-    user: avatar
-    state: present
-    key: '{{ avatar_public_key }}'
 - name: Add authorized keys to homeassistant
+  when: "not inventory_hostname == 'avatar-automate'"
   authorized_key:
     exclusive: yes
     state: present
