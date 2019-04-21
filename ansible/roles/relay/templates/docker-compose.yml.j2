@@ -1,0 +1,36 @@
+version: "3.7"
+
+x-timezone: &timezone "America/Toronto"
+
+services:
+  glances:
+    container_name: glances
+    build:
+      context: "{{ docker_apps_dir }}/docker-images/glances"
+    image: "avatary/glances"
+    pid: "host"
+    restart: "unless-stopped"
+    environment:
+      TZ: *timezone
+      GLANCES_OPT: -w
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "1"
+    ports:
+      - "8888:61208"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  plant-gateway:
+    container_name: plant-gateway
+    build:
+      context: "{{ docker_apps_dir }}/docker-images/plant-gateway"
+    image: "avatary/plant-gateway"
+    network_mode: "host"
+    restart: "unless-stopped"
+    environment:
+      TZ: *timezone
+    volumes:
+      - "{{ docker_appdata_dir }}/plantgw:/config:ro"

@@ -1,0 +1,7 @@
+#!/usr/bin/with-contenv bash
+
+# init config
+[[ ! -f /config/plantgw.yaml ]] && \
+    cp /defaults/plantgw.yaml /config/plantgw.yaml
+
+cp /config/plantgw.yaml /root/.plantgw.yaml
