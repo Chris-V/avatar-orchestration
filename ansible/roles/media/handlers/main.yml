@@ -1,0 +1,3 @@
+- name: Activate WOL
+  listen: activate wol
+  command: "ethtool -s {{ ansible_facts['default_ipv4']['interface'] }} wol g"

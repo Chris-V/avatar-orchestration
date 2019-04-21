@@ -3,9 +3,6 @@
     name: ethtool
     state: present
 
-- name: Activate WOL
-  command: "ethtool -s {{ ansible_facts['default_ipv4']['interface'] }} wol g"
-
 - name: Copy WOL config
   template:
     src: etc/systemd/network/15-wired.link.j2
@@ -14,6 +11,7 @@
     owner: root
     group: root
     mode: 0644
+  notify: activate wol
 
 - name: Copy NFTables configuration
   template:

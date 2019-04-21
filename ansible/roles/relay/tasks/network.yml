@@ -1,0 +1,25 @@
+- name: Disable wireless power saving mode
+  copy:
+    dest: "/etc/udev/rules.d/81-wifi-powersave.rules"
+    owner: root
+    group: root
+    mode: 0644
+    content: 'ACTION=="add", SUBSYSTEM=="net", KERNEL=="wl*", RUN+="/usr/bin/iw dev $name set power_save off"'
+  notify: reload udev
+
+- name: Copy NFTables configuration
+  template:
+    src: etc/nftables.conf.j2
+    dest: /etc/nftables.conf
+    force: yes
+    owner: root
+    group: root
+    mode: 0600
+    validate: 'nft -c -f %s'
+  notify: reload nftables
+
+- name: Enable NFTables
+  systemd:
+    name: nftables.service
+    state: started
+    enabled: yes

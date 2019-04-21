@@ -44,7 +44,3 @@ Mount | Size | FS | Parity | Comments
 * Ansible getting started: https://serversforhackers.com/c/an-ansible2-tutorial
 * Ansible stuff from the lsio guy: https://www.youtube.com/watch?v=lumHT3MAS_w
     * https://github.com/IronicBadger/ansible
-
-## TODO
-Relays:  
-echo 'ACTION=="add", SUBSYSTEM=="net", KERNEL=="wl*", RUN+="/usr/bin/iw dev $name set power_save off"' > /etc/udev/rules.d/81-wifi-powersave.rules
