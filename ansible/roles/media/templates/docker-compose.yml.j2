@@ -6,7 +6,9 @@ x-proxy-enabled: &proxy-enabled
   traefik.docker.network: "proxy"
 
 networks:
-  proxy:
+  public:
+  glances:
+  media:
 
 services:
   proxy:
@@ -21,7 +23,9 @@ services:
       traefik.proxy.port: 8080
       traefik.proxy.frontend.rule: "Host:traefik.{{ media_host }}"
     networks:
-      proxy:
+      public:
+      glances:
+      media:
         aliases:
           - deluge.docker.localhost
           - jackett.docker.localhost
@@ -48,7 +52,7 @@ services:
       traefik.glances.port: 61208
       traefik.glances.frontend.rule: "Host:glances.{{ media_host }}"
     networks:
-      proxy:
+      glances:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "{{ docker_appdata_dir }}/glances.conf:/glances/conf/glances.conf:ro"
@@ -66,7 +70,7 @@ services:
       CONNECTION_PORT: 443
       FORWARDING_PORT: {{ deluge_incoming_port }}
     networks:
-      proxy:
+      media:
 
   deluge:
     container_name: deluge
@@ -107,7 +111,7 @@ services:
       traefik.plex.port: 32400
       traefik.plex.frontend.rule: "Host:plex.docker.localhost,plex.{{ media_host }}"
     networks:
-      proxy:
+      media:
     ports:
       - "32400:32400"
     volumes:
@@ -130,7 +134,7 @@ services:
       traefik.jackett.port: 9117
       traefik.jackett.frontend.rule: "Host:jackett.docker.localhost,jackett.{{ media_host }}"
     networks:
-      proxy:
+      media:
     volumes:
       - "{{ jackett_config_dir }}:/config"
       - "{{ jackett_downloads_dir }}:/downloads"
@@ -153,7 +157,7 @@ services:
       traefik.sonarr.port: 8989
       traefik.sonarr.frontend.rule: "Host:sonarr.docker.localhost,sonarr.{{ media_host }}"
     networks:
-      proxy:
+      media:
     volumes:
       - "{{ sonarr_config_dir }}:/config"
       - "{{ series_dir }}:/tv"
@@ -177,7 +181,7 @@ services:
       traefik.radarr.port: 7878
       traefik.radarr.frontend.rule: "Host:radarr.docker.localhost,radarr.{{ media_host }}"
     networks:
-      proxy:
+      media:
     volumes:
       - "{{ radarr_config_dir }}:/config"
       - "{{ movies_dir }}:/movies"
@@ -209,6 +213,8 @@ services:
       SNOOPER_ENABLED: "false"
       OPS: "{{ minecraft_username }}"
       WHITELIST: "{{ minecraft_username }}"
+    networks:
+      public:
     ports:
       - "25565:25565"
     volumes:
