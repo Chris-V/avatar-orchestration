@@ -1,19 +1,15 @@
-# Pull base image.
 FROM arm64v8/alpine:3.9
 
-# Install Glances (develop branch)
-RUN apk add python py2-psutil py2-bottle
-RUN apk add git
-RUN git clone -b develop https://github.com/nicolargo/glances.git
+RUN \
+    apk add --no-cache python3 py3-psutil py3-bottle && \
+    python3 -m ensurepip && \
+    python3 -m pip install --no-cache-dir 'glances==3.1.0' && \
+    rm -rf /root/.cache && \
+    rm -rf /usr/lib/python*/ensurepip
 
-# Define working directory.
-WORKDIR /glances
-
-# EXPOSE PORT (For XMLRPC)
+# XMLRPC
 EXPOSE 61209
-
-# EXPOSE PORT (For Web UI)
+# Web UI
 EXPOSE 61208
 
-# Define default command.
-CMD python -m glances -C /glances/conf/glances.conf $GLANCES_OPT
+ENTRYPOINT ["/usr/bin/glances"]

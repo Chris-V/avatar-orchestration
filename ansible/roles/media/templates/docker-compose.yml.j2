@@ -1,6 +1,6 @@
 version: "3.7"
 
-x-timezone: &timezone "America/Toronto"
+x-timezone: &timezone " {{ timezone }} "
 x-proxy-enabled: &proxy-enabled
   traefik.enable: "true"
   traefik.docker.network: "proxy"
@@ -202,7 +202,10 @@ services:
       ICON: "https://i.imgur.com/6VOFSL3.jpg"
       TYPE: "vanilla"
       VERSION: "1.14"
-      MAX_MEMORY: "6G"
+      GUI: "false"
+      MEMORY: "3G"
+      JVM_OPTS: "-server"
+      JVM_XX_OPTS: "-XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:+ParallelRefProcEnabled -XX:+UseLargePagesInMetaspace -XX:MaxGCPauseMillis=100 -XX:TargetSurvivorRatio=90 -XX:G1NewSizePercent=50 -XX:G1MaxNewSizePercent=80 -XX:G1MixedGCLiveThresholdPercent=35"
       MAX_PLAYERS: 6
       VIEW_DISTANCE: 12
       ENABLE_RCON: "true"

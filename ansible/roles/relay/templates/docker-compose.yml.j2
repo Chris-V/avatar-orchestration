@@ -1,6 +1,6 @@
 version: "3.7"
 
-x-timezone: &timezone "America/Toronto"
+x-timezone: &timezone "{{ timezone }}"
 
 services:
   glances:
@@ -8,11 +8,11 @@ services:
     build:
       context: "{{ docker_apps_dir }}/docker-images/glances"
     image: "avatary/glances"
+    command: "-w"
     pid: "host"
     restart: "unless-stopped"
     environment:
       TZ: *timezone
-      GLANCES_OPT: -w
     logging:
       driver: "json-file"
       options:

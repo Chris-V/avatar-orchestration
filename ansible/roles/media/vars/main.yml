@@ -27,7 +27,7 @@ jackett_config_dir: '{{ docker_appdata_dir }}/jackett'
 jackett_downloads_dir: '{{ downloads_dir }}/jackett'
 
 # Minecraft
-minecraft_data_dir: '{{ data_mount }}/minecraft'
+minecraft_data_dir: '/srv/minecraft'
 
 # Plex
 plex_config_dir: '{{ docker_appdata_dir }}/plex'
