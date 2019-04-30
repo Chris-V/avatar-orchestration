@@ -25,6 +25,7 @@
     - { path: '{{ deluge_downloads_dir }}', group: 'data' }
     - { path: '{{ jackett_downloads_dir }}', group: 'data' }
     - { path: '{{ minecraft_data_dir }}', group: 'docker-appdata', mode: "ug=rwx,o=" }
+    - { path: '{{ minecraft_map_dir }}', group: 'data' }
     - { path: '{{ plex_transcode_dir }}', group: 'docker-appdata' }
 
 - name: Create docker directories
@@ -63,14 +64,12 @@
 
 - name: Copy managed app configs
   copy:
-    src: '{{ item.name }}'
+    src: 'appdata/'
     dest: '{{ docker_appdata_dir }}'
     owner: docker-appdata
     group: docker-appdata
     directory_mode: "u=rwx,g=rx,o="
     mode: "u+rw,g+r-w,o=" # Preserve exec. bit where applicable
-  loop:
-    - { name: 'appdata/backup-scheduler' }
 
 - name: Populate managed app configs
   template:

@@ -28,6 +28,8 @@ jackett_downloads_dir: '{{ downloads_dir }}/jackett'
 
 # Minecraft
 minecraft_data_dir: '/srv/minecraft'
+minecraft_map_dir: '/srv/minecraft-map'
+minecraft_overviewer_dir: '{{ docker_appdata_dir }}/minecraft-overviewer'
 
 # Plex
 plex_config_dir: '{{ docker_appdata_dir }}/plex'

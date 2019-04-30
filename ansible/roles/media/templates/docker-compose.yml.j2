@@ -5,10 +5,13 @@ x-proxy-enabled: &proxy-enabled
   traefik.enable: "true"
   traefik.docker.network: "proxy"
 
+x-minecraft-version: &minecraft-version "1.14"
+
 networks:
   public:
   glances:
   media:
+  minecraft:
 
 services:
   proxy:
@@ -201,9 +204,9 @@ services:
       MOTD: "The ultimate Minecraft server"
       ICON: "https://i.imgur.com/6VOFSL3.jpg"
       TYPE: "vanilla"
-      VERSION: "1.14"
+      VERSION: *minecraft-version
       GUI: "false"
-      MEMORY: "3G"
+      MEMORY: "9G"
       JVM_OPTS: "-server"
       JVM_XX_OPTS: "-XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:+ParallelRefProcEnabled -XX:+UseLargePagesInMetaspace -XX:MaxGCPauseMillis=100 -XX:TargetSurvivorRatio=90 -XX:G1NewSizePercent=50 -XX:G1MaxNewSizePercent=80 -XX:G1MixedGCLiveThresholdPercent=35"
       MAX_PLAYERS: 6
@@ -216,16 +219,50 @@ services:
       WHITELIST: "{{ minecraft_username }}"
     networks:
       public:
+      minecraft:
     ports:
       - "25565:25565"
     volumes:
       - "{{ minecraft_data_dir }}:/data"
 
+  minecraft-overviewer:
+    container_name: "minecraft-overviewer"
+    build:
+      context: "{{ docker_srv_dir }}/docker-images/minecraft-overviewer"
+      args:
+        PUID: {{ system_appdata_uid }}
+        PGID: {{ system_data_gid }}
+    image: "avatary/minecraft-overviewer"
+    restart: "no"
+    environment:
+      MINECRAFT_VERSION: *minecraft-version
+      RENDER_MAP: "true"
+      RENDER_POI: "true"
+    network_mode: "host"
+    volumes:
+      - "{{ minecraft_overviewer_dir }}/config.py:/home/minecraft/config.py:ro"
+      - "{{ minecraft_data_dir }}/Ultimate:/home/minecraft/server/world:ro"
+      - "{{ minecraft_map_dir }}:/home/minecraft/render"
+
+  minecraft-map:
+    container_name: "minecraft-map"
+    image: "nginx:stable-alpine"
+    restart: "unless-stopped"
+    labels:
+      <<: *proxy-enabled
+      traefik.glances.backend: minecraft-map
+      traefik.glances.port: 80
+      traefik.glances.frontend.rule: "Host:minecraft-map.{{ media_host }}"
+    networks:
+      public:
+    volumes:
+      - "{{ minecraft_map_dir }}:/usr/share/nginx/html:ro"
+
   backup-scheduler:
     container_name: backup-scheduler
     build:
       context: "{{ docker_srv_dir }}/docker-images/backup-scheduler"
-    image: "backup-scheduler"
+    image: "avatary/backup-scheduler"
     network_mode: "none"
     restart: "always"
     environment:
