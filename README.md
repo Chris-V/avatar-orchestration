@@ -12,9 +12,9 @@ This repository contains scripts to install and maintain avatar-media.
     1. Reboot target
 1. `make ansible inventory=production`
     1. ¯\\\_(ツ)\_/¯
-1. Start apps
+1. Start apps (not orchestrated, for now)
     1. `docker-compose pull`
-    1. `docker-compose up -d`
+    1. `docker-compose up -d --build`
 
 ## Media
 

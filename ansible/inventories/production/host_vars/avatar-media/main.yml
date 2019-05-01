@@ -1,0 +1,6 @@
+# Inventory: PRODUCTION
+# Server: Avatar-Media
+
+ansible_host: avatar-media-ansible
+
+ssh_port: "{{ media_ssh }}"

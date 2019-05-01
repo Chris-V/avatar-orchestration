@@ -1,0 +1,95 @@
+- name: Install host requirements for home-asssisant
+  pacman:
+    name: "python-requests"
+    state: "present"
+
+- name: Create hubz device group
+  group:
+    name: "hubz"
+    state: "present"
+
+- name: Add homeassistant to hubz
+  user:
+    name: "homeassistant"
+    append: yes
+    groups: "hubz"
+
+- name: Copy UDEV rules for HUSBZB-1
+  copy:
+    dest: "/etc/udev/rules.d/99-hubz.rules"
+    owner: "root"
+    group: "root"
+    mode: 0644
+    content: >-
+      SUBSYSTEM=="tty", ATTRS{interface}=="HubZ Z-Wave Com Port", SYMLINK+="zwave", GROUP="hubz", MODE="0660"
+      SUBSYSTEM=="tty", ATTRS{interface}=="HubZ ZigBee Com Port", SYMLINK+="zigbee", GROUP="hubz", MODE="0660"
+  notify: reload udev
+
+- name: Copy poweroff key
+  copy:
+    src: 'homeassistant/poweroff_rsa'
+    dest: '{{ homeassistant_poweroff_key }}'
+    owner: "homeassistant"
+    group: "homeassistant"
+    mode: 0600
+- name: Copy public poweroff key
+  copy:
+    dest: '{{ homeassistant_poweroff_key }}.pub'
+    owner: "homeassistant"
+    group: "homeassistant"
+    mode: 0600
+    content: "{{ poweroff_public_key }}"
+- name: Copy SSH config
+  template:
+    src: 'homeassistant/ssh_config.j2'
+    dest: '{{ homeassistant_home }}/.ssh/config'
+    owner: "homeassistant"
+    group: "homeassistant"
+    mode: 0600
+
+- name: Generate home-assistant deploy key
+  openssh_keypair:
+    path: "{{ homeassistant_config_key }}"
+    type: "rsa"
+    size: 4096
+    state: "present"
+    force: no
+    owner: "homeassistant"
+    group: "homeassistant"
+- name: Upload home-assistant deploy key
+  github_deploy_key:
+    name: "avatar-automate-ansible"
+    owner: "{{ homeassistant_config_owner }}"
+    repo: "{{ homeassistant_config_repo }}"
+    token: "{{ github_token }}"
+    read_only: yes
+    force: no
+    key: "{{ lookup('file', '{{ homeassistant_config_key }}.pub') }}"
+    state: "present"
+
+- name: Fetch configuration
+  become: yes
+  become_user: homeassistant
+  git:
+    dest: "{{ homeassistant_home }}/.homeassistant"
+    repo: "git@github.com:{{ homeassistant_config_owner }}/{{ homeassistant_config_repo }}.git"
+    key_file: "{{ homeassistant_config_key }}.pub"
+    accept_hostkey: yes
+    umask: 0037
+
+- name: Copy secrets
+  template:
+    src: 'homeassistant/secrets.yaml.j2'
+    dest: '{{ homeassistant_home }}/.homeassistant/secrets.yaml'
+    owner: "homeassistant"
+    group: "homeassistant"
+    mode: 0600
+
+# TODO: Restore / fetch other secret files
+#  * html5_push_registrations.conf
+#  * known_devices.yaml
+#  * pyozw.sqlite
+#  * .storage
+#  * .uuid
+#  * zigbee.db
+#  * zwcfg_0xce33fce5.xml

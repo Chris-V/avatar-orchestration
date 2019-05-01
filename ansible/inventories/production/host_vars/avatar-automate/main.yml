@@ -1,0 +1,6 @@
+# Inventory: PRODUCTION
+# Server: Avatar-Automate
+
+ansible_host: avatar-automate-ansible
+
+ssh_port: "{{ automate_ssh }}"

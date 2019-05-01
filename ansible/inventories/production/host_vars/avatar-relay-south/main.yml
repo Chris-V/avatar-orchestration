@@ -1,0 +1,6 @@
+# Inventory: PRODUCTION
+# Server: Avatar-Relay-South
+
+ansible_host: avatar-relay-south-ansible
+
+ssh_port: "{{ relay_south_ssh }}"
