@@ -4,3 +4,5 @@
 ansible_host: avatar-automate-ansible
 
 ssh_port: "{{ automate_ssh }}"
+internal_ip: "{{ automate_ip }}"
+internal_hostname: "{{ automate_host }}"

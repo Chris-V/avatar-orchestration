@@ -4,3 +4,5 @@
 ansible_host: avatar-relay-north-ansible
 
 ssh_port: "{{ relay_north_ssh }}"
+internal_ip: "{{ relay_north_ip }}"
+internal_hostname: "{{ relay_north_host }}"

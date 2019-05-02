@@ -24,7 +24,7 @@ services:
       <<: *proxy-enabled
       traefik.proxy.backend: proxy
       traefik.proxy.port: 8080
-      traefik.proxy.frontend.rule: "Host:traefik.{{ media_host }}"
+      traefik.proxy.frontend.rule: "Host:traefik.{{ internal_hostname }}"
     networks:
       public:
       glances:
@@ -53,7 +53,7 @@ services:
       <<: *proxy-enabled
       traefik.glances.backend: glances
       traefik.glances.port: 61208
-      traefik.glances.frontend.rule: "Host:glances.{{ media_host }}"
+      traefik.glances.frontend.rule: "Host:glances.{{ internal_hostname }}"
     networks:
       glances:
     volumes:
@@ -92,7 +92,7 @@ services:
       <<: *proxy-enabled
       traefik.deluge.backend: vpn
       traefik.deluge.port: 8112
-      traefik.deluge.frontend.rule: "Host:deluge.docker.localhost,deluge.{{ media_host }}"
+      traefik.deluge.frontend.rule: "Host:deluge.docker.localhost,deluge.{{ internal_hostname }}"
     volumes:
       - "{{ deluge_config_dir }}:/config"
       - "{{ downloads_dir }}:/downloads"
@@ -112,7 +112,7 @@ services:
       <<: *proxy-enabled
       traefik.plex.backend: plex
       traefik.plex.port: 32400
-      traefik.plex.frontend.rule: "Host:plex.docker.localhost,plex.{{ media_host }}"
+      traefik.plex.frontend.rule: "Host:plex.docker.localhost,plex.{{ internal_hostname }}"
     networks:
       media:
     ports:
@@ -135,7 +135,7 @@ services:
       <<: *proxy-enabled
       traefik.jackett.backend: jackett
       traefik.jackett.port: 9117
-      traefik.jackett.frontend.rule: "Host:jackett.docker.localhost,jackett.{{ media_host }}"
+      traefik.jackett.frontend.rule: "Host:jackett.docker.localhost,jackett.{{ internal_hostname }}"
     networks:
       media:
     volumes:
@@ -158,7 +158,7 @@ services:
       <<: *proxy-enabled
       traefik.sonarr.backend: sonarr
       traefik.sonarr.port: 8989
-      traefik.sonarr.frontend.rule: "Host:sonarr.docker.localhost,sonarr.{{ media_host }}"
+      traefik.sonarr.frontend.rule: "Host:sonarr.docker.localhost,sonarr.{{ internal_hostname }}"
     networks:
       media:
     volumes:
@@ -182,7 +182,7 @@ services:
       <<: *proxy-enabled
       traefik.radarr.backend: radarr
       traefik.radarr.port: 7878
-      traefik.radarr.frontend.rule: "Host:radarr.docker.localhost,radarr.{{ media_host }}"
+      traefik.radarr.frontend.rule: "Host:radarr.docker.localhost,radarr.{{ internal_hostname }}"
     networks:
       media:
     volumes:
@@ -252,7 +252,7 @@ services:
       <<: *proxy-enabled
       traefik.glances.backend: minecraft-map
       traefik.glances.port: 80
-      traefik.glances.frontend.rule: "Host:minecraft-map.{{ media_host }}"
+      traefik.glances.frontend.rule: "Host:minecraft-map.{{ internal_hostname }}"
     networks:
       public:
     volumes:

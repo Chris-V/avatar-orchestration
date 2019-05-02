@@ -34,8 +34,8 @@
     dest: '{{ docker_apps_dir }}'
     owner: "root"
     group: "docker"
-    directory_mode: "ug=rwx,o="
-    mode: "preserve"
+    directory_mode: 0750
+    mode: 0640
 
 - name: Copy plant gateway config
   template:
@@ -43,7 +43,7 @@
     dest: '{{ docker_appdata_dir }}/plantgw/plantgw.yaml'
     owner: "root"
     group: "docker"
-    mode: 0660
+    mode: 0640
 
 - name: Copy docker compose
   template:

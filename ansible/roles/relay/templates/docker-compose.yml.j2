@@ -1,8 +1,33 @@
 version: "3.7"
 
 x-timezone: &timezone "{{ timezone }}"
+x-proxy-enabled: &proxy-enabled
+  traefik.enable: "true"
+  traefik.docker.network: "public"
+
+networks:
+  public:
 
 services:
+  proxy:
+    container_name: proxy
+    image: "traefik:alpine"
+    restart: "unless-stopped"
+    environment:
+      TZ: *timezone
+    labels:
+      <<: *proxy-enabled
+      traefik.proxy.backend: "proxy"
+      traefik.proxy.port: 8080
+      traefik.proxy.frontend.rule: "Host:traefik.{{ internal_hostname }}"
+    networks:
+      public:
+    ports:
+      - "80:80"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "{{ docker_appdata_dir }}/traefik.toml:/traefik.toml:ro"
+
   glances:
     container_name: glances
     build:
@@ -13,13 +38,18 @@ services:
     restart: "unless-stopped"
     environment:
       TZ: *timezone
+    labels:
+      <<: *proxy-enabled
+      traefik.glances.backend: "glances"
+      traefik.glances.port: 61208
+      traefik.glances.frontend.rule: "Host:glances.{{ internal_hostname }}"
     logging:
       driver: "json-file"
       options:
         max-size: "200k"
         max-file: "1"
-    ports:
-      - "8888:61208"
+    networks:
+      public:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
