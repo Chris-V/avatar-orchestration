@@ -12,6 +12,9 @@
     [entrypoints.http]
         address = ":80"
 
+        [entryPoints.http.forwardedHeaders]
+            trustedIPs = ["{{ automate_ip }}"]
+
 [retry]
 
 [api]

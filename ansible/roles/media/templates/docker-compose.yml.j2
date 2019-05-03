@@ -198,6 +198,7 @@ services:
     tty: true
     user: "{{ system_appdata_uid }}:{{ system_appdata_gid }}"
     environment:
+      TZ: *timezone
       EULA: "TRUE"
       LEVEL: "Ultimate"
       SERVER_NAME: "Ultimate"
@@ -235,6 +236,7 @@ services:
     image: "avatary/minecraft-overviewer"
     restart: "no"
     environment:
+      TZ: *timezone
       MINECRAFT_VERSION: *minecraft-version
       RENDER_MAP: "true"
       RENDER_POI: "true"
@@ -248,6 +250,8 @@ services:
     container_name: "minecraft-map"
     image: "nginx:stable-alpine"
     restart: "unless-stopped"
+    environment:
+      TZ: *timezone
     labels:
       <<: *proxy-enabled
       traefik.glances.backend: minecraft-map

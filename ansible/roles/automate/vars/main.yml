@@ -1,0 +1,11 @@
+docker_apps_dir: '/opt/docker-apps'
+docker_appdata_dir: '{{ docker_apps_dir }}/appdata'
+
+# Home-Assistant
+homeassistant_home: "/home/homeassistant"
+
+homeassistant_config_owner: "Chris-V"
+homeassistant_config_repo: "homeassistant-config"
+homeassistant_config_key: "{{ homeassistant_home }}/.ssh/homeassistant-config_rsa"
+
+homeassistant_poweroff_key: "{{ homeassistant_home }}/.ssh/poweroff_rsa"

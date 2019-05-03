@@ -85,7 +85,7 @@
     group: "homeassistant"
     mode: 0600
 
-# TODO: Restore / fetch other secret files
+# TODO: Restore / fetch other secret files (mutable)
 #  * html5_push_registrations.conf
 #  * known_devices.yaml
 #  * pyozw.sqlite

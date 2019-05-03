@@ -1,0 +1,18 @@
+[http.routers]
+
+  [http.routers.home-assistant-http]
+    entryPoints = ["http"]
+    rule = "Host(`home-assistant.{{ domain_name }}`)"
+    middlewares = ["common", "redirect-https"]
+  [http.routers.home-assistant-https]
+    entryPoints = ["https"]
+    rule = "Host(`home-assistant.{{ domain_name }}`)"
+    middlewares = ["common"]
+    service = "home-assistant"
+    [http.routers.home-assistant-https.tls]
+
+[http.services]
+
+  [http.services.home-assistant.LoadBalancer]
+     [[http.services.home-assistant.LoadBalancer.servers]]
+        url = "http://127.0.0.1:35072/"

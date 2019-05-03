@@ -1,0 +1,14 @@
+user home-assistant
+topic readwrite home-assistant/#
+topic read owntracks/#
+topic read plants/#
+topic read $SYS/#
+
+user gardener
+topic read plants/#
+
+user relay_s
+topic write plants/#
+
+user relay_n
+topic write plants/#

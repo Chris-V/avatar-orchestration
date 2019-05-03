@@ -1,0 +1,104 @@
+version: "3.7"
+
+x-timezone: &timezone "{{ timezone }}"
+x-proxy-enabled: &proxy-enabled
+  traefik.enable: "true"
+  traefik.docker.network: "public"
+
+networks:
+  public:
+
+services:
+  proxy:
+    container_name: proxy
+    image: "traefik:2.0-alpine"
+    restart: "unless-stopped"
+    environment:
+      TZ: *timezone
+      GCE_PROJECT: "{{ gce_project }}"
+      GCE_SERVICE_ACCOUNT_FILE: "/traefik.d/gce_service_account.json"
+    labels:
+      <<: *proxy-enabled
+      traefik.http.services.proxy.loadbalancer.server.port: 8080
+      traefik.http.routers.proxy_http_internal.entryPoints: "http"
+      traefik.http.routers.proxy_http_internal.rule: "Host(`traefik.{{ internal_hostname }}`)"
+      traefik.http.routers.proxy_http_internal.servide: "proxy"
+      traefik.http.routers.proxy_http.entryPoints: "http"
+      traefik.http.routers.proxy_http.rule: &traefik_router_rule "Host(`traefik-automate.{{ domain_name }}`)"
+      traefik.http.routers.proxy_http.middlewares: "redirect-https"
+      traefik.http.routers.proxy_https.entryPoints: "https"
+      traefik.http.routers.proxy_https.rule: *traefik_router_rule
+      traefik.http.routers.proxy_https.middlewares: "common"
+      traefik.http.routers.proxy_https.service: "proxy"
+      traefik.http.routers.proxy_https.tls: "true"
+    networks:
+      public:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "{{ docker_appdata_dir }}/traefik/traefik.toml:/traefik.toml:ro"
+      - "{{ docker_appdata_dir }}/traefik/traefik.d:/traefik.d:ro"
+      - "{{ docker_appdata_dir }}/traefik/acme:/etc/traefik/acme"
+
+  proxy_error_pages:
+    container_name: error_pages
+    image: "nginx:stable-alpine"
+    restart: "unless-stopped"
+    environment:
+      TZ: *timezone
+    labels:
+      <<: *proxy-enabled
+      traefik.http.services.error_pages.loadbalancer.server.port: 80
+      traefik.http.routers.error_pages.rule: "HostRegexp(`{catchall:.*}`)"
+      traefik.http.routers.error_pages.priority: 1
+      traefik.http.routers.error_pages.middlewares: "common"
+      traefik.http.routers.error_pages.service: "error_pages"
+    networks:
+      public:
+    volumes:
+      - "/srv/www/error_pages:/usr/share/nginx/html:ro"
+
+  glances:
+    container_name: glances
+    image: "nicolargo/glances:latest"
+    pid: "host"
+    restart: "unless-stopped"
+    environment:
+      TZ: *timezone
+      GLANCES_OPT: -w
+    labels:
+      <<: *proxy-enabled
+      traefik.http.services.glances.loadbalancer.server.port: 61208
+      traefik.http.routers.glances_http.entryPoints: "http"
+      traefik.http.routers.glances_http.rule: &glances_router_rule "Host(`glances.{{ domain_name }}`)"
+      traefik.http.routers.glances_http.middlewares: "redirect-https"
+      traefik.http.routers.glances_https.entryPoints: "https"
+      traefik.http.routers.glances_https.rule: *glances_router_rule
+      traefik.http.routers.glances_https.middlewares: "common"
+      traefik.http.routers.glances_https.service: "glances"
+      traefik.http.routers.glances_https.tls: "true"
+    networks:
+      public:
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  mosquitto:
+    container_name: mosquitto
+    image: "eclipse-mosquitto:latest"
+    restart: "unless-stopped"
+    environment:
+      TZ: *timezone
+    labels:
+      <<: *proxy-enabled
+      traefik.tcp.services.mosquitto.loadbalancer.server.port: 1883
+      traefik.tcp.routers.mosquitto.entryPoints: "mqtts"
+      traefik.tcp.routers.mosquitto.rule: "HostSNI(`mqtt.{{ domain_name }}`)"
+      traefik.tcp.routers.mosquitto.service: "mosquitto"
+      traefik.tcp.routers.mosquitto.tls: "true"
+    networks:
+      public:
+    volumes:
+      - "{{ docker_appdata_dir }}/mosquitto/config:/mosquitto/config:ro"
+      - "{{ docker_appdata_dir }}/mosquitto/data:/mosquitto/data"

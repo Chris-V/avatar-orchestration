@@ -1,0 +1,92 @@
+[Global]
+  Debug = false
+  CheckNewVersion = false
+  SendAnonymousUsage = false
+
+[Log]
+  Level = "WARN"
+
+[AccessLog]
+
+[Providers]
+  [Providers.File]
+    Directory = "/traefik.d"
+    Watch = true
+  [Providers.Docker]
+    Endpoint = "unix:///var/run/docker.sock"
+    Exposedbydefault = false
+    Watch = true
+
+[ServersTransport]
+  MaxIdleConnsPerHost = 50
+  [ServersTransport.ForwardingTimeouts]
+    DialTimeout = 15
+    ResponseHeaderTimeout = 5
+
+[TLSOptions]
+  [TLSOptions.default]
+    SniStrict = true
+    MinVersion = "VersionTLS12"
+    CipherSuites = [
+      "TLS_CHACHA20_POLY1305_SHA256",
+      "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
+      "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305",
+      "TLS_AES_256_GCM_SHA384",
+    ]
+
+[ACME]
+  EntryPoint = "https"
+  Email = "{{ acme_email }}"
+  Storage = "acme.json"
+  OnHostRule = false
+
+  [ACME.DNSChallenge]
+    Provider = "gcloud"
+
+  [[ACME.Domains]]
+    Main = "*.{{ domain_name }}"
+    SANs = ["{{ domain_name }}"]
+
+[API]
+  EntryPoint = "https"
+  Dashboard = true
+
+[EntryPoints]
+  [EntryPoints.http]
+    address = ":80"
+    [EntryPoints.http.Transport]
+      [EntryPoints.http.Transport.RespondingTimeouts]
+        IdleTimeout = 5
+  [EntryPoints.https]
+    address = ":443"
+    [EntryPoints.https.Transport]
+      [EntryPoints.https.Transport.RespondingTimeouts]
+        IdleTimeout = 300
+  [EntryPoints.mqtts]
+    address = ":8883"
+
+[http.middlewares]
+  [http.middlewares.redirect-https.RedirectScheme]
+    Scheme = "https"
+
+  [http.middlewares.monitoring-auth.basicauth]
+    usersFile = "/traefik.d/monitoring.htpasswd"
+    removeHeader = true
+
+  [http.middlewares.common.Compress]
+  [http.middlewares.common.Headers]
+    SSLRedirect = true
+    STSSeconds = 15768000
+    STSIncludeSubdomains = true
+    CustomFrameOptionsValue = "SAMEORIGIN"
+    ContentTypeNosniff = true
+    BrowserXssFilter = true
+    ContentSecurityPolicy = "frame-ancestors https://*.{{ domain_name }}"
+    ReferrerPolicy = "no-referrer"
+  [http.middlewares.common.Headers.CustomResponseHeaders]
+    Cache-Control = "private"
+
+  [http.middlewares.error-pages.errors]
+    status = ["502-504"]
+    service = "error_pages"
+    query = "/5xx.html"
