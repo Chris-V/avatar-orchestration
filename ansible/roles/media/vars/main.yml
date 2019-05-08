@@ -27,6 +27,7 @@ jackett_config_dir: '{{ docker_appdata_dir }}/jackett'
 jackett_downloads_dir: '{{ downloads_dir }}/jackett'
 
 # Minecraft
+minecraft_backups_dir: '{{ backups_dir }}/minecraft'
 minecraft_data_dir: '/srv/minecraft'
 minecraft_map_dir: '/srv/minecraft-map'
 minecraft_overviewer_dir: '{{ docker_appdata_dir }}/minecraft-overviewer'

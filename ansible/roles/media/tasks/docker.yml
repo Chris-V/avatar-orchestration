@@ -24,7 +24,8 @@
     - { path: '{{ deluge_completed_dir }}', group: 'data' }
     - { path: '{{ deluge_downloads_dir }}', group: 'data' }
     - { path: '{{ jackett_downloads_dir }}', group: 'data' }
-    - { path: '{{ minecraft_data_dir }}', group: 'docker-appdata', mode: "ug=rwx,o=" }
+    - { path: '{{ minecraft_backups_dir }}', group: 'docker-appdata' }
+    - { path: '{{ minecraft_data_dir }}', group: 'docker-appdata' }
     - { path: '{{ minecraft_map_dir }}', group: 'data' }
     - { path: '{{ plex_transcode_dir }}', group: 'docker-appdata' }
 
@@ -49,12 +50,15 @@
 
 - name: Copy docker compose
   template:
-    src: "docker-compose.yml.j2"
-    dest: '{{ docker_srv_dir }}/docker-compose.yml'
+    src: "{{ item }}.yml.j2"
+    dest: '{{ docker_srv_dir }}/{{ item }}.yml'
     owner: root
     group: docker
     mode: 0660
     validate: 'docker-compose -f %s config'
+  loop:
+    - "docker-compose"
+    - "docker-compose.jobs"
 
 - name: Copy initial app configs
   unarchive:
