@@ -4,7 +4,7 @@ x-timezone: &timezone " {{ timezone }} "
 
 x-proxy-enabled: &proxy-enabled
   traefik.enable: "true"
-  traefik.docker.network: "public"
+  traefik.docker.network: "docker_public"
 
 x-minecraft-rcon-port: &minecraft-rcon-port 25575
 x-minecraft-rcon-password: &minecraft-rcon-password "{{ rcon_password }}"
@@ -14,9 +14,13 @@ x-minecraft-version: &minecraft-version "{{ minecraft_version }}"
 
 networks:
   public:
+    driver: "bridge"
   glances:
+    driver: "bridge"
   media:
+    driver: "bridge"
   minecraft:
+    driver: "bridge"
 
 services:
   proxy:

@@ -28,23 +28,6 @@
     directory_mode: "ug=rwx,o="
     mode: "preserve"
 
-- name: Copy app data
-  copy:
-    src: 'appdata'
-    dest: '{{ docker_apps_dir }}'
-    owner: "root"
-    group: "docker"
-    directory_mode: 0750
-    mode: 0640
-
-- name: Copy plant gateway config
-  template:
-    src: 'host_files/{{ inventory_hostname }}/plantgw.yaml.j2'
-    dest: '{{ docker_appdata_dir }}/plantgw/plantgw.yaml'
-    owner: "root"
-    group: "docker"
-    mode: 0640
-
 - name: Copy docker compose
   template:
     src: "docker-compose.yml.j2"
@@ -53,3 +36,29 @@
     group: "docker"
     mode: 0660
     validate: 'docker-compose -f %s config'
+
+- name: Copy app data
+  copy:
+    src: 'appdata/'
+    dest: '{{ docker_appdata_dir }}'
+    owner: "docker-appdata"
+    group: "docker-appdata"
+    directory_mode: 0750
+    mode: 0640
+- name: Copy app data templates
+  template:
+    src: 'appdata/{{ item.filename }}.j2'
+    dest: '{{ docker_appdata_dir }}/{{ item.filename }}'
+    owner: 'docker-appdata'
+    group: 'docker-appdata'
+    mode: 0640
+  loop:
+    - { filename: 'traefik.toml' }
+
+- name: Copy host-specific plant gateway config
+  template:
+    src: 'host_files/{{ inventory_hostname }}/plantgw.yaml.j2'
+    dest: '{{ docker_appdata_dir }}/plantgw/plantgw.yaml'
+    owner: "root"
+    group: "docker"
+    mode: 0640
