@@ -16,6 +16,7 @@ movies_dir: '{{ storage_mount }}/movies'
 # Dockerised setup
 docker_srv_dir: '/srv/docker'
 docker_appdata_dir: '{{ docker_srv_dir }}/appdata'
+appdata_backups_dir: '{{ backups_dir }}/appdata'
 
 # Deluge
 deluge_config_dir: '{{ docker_appdata_dir }}/deluge'

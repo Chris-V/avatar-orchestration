@@ -18,13 +18,14 @@
     mode: "{{ item.mode | default(0775) }}"
   loop:
     - { path: '{{ backups_dir }}', group: 'docker-appdata' }
+    - { path: '{{ appdata_backups_dir }}', group: 'docker-appdata' }
+    - { path: '{{ minecraft_backups_dir }}', group: 'docker-appdata' }
     - { path: '{{ series_dir }}', group: 'media' }
     - { path: '{{ movies_dir }}', group: 'media' }
     - { path: '{{ downloads_dir }}', group: 'data' }
     - { path: '{{ deluge_completed_dir }}', group: 'data' }
     - { path: '{{ deluge_downloads_dir }}', group: 'data' }
     - { path: '{{ jackett_downloads_dir }}', group: 'data' }
-    - { path: '{{ minecraft_backups_dir }}', group: 'docker-appdata' }
     - { path: '{{ minecraft_data_dir }}', group: 'docker-appdata' }
     - { path: '{{ minecraft_map_dir }}', group: 'data' }
     - { path: '{{ plex_transcode_dir }}', group: 'docker-appdata' }

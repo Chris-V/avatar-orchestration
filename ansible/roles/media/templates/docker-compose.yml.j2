@@ -200,6 +200,8 @@ services:
     image: "itzg/minecraft-server"
     restart: "unless-stopped"
     user: "{{ system_appdata_uid }}:{{ system_appdata_gid }}"
+    stdin_open: true
+    tty: true
     environment:
       TZ: *timezone
       EULA: "TRUE"
@@ -260,26 +262,28 @@ services:
       TYPE: *minecraft-type
       INITIAL_DELAY: 43200
       INTERVAL_SEC: 86400
-      PRUNE_BACKUPS_DAYS: 7
+      PRUNE_BACKUPS_DAYS: 21
     networks:
       minecraft:
     volumes:
       - "{{ minecraft_data_dir }}:/data:ro"
       - "{{ minecraft_backups_dir }}:/backups"
 
-  backup-scheduler:
-    container_name: backup-scheduler
+  appdata-backup:
+    container_name: appdata-backup
     build:
-      context: "{{ docker_srv_dir }}/docker-images/backup-scheduler"
-    image: "avatary/backup-scheduler"
+      context: "{{ docker_srv_dir }}/docker-images/docker-volumes-backup"
+    image: "avatary/docker-volumes-backup"
     network_mode: "none"
     restart: "always"
     environment:
       TZ: *timezone
       PUID: {{ system_appdata_uid }}
       PGID: {{ system_appdata_gid }}
+      CRONTAB_CONFIG: "30 3 * * *"
+      PAUSE_CONTAINERS: "deluge jackett plex radarr sonarr"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "{{ docker_appdata_dir }}/backup-scheduler:/config:ro"
-      - "{{ docker_appdata_dir }}:/appdata:ro"
-      - "{{ backups_dir }}:/backups"
+      - "{{ docker_appdata_dir }}/appdata-backup:/config:ro"
+      - "{{ docker_appdata_dir }}:/data:ro"
+      - "{{ appdata_backups_dir }}:/backups"
