@@ -217,7 +217,7 @@ services:
       VERSION: *minecraft-version
       GUI: "false"
       MEMORY: "9G"
-      JVM_OPTS: "-server"
+      JVM_OPTS: "-d64 -server"
       JVM_XX_OPTS: "-XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:+ParallelRefProcEnabled -XX:+UseLargePagesInMetaspace -XX:MaxGCPauseMillis=100 -XX:TargetSurvivorRatio=90 -XX:G1NewSizePercent=50 -XX:G1MaxNewSizePercent=80 -XX:G1MixedGCLiveThresholdPercent=35"
       MAX_PLAYERS: 6
       VIEW_DISTANCE: 12
