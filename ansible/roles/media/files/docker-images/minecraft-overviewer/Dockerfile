@@ -1,4 +1,5 @@
-FROM mide/minecraft-overviewer
+FROM mide/minecraft-overviewer:2019-05
+LABEL maintainer="avatary"
 
 ARG PUID=1000
 ARG PGID=1000
