@@ -41,16 +41,16 @@
   copy:
     src: 'appdata/'
     dest: '{{ docker_appdata_dir }}'
-    owner: "docker-appdata"
-    group: "docker-appdata"
+    owner: "root"
+    group: "docker"
     directory_mode: 0750
     mode: 0640
 - name: Copy app data templates
   template:
     src: 'appdata/{{ item.filename }}.j2'
     dest: '{{ docker_appdata_dir }}/{{ item.filename }}'
-    owner: 'docker-appdata'
-    group: 'docker-appdata'
+    owner: 'root'
+    group: 'docker'
     mode: 0640
   loop:
     - { filename: 'traefik.toml' }

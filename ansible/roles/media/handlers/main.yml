@@ -1,3 +1,9 @@
 - name: Activate WOL
   listen: activate wol
   command: "ethtool -s {{ ansible_facts['default_ipv4']['interface'] }} wol g"
+
+- name: Reload NFTables
+  listen: reload nftables
+  systemd:
+    name: "nftables.service"
+    state: "reloaded"

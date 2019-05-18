@@ -1,3 +1,5 @@
+# TODO: Split in two: 'become root' and 'become homeassistant'
+
 - name: Install host requirements for home-asssisant
   pacman:
     name: "python-requests"
@@ -20,7 +22,7 @@
     owner: "root"
     group: "root"
     mode: 0644
-    content: >-
+    content: |
       SUBSYSTEM=="tty", ATTRS{interface}=="HubZ Z-Wave Com Port", SYMLINK+="zwave", GROUP="hubz", MODE="0660"
       SUBSYSTEM=="tty", ATTRS{interface}=="HubZ ZigBee Com Port", SYMLINK+="zigbee", GROUP="hubz", MODE="0660"
   notify: reload udev
@@ -37,7 +39,7 @@
     dest: '{{ homeassistant_poweroff_key }}.pub'
     owner: "homeassistant"
     group: "homeassistant"
-    mode: 0600
+    mode: 0644
     content: "{{ poweroff_public_key }}"
 - name: Copy SSH config
   template:
@@ -46,8 +48,11 @@
     owner: "homeassistant"
     group: "homeassistant"
     mode: 0600
+    validate: "/usr/sbin/sshd -T -f %s"
 
 - name: Generate home-assistant deploy key
+  become: yes
+  become_user: homeassistant
   openssh_keypair:
     path: "{{ homeassistant_config_key }}"
     type: "rsa"
@@ -56,28 +61,36 @@
     force: "{{ homeassistant_config_key_force | bool }}"
     owner: "homeassistant"
     group: "homeassistant"
-- name: Upload home-assistant deploy key
+- name: Read public home-assistant deploy key
+  register: "public_deploy_key"
+  slurp:
+    src: "{{ homeassistant_config_key }}.pub"
+- name: Upload home-assistant deploy key to GitHub
   github_deploy_key:
-    name: "avatar-automate-ansible"
+    name: "automate-homeassistant"
     owner: "{{ homeassistant_config_owner }}"
     repo: "{{ homeassistant_config_repo }}"
     token: "{{ github_token }}"
     read_only: yes
     force: "{{ homeassistant_config_key_force | bool }}"
-    key: "{{ lookup('file', '{{ homeassistant_config_key }}.pub') }}"
+    key: "{{ public_deploy_key['content'] | b64decode }}"
     state: "present"
 
-- name: Fetch configuration
+- name: Pull home-assistant configuration
   become: yes
   become_user: homeassistant
+  tags:
+    - homeassistant
   git:
     dest: "{{ homeassistant_home }}/.homeassistant"
     repo: "git@github.com:{{ homeassistant_config_owner }}/{{ homeassistant_config_repo }}.git"
-    key_file: "{{ homeassistant_config_key }}.pub"
+    key_file: "{{ homeassistant_config_key }}"
     accept_hostkey: yes
-    umask: 0037
+    umask: "0037"
 
-- name: Copy secrets
+- name: Copy home-assistant secrets
+  tags:
+    - homeassistant
   template:
     src: 'homeassistant/secrets.yaml.j2'
     dest: '{{ homeassistant_home }}/.homeassistant/secrets.yaml'

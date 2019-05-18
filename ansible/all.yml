@@ -1,3 +1,27 @@
-- import_playbook: automate.yml
-- import_playbook: media.yml
-- import_playbook: relays.yml
+- hosts: avatar
+  become: yes
+  become_user: root
+  tasks:
+    - import_role:
+        name: common
+
+- hosts: media
+  become: yes
+  become_user: root
+  tasks:
+    - import_role:
+        name: media
+
+- hosts: automate
+  become: yes
+  become_user: root
+  tasks:
+    - import_role:
+        name: automate
+
+- hosts: relays
+  become: yes
+  become_user: root
+  tasks:
+    - import_role:
+        name: relay

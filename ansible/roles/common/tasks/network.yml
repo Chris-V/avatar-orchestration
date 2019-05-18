@@ -1,0 +1,15 @@
+- name: Set hostname
+  copy:
+    dest: "/etc/hostname"
+    owner: "root"
+    group: "root"
+    mode: 0644
+    content: "{{ inventory_hostname }}"
+
+- name: Update hosts file
+  template:
+    src: "etc/hosts.j2"
+    dest: '/etc/hosts'
+    owner: root
+    group: root
+    mode: 0644

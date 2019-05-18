@@ -30,8 +30,8 @@
     path: '/data'
     fstype: 'btrfs'
     opts: 'rw,relatime,space_cache=v1,subvolid=5,subvol=/'
-    dump: 0
-    passno: 0
+    dump: '0'
+    passno: '0'
 
 - name: Mount storage disk 1
   mount:

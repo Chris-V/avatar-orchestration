@@ -56,7 +56,7 @@
   user:
     name: homeassistant
     groups: ssh,poweroff
-    append: no
+    append: "{{ inventory_hostname == 'avatar-automate' }}"
     create_home: yes
     state: present
     shell: /bin/bash

@@ -1,3 +1,9 @@
 - name: Reload udev rules
   listen: reload udev
-  command: "udevadm control --reload-rules && udevadm trigger"
+  command: "udevadm control --reload-rules; udevadm trigger"
+
+- name: Reload NFTables
+  listen: reload nftables
+  systemd:
+    name: "nftables.service"
+    state: "reloaded"

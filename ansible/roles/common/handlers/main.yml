@@ -3,9 +3,3 @@
   systemd:
     name: sshd.service
     state: reloaded
-
-- name: Reload NFTables
-  listen: reload nftables
-  systemd:
-    name: nftables.service
-    state: reloaded
