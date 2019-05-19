@@ -6,7 +6,7 @@ ARG GLANCES_VERSION=3.1.0
 RUN \
     apk add --no-cache python3 py3-psutil py3-bottle && \
     python3 -m ensurepip && \
-    python3 -m pip install --no-cache-dir 'glances==$GLANCES_VERSION' && \
+    python3 -m pip install --no-cache-dir glances==${GLANCES_VERSION} && \
     rm -rf /root/.cache && \
     rm -rf /usr/lib/python*/ensurepip
 

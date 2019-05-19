@@ -5,7 +5,7 @@ ARG ROTATE_BACKUPS_VERSION=6.0
 
 RUN apk add --no-cache docker python3 rsyslog tar
 RUN python3 -m ensurepip && \
-    python3 -m pip install --no-cache-dir 'rotate-backups==$ROTATE_BACKUPS_VERSION' && \
+    python3 -m pip install --no-cache-dir rotate-backups==${ROTATE_BACKUPS_VERSION} && \
     rm -rf \
         /root/.cache \
         /usr/lib/python*/ensurepip
