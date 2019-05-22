@@ -10,7 +10,7 @@ backup_src="/data"
 backup_dest="/backups"
 backup_file="${backup_dest}/$(date +%Y-%m-%dT%H:%M:%S).tar.gz"
 
-exclusion_args=""
+exclusion_opts=( )
 
 if [[ -f "/config/${TAR_EXCLUSIONS_FILE}" ]]; then
     while read line; do
@@ -19,7 +19,7 @@ if [[ -f "/config/${TAR_EXCLUSIONS_FILE}" ]]; then
             line="${backup_src}${line}";
         fi
 
-        exclusion_args="${exclusion_args} --exclude=\"${line}\""
+        exclusion_opts+=( --exclude="$line" )
     done < "/config/${TAR_EXCLUSIONS_FILE}"
 fi
 
@@ -62,7 +62,7 @@ tar \
     --preserve-permissions \
     --file="${backup_file}" \
     --directory="${backup_src}/.." \
-    ${exclusion_args} \
+    "${exclusion_opts[@]}" \
     "${backup_src}"
 
 if [ $? = 0 ]; then
