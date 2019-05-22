@@ -13,22 +13,23 @@
   file:
     path: "{{ item.path }}"
     state: directory
+    recurse: no
     owner: "docker-appdata"
-    group: "{{ item.group }}"
-    mode: "{{ item.mode | default(0775) }}"
+    group: "{{ item.group | default('docker-appdata', true) }}"
+    mode: "{{ item.mode | default('ug=rwx,o=', true) }}"
   loop:
-    - { path: '{{ backups_dir }}', group: 'docker-appdata' }
-    - { path: '{{ appdata_backups_dir }}', group: 'docker-appdata' }
-    - { path: '{{ minecraft_backups_dir }}', group: 'docker-appdata' }
-    - { path: '{{ series_dir }}', group: 'media' }
-    - { path: '{{ movies_dir }}', group: 'media' }
-    - { path: '{{ downloads_dir }}', group: 'data' }
-    - { path: '{{ deluge_completed_dir }}', group: 'data' }
-    - { path: '{{ deluge_downloads_dir }}', group: 'data' }
-    - { path: '{{ jackett_downloads_dir }}', group: 'data' }
-    - { path: '{{ minecraft_data_dir }}', group: 'docker-appdata' }
-    - { path: '{{ minecraft_map_dir }}', group: 'data' }
-    - { path: '{{ plex_transcode_dir }}', group: 'docker-appdata' }
+    - { path: '{{ backups_dir }}' }
+    - { path: '{{ appdata_backups_dir }}' }
+    - { path: '{{ minecraft_backups_dir }}' }
+    - { path: '{{ series_dir }}', group: 'media', mode: "ug=rwx,o=rx" }
+    - { path: '{{ movies_dir }}', group: 'media', mode: "ug=rwx,o=rx" }
+    - { path: '{{ downloads_dir }}', group: 'data', mode: "ug=rwx,o=rx" }
+    - { path: '{{ deluge_completed_dir }}', group: 'data', mode: "ug=rwx,o=rx" }
+    - { path: '{{ deluge_downloads_dir }}', group: 'data', mode: "ug=rwx,o=rx" }
+    - { path: '{{ jackett_downloads_dir }}', group: 'data', mode: "ug=rwx,o=rx" }
+    - { path: '{{ minecraft_data_dir }}' }
+    - { path: '{{ minecraft_map_dir }}', group: 'data', mode: "ug=rwx,o=rx" }
+    - { path: '{{ plex_transcode_dir }}' }
 
 - name: Create docker directories
   file:
@@ -36,7 +37,7 @@
     state: directory
     owner: root
     group: docker
-    mode: 0770
+    mode: "ug=rwx,o="
   loop:
     - '{{ docker_srv_dir }}'
 
