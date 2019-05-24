@@ -3,7 +3,7 @@ version: "3.7"
 x-timezone: &timezone "{{ timezone }}"
 x-proxy-enabled: &proxy-enabled
   traefik.enable: "true"
-  traefik.docker.network: "public"
+  traefik.docker.network: "docker-apps_public"
 
 networks:
   public:

@@ -3,6 +3,8 @@ LABEL maintainer="avatary"
 
 ARG PLANT_GATEWAY_VERSION=0.5.1
 
+# TODO: apk add --no-cache --virtual .build_deps && DO STUFF && apk del .build_deps
+
 RUN \
     apk add --no-cache bluez python3 make gcc pkgconf glib-dev libc-dev && \
     python3 -m ensurepip && \
