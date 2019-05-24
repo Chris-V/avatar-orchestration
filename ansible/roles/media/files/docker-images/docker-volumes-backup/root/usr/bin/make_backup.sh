@@ -76,7 +76,7 @@ else
 fi
 
 log INFO "Rotating backups..."
-exec /usr/bin/rotate-backups -c /config/rotate-backup.ini
+/usr/bin/rotate-backups -c /config/rotate-backup.ini
 if [ $? = 0 ]; then
 
     log INFO "Backup rotation done."
