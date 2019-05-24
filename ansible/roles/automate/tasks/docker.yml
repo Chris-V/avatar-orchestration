@@ -9,11 +9,19 @@
     state: "started"
     enabled: yes
 
+- name: Copy UDEV rules for UPS
+  copy:
+    dest: "/etc/udev/rules.d/99-ups.rules"
+    owner: "root"
+    group: "root"
+    mode: 0644
+    content: |
+      SUBSYSTEM=="usbmisc", ATTRS{manufacturer}=="American Power Conversion", ATTRS{serial}=="4B1622P31617  ", SYMLINK+="ups", OWNER="root"
+  notify: reload udev
+
 - name: Create docker directories
-  loop:
-    - { path: "{{ docker_apps_dir }}" }
   file:
-    path: "{{ item.path }}"
+    path: "{{ docker_apps_dir }}"
     state: "directory"
     owner: "root"
     group: "docker"

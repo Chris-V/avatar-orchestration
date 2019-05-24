@@ -6,6 +6,8 @@ x-proxy-enabled: &proxy-enabled
   traefik.docker.network: "docker-apps_public"
 
 networks:
+  ups:
+    driver: "bridge"
   public:
     driver: "bridge"
     # Until direct host access is not required (hass in docker)
@@ -93,3 +95,23 @@ services:
     volumes:
       - "{{ docker_appdata_dir }}/mosquitto/config:/mosquitto/config:ro"
       - "{{ docker_appdata_dir }}/mosquitto/data:/mosquitto/data"
+
+  apcupsd:
+    container_name: apcupsd
+    restart: "unless-stopped"
+    image: "avatary/apcupsd:aarch64"
+    build:
+      context: "git@github.com:gersilex/apcupsd-docker.git#master"
+    devices:
+      - "/dev/ups:/dev/usb/hiddev0"
+    environment:
+      TZ: *timezone
+    expose:
+      - 3551
+    networks:
+      ups:
+    ports:
+      # TODO: remove port mapping when HASS is dockerized and uses the ups network
+      - "3551:3551"
+    volumes:
+      - "{{ docker_appdata_dir }}/apcupsd/apcupsd.conf:/etc/apcupsd/apcupsd.conf:ro"

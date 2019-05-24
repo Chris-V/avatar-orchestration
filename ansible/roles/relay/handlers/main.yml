@@ -1,6 +1,6 @@
 - name: Reload udev rules
   listen: reload udev
-  command: "udevadm control --reload-rules; udevadm trigger"
+  command: "udevadm control --reload; udevadm trigger"
 
 - name: Reload NFTables
   listen: reload nftables
