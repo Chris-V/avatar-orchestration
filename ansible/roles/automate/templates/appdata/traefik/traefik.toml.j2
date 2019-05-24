@@ -4,7 +4,7 @@
   SendAnonymousUsage = false
 
 [Log]
-  Level = "WARN"
+  Level = "INFO"
 
 [AccessLog]
 
@@ -35,12 +35,14 @@
     ]
 
 [ACME]
-  EntryPoint = "https"
   Email = "{{ acme_email }}"
-  Storage = "acme.json"
+  Storage = "/etc/traefik/acme/acme.json"
+  KeyType = "RSA4096"
   OnHostRule = false
+  ACMELogging = true
 
   [ACME.DNSChallenge]
+    Resolvers = ["1.1.1.1:53", "1.0.0.1:53"]
     Provider = "gcloud"
 
   [[ACME.Domains]]
@@ -64,29 +66,3 @@
         IdleTimeout = 300
   [EntryPoints.mqtts]
     address = ":8883"
-
-[http.middlewares]
-  [http.middlewares.redirect-https.RedirectScheme]
-    Scheme = "https"
-
-  [http.middlewares.monitoring-auth.basicauth]
-    usersFile = "/traefik.d/monitoring.htpasswd"
-    removeHeader = true
-
-  [http.middlewares.common.Compress]
-  [http.middlewares.common.Headers]
-    SSLRedirect = true
-    STSSeconds = 15768000
-    STSIncludeSubdomains = true
-    CustomFrameOptionsValue = "SAMEORIGIN"
-    ContentTypeNosniff = true
-    BrowserXssFilter = true
-    ContentSecurityPolicy = "frame-ancestors https://*.{{ domain_name }}"
-    ReferrerPolicy = "no-referrer"
-  [http.middlewares.common.Headers.CustomResponseHeaders]
-    Cache-Control = "private"
-
-  [http.middlewares.error-pages.errors]
-    status = ["502-504"]
-    service = "error_pages"
-    query = "/5xx.html"

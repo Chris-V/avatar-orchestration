@@ -1,3 +1,6 @@
+system_appdata_uid: 875
+system_appdata_gid: 875
+
 docker_apps_dir: '/opt/docker-apps'
 docker_appdata_dir: '{{ docker_apps_dir }}/appdata'
 

@@ -1,0 +1,30 @@
+[http.middlewares]
+  [http.middlewares.redirect-https.RedirectScheme]
+    Scheme = "https"
+
+  [http.middlewares.monitoring-auth.basicauth]
+    usersFile = "/traefik.d/monitoring.htpasswd"
+    removeHeader = true
+
+  [http.middlewares.common.Chain]
+    middlewares = ["compress", "harden-headers", "harden-headers-custom"]
+
+  [http.middlewares.compress.Compress]
+
+  [http.middlewares.harden-headers.Headers]
+    SSLRedirect = true
+    STSSeconds = 15768000
+    STSIncludeSubdomains = true
+    CustomFrameOptionsValue = "SAMEORIGIN"
+    ContentTypeNosniff = true
+    BrowserXssFilter = true
+    ContentSecurityPolicy = "frame-ancestors https://*.{{ domain_name }}"
+    ReferrerPolicy = "no-referrer"
+
+  [http.middlewares.harden-headers-custom.Headers.CustomResponseHeaders]
+    Cache-Control = "private"
+
+  [http.middlewares.error-pages.errors]
+    status = ["502-504"]
+    service = "docker.error_pages"
+    query = "/5xx.html"

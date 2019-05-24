@@ -4,6 +4,7 @@
     entryPoints = ["http"]
     rule = "Host(`router.{{ domain_name }}`)"
     middlewares = ["common", "redirect-https"]
+    service = "router"
   [http.routers.router_https]
     entryPoints = ["https"]
     rule = "Host(`router.{{ domain_name }}`)"
@@ -14,5 +15,7 @@
 [http.services]
 
   [http.services.router.LoadBalancer]
-     [[http.services.router.LoadBalancer.servers]]
-        url = "http://{{ router_ip }}/"
+    method = "wrr"
+    [[http.services.router.LoadBalancer.servers]]
+      URL = "http://{{ router_ip }}/"
+      Weight = 1

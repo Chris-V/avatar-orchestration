@@ -4,6 +4,7 @@
     entryPoints = ["http"]
     rule = "Host(`home-assistant.{{ domain_name }}`)"
     middlewares = ["common", "redirect-https"]
+    service = "home-assistant"
   [http.routers.home-assistant-https]
     entryPoints = ["https"]
     rule = "Host(`home-assistant.{{ domain_name }}`)"
@@ -14,5 +15,7 @@
 [http.services]
 
   [http.services.home-assistant.LoadBalancer]
-     [[http.services.home-assistant.LoadBalancer.servers]]
-        url = "http://127.0.0.1:35072/"
+    method = "wrr"
+    [[http.services.home-assistant.LoadBalancer.servers]]
+      URL = "http://172.222.0.1:35072/"
+      Weight = 1

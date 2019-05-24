@@ -12,7 +12,6 @@
 - name: Create docker directories
   loop:
     - { path: "{{ docker_apps_dir }}" }
-    - { path: "{{ docker_appdata_dir }}" }
   file:
     path: "{{ item.path }}"
     state: "directory"
@@ -20,27 +19,48 @@
     group: "docker"
     mode: 0750
 
+# TODO: Copying whole directories is tricky. Because it resets some permissions then re-hardens them. So we get tons of "changed" output
+
 - name: Copy appdata files
-  loop:
-    - { src: "appdata", dest: "{{ docker_appdata_dir }}" }
-    - { src: "www", dest: "/srv" }
   copy:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
+    src: "appdata"
+    dest: "{{ docker_appdata_dir }}/.."
     owner: "docker-appdata"
     group: "docker-appdata"
     directory_mode: 0750
     mode: 0640
+- name: Copy www files
+  copy:
+    src: "www"
+    dest: "/srv"
+    owner: "docker-appdata"
+    group: "docker-appdata"
+    directory_mode: 0755
+    mode: 0644
 
 - name: Copy appdata templates
-  with_filetree: "appdata/"
+  with_filetree: "../templates/appdata/"
   when: "item.state == 'file'"
   template:
     src: "{{ item.src }}"
-    dest: "{{ docker_appdata_dir }}/{{ item.path }}"
+    dest: "{{ docker_appdata_dir }}/{{ item.path | replace('.j2', '') }}"
     owner: "docker-appdata"
     group: "docker-appdata"
-    mode: 0640
+    mode: "u=rwX,g=rX,o="
+
+- name: Harden appdata permissions
+  loop:
+    - { state: "directory", path: "{{ docker_appdata_dir }}/traefik/acme" }
+    - { state: "file", path: "{{ docker_appdata_dir }}/traefik/traefik.d/monitoring.htpasswd" }
+    - { state: "file", path: "{{ docker_appdata_dir }}/traefik/traefik.d/gce_service_account.json" }
+    - { state: "directory", path: "{{ docker_appdata_dir }}/mosquitto/data" }
+    - { state: "file", path: "{{ docker_appdata_dir }}/mosquitto/config/passwords" }
+    - { state: "file", path: "{{ docker_appdata_dir }}/mosquitto/config/acl" }
+  file:
+    path: "{{ item.path }}"
+    state: "{{ item.state }}"
+    recurse: "{{ (item.state == 'directory') | bool }}"
+    mode: "u=rwX,go="
 
 - name: Copy docker compose
   template:

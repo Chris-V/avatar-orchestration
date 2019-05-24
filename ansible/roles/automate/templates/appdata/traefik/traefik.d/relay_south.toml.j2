@@ -4,6 +4,7 @@
     entryPoints = ["http"]
     rule = "Host(`glances-relay-south.{{ domain_name }}`)"
     middlewares = ["common", "redirect-https"]
+    service = "relay-south-glances"
   [http.routers.relay-south-glances-https]
     entryPoints = ["https"]
     rule = "Host(`glances-relay-south.{{ domain_name }}`)"
@@ -15,6 +16,7 @@
     entryPoints = ["http"]
     rule = "Host(`traefik-relay-south.{{ domain_name }}`)"
     middlewares = ["common", "redirect-https"]
+    service = "relay-south-traefik"
   [http.routers.relay-south-traefik-https]
     entryPoints = ["https"]
     rule = "Host(`traefik-relay-south.{{ domain_name }}`)"
@@ -25,9 +27,13 @@
 [http.services]
 
   [http.services.relay-south-glances.LoadBalancer]
-     [[http.services.relay-south-glances.LoadBalancer.servers]]
-        url = "http://glances.{{ relay_south_host }}/"
+    method = "wrr"
+    [[http.services.relay-south-glances.LoadBalancer.servers]]
+      URL = "http://glances.{{ relay_south_host }}/"
+      Weight = 1
 
   [http.services.relay-south-traefik.LoadBalancer]
-     [[http.services.relay-south-traefik.LoadBalancer.servers]]
-        url = "http://traefik.{{ relay_south_host }}/"
+    method = "wrr"
+    [[http.services.relay-south-traefik.LoadBalancer.servers]]
+      URL = "http://traefik.{{ relay_south_host }}/"
+      Weight = 1

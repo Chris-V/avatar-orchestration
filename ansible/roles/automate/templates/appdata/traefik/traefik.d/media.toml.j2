@@ -4,6 +4,7 @@
     entryPoints = ["http"]
     rule = "Host(`glances-media.{{ domain_name }}`)"
     middlewares = ["common", "redirect-https"]
+    service = "media-glances"
   [http.routers.media-glances-https]
     entryPoints = ["https"]
     rule = "Host(`glances-media.{{ domain_name }}`)"
@@ -15,6 +16,7 @@
     entryPoints = ["http"]
     rule = "Host(`traefik-media.{{ domain_name }}`)"
     middlewares = ["common", "redirect-https"]
+    service = "media-traefik"
   [http.routers.media-traefik-https]
     entryPoints = ["https"]
     rule = "Host(`traefik-media.{{ domain_name }}`)"
@@ -26,6 +28,7 @@
     entryPoints = ["http"]
     rule = "Host(`deluge.{{ domain_name }}`)"
     middlewares = ["common", "redirect-https"]
+    service = "media-deluge"
   [http.routers.media-deluge-https]
     entryPoints = ["https"]
     rule = "Host(`deluge.{{ domain_name }}`)"
@@ -37,6 +40,7 @@
     entryPoints = ["http"]
     rule = "Host(`jackett.{{ domain_name }}`)"
     middlewares = ["common", "redirect-https"]
+    service = "media-jackett"
   [http.routers.media-jackett-https]
     entryPoints = ["https"]
     rule = "Host(`jackett.{{ domain_name }}`)"
@@ -48,6 +52,7 @@
     entryPoints = ["http"]
     rule = "Host(`plex.{{ domain_name }}`)"
     middlewares = ["common", "redirect-https"]
+    service = "media-plex"
   [http.routers.media-plex-https]
     entryPoints = ["https"]
     rule = "Host(`plex.{{ domain_name }}`)"
@@ -59,6 +64,7 @@
     entryPoints = ["http"]
     rule = "Host(`radarr.{{ domain_name }}`)"
     middlewares = ["common", "redirect-https"]
+    service = "media-radarr"
   [http.routers.media-radarr-https]
     entryPoints = ["https"]
     rule = "Host(`radarr.{{ domain_name }}`)"
@@ -70,6 +76,7 @@
     entryPoints = ["http"]
     rule = "Host(`sonarr.{{ domain_name }}`)"
     middlewares = ["common", "redirect-https"]
+    service = "media-sonarr"
   [http.routers.media-sonarr-https]
     entryPoints = ["https"]
     rule = "Host(`sonarr.{{ domain_name }}`)"
@@ -81,6 +88,7 @@
     entryPoints = ["http"]
     rule = "Host(`minecraft-map.{{ domain_name }}`)"
     middlewares = ["common", "redirect-https"]
+    service = "media-minecraft-map"
   [http.routers.media-minecraft-map-https]
     entryPoints = ["https"]
     rule = "Host(`minecraft-map.{{ domain_name }}`)"
@@ -91,33 +99,49 @@
 [http.services]
 
   [http.services.media-glances.LoadBalancer]
-     [[http.services.media-glances.LoadBalancer.servers]]
-        url = "http://glances.{{ media_host }}/"
+    method = "wrr"
+    [[http.services.media-glances.LoadBalancer.servers]]
+      URL = "http://glances.{{ media_host }}/"
+      Weight = 1
 
   [http.services.media-traefik.LoadBalancer]
-     [[http.services.media-traefik.LoadBalancer.servers]]
-        url = "http://traefik.{{ media_host }}/"
+    method = "wrr"
+    [[http.services.media-traefik.LoadBalancer.servers]]
+      URL = "http://traefik.{{ media_host }}/"
+      Weight = 1
 
   [http.services.media-deluge.LoadBalancer]
+     method = "wrr"
      [[http.services.media-deluge.LoadBalancer.servers]]
-        url = "http://deluge.{{ media_host }}/"
+       URL = "http://deluge.{{ media_host }}/"
+       Weight = 1
 
   [http.services.media-jackett.LoadBalancer]
-     [[http.services.media-jackett.LoadBalancer.servers]]
-        url = "http://jackett.{{ media_host }}/"
+    method = "wrr"
+    [[http.services.media-jackett.LoadBalancer.servers]]
+      URL = "http://jackett.{{ media_host }}/"
+      Weight = 1
 
   [http.services.media-plex.LoadBalancer]
-     [[http.services.media-plex.LoadBalancer.servers]]
-        url = "http://plex.{{ media_host }}/"
+    method = "wrr"
+    [[http.services.media-plex.LoadBalancer.servers]]
+      URL = "http://plex.{{ media_host }}/"
+      Weight = 1
 
   [http.services.media-radarr.LoadBalancer]
-     [[http.services.media-radarr.LoadBalancer.servers]]
-        url = "http://radarr.{{ media_host }}/"
+    method = "wrr"
+    [[http.services.media-radarr.LoadBalancer.servers]]
+      URL = "http://radarr.{{ media_host }}/"
+      Weight = 1
 
   [http.services.media-sonarr.LoadBalancer]
-     [[http.services.media-sonarr.LoadBalancer.servers]]
-        url = "http://sonarr.{{ media_host }}/"
+    method = "wrr"
+    [[http.services.media-sonarr.LoadBalancer.servers]]
+      URL = "http://sonarr.{{ media_host }}/"
+      Weight = 1
 
   [http.services.media-minecraft-map.LoadBalancer]
-     [[http.services.media-minecraft-map.LoadBalancer.servers]]
-        url = "http://minecraft-map.{{ media_host }}/"
+    method = "wrr"
+    [[http.services.media-minecraft-map.LoadBalancer.servers]]
+      URL = "http://minecraft-map.{{ media_host }}/"
+      Weight = 1
