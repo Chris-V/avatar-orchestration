@@ -64,6 +64,7 @@
     - { state: "directory", path: "{{ docker_appdata_dir }}/mosquitto/data" }
     - { state: "file", path: "{{ docker_appdata_dir }}/mosquitto/config/passwords" }
     - { state: "file", path: "{{ docker_appdata_dir }}/mosquitto/config/acl" }
+    - { state: "file", path: "{{ docker_appdata_dir }}/appdata-backup/gcs_auth.json" }
   file:
     path: "{{ item.path }}"
     state: "{{ item.state }}"

@@ -6,6 +6,8 @@ x-proxy-enabled: &proxy-enabled
   traefik.docker.network: "docker-apps_public"
 
 networks:
+  backup:
+    driver: "bridge"
   ups:
     driver: "bridge"
   public:
@@ -101,7 +103,7 @@ services:
     restart: "unless-stopped"
     image: "avatary/apcupsd:aarch64"
     build:
-      context: "git@github.com:gersilex/apcupsd-docker.git#master"
+      context: "https://github.com/gersilex/apcupsd-docker.git#master"
     devices:
       - "/dev/ups:/dev/usb/hiddev0"
     environment:
@@ -115,3 +117,24 @@ services:
       - "3551:3551"
     volumes:
       - "{{ docker_appdata_dir }}/apcupsd/apcupsd.conf:/etc/apcupsd/apcupsd.conf:ro"
+
+  appdata_backup:
+    container_name: appdata-backup
+    image: "avatary/rclone:aarch64"
+    build:
+      context: "https://github.com/bcardiff/docker-rclone.git#master"
+      args:
+        ARCH: "arm64"
+    restart: "always"
+    environment:
+      TZ: *timezone
+      CRON: "0 5 * * *"
+      CRON_ABORT: "0 6 * * *"
+      SYNC_SRC: "/appdata"
+      SYNC_DEST: "GCS:avatar-automate-backup"
+      SYNC_OPTS: "-v -x -L"
+    networks:
+      - "backup"
+    volumes:
+      - "{{ docker_appdata_dir }}:/appdata"
+      - "{{ docker_appdata_dir }}/appdata-backup:/config"
