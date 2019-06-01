@@ -8,15 +8,16 @@ x-proxy-enabled: &proxy-enabled
 networks:
   backup:
     driver: "bridge"
+  glances:
+    driver: "bridge"
   ups:
     driver: "bridge"
   public:
     driver: "bridge"
-    # Until direct host access is not required (hass in docker)
     ipam:
-      driver: default
+      driver: "default"
       config:
-        - subnet: "172.222.0.0/16"
+        - subnet: "172.31.170.0/24"
 
 services:
   proxy:
@@ -44,6 +45,7 @@ services:
       traefik.http.routers.proxy_https.service: "proxy"
       traefik.http.routers.proxy_https.tls: "true"
     networks:
+      glances:
       public:
     ports:
       - "80:80"
@@ -78,6 +80,43 @@ services:
       public:
     volumes:
       - "/srv/www/error_pages:/usr/share/nginx/html:ro"
+
+  glances:
+    container_name: glances
+    image: "avatary/glances:arm64-latest"
+    build:
+      # TODO: develop has future in 'requirements.txt', but Docker images don't install it.
+      context: "https://github.com/Chris-V/glances.git#fix_dockerfile_pip:docker-files/devel-arm"
+    pid: "host"
+    restart: "unless-stopped"
+    environment:
+      TZ: *timezone
+      GLANCES_OPT: -w
+    labels:
+      <<: *proxy-enabled
+      traefik.docker.network: "docker-apps_glances"
+      traefik.http.services.glances.loadbalancer.server.port: 61208
+      traefik.http.routers.glances_http_internal.entryPoints: "http"
+      traefik.http.routers.glances_http_internal.rule: "Host(`glances.{{ internal_hostname }}`)"
+      traefik.http.routers.glances_http_internal.middlewares: "file.common"
+      traefik.http.routers.glances_http_internal.service: "glances"
+      traefik.http.routers.glances_http.entryPoints: "http"
+      traefik.http.routers.glances_http.rule: &glances_router_rule "Host(`glances-automate.{{ domain_name }}`)"
+      traefik.http.routers.glances_http.middlewares: "file.common, file.redirect-https"
+      traefik.http.routers.glances_https.entryPoints: "https"
+      traefik.http.routers.glances_https.rule: *glances_router_rule
+      traefik.http.routers.glances_https.middlewares: "file.common, file.monitoring-auth"
+      traefik.http.routers.glances_https.service: "glances"
+      traefik.http.routers.glances_https.tls: "true"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "1"
+    networks:
+      glances:
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   mosquitto:
     container_name: mosquitto
@@ -118,7 +157,7 @@ services:
     volumes:
       - "{{ docker_appdata_dir }}/apcupsd/apcupsd.conf:/etc/apcupsd/apcupsd.conf:ro"
 
-  appdata_backup:
+  appdata-backup:
     container_name: appdata-backup
     image: "avatary/rclone:aarch64"
     build:
