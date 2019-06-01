@@ -243,9 +243,9 @@ services:
       TZ: *timezone
     labels:
       <<: *proxy-enabled
-      traefik.glances.backend: minecraft-map
-      traefik.glances.port: 80
-      traefik.glances.frontend.rule: "Host:minecraft-map.{{ internal_hostname }}"
+      traefik.minecraft-map.backend: minecraft-map
+      traefik.minecraft-map.port: 80
+      traefik.minecraft-map.frontend.rule: "Host:minecraft-map.{{ internal_hostname }}"
     networks:
       public:
     volumes:
@@ -277,6 +277,7 @@ services:
     container_name: appdata-backup
     build:
       context: "{{ docker_srv_dir }}/docker-images/docker-volumes-backup"
+      network: "host"
     image: "avatary/docker-volumes-backup"
     network_mode: "none"
     restart: "always"
