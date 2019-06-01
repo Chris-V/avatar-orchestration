@@ -30,14 +30,15 @@ services:
 
   glances:
     container_name: glances
+    image: "avatary/glances:arm64-latest"
     build:
-      context: "{{ docker_apps_dir }}/docker-images/glances"
-    image: "avatary/glances"
-    command: "-w"
+      # TODO: develop has future in 'requirements.txt', but Docker images don't install it.
+      context: "https://github.com/Chris-V/glances.git#fix_dockerfile_pip:docker-files/devel-arm"
     pid: "host"
     restart: "unless-stopped"
     environment:
       TZ: *timezone
+      GLANCES_OPT: -w
     labels:
       <<: *proxy-enabled
       traefik.glances.backend: "glances"
