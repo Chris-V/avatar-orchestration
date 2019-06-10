@@ -26,5 +26,5 @@
 
   [http.middlewares.error-pages.errors]
     status = ["502-504"]
-    service = "docker.error_pages"
+    service = "docker.proxy_error_pages"
     query = "/5xx.html"

@@ -2,6 +2,7 @@
   tags:
     - always
 - import_tasks: users.yml
+- import_tasks: devices.yml
 - import_tasks: network.yml
 - import_tasks: docker.yml
 - import_tasks: homeassistant.yml

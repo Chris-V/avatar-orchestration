@@ -3,21 +3,48 @@ version: "3.7"
 x-timezone: &timezone "{{ timezone }}"
 x-proxy-enabled: &proxy-enabled
   traefik.enable: "true"
-  traefik.docker.network: "docker-apps_public"
+  traefik.docker.network: "public"
 
 networks:
-  backup:
-    driver: "bridge"
-  glances:
-    driver: "bridge"
-  ups:
-    driver: "bridge"
   public:
     driver: "bridge"
+    name: "public"
+    driver_opts:
+      com.docker.network.bridge.name: "br-public"
     ipam:
       driver: "default"
       config:
-        - subnet: "172.31.170.0/24"
+        - subnet: "{{ docker_net_public }}"
+
+  backups:
+    driver: "bridge"
+    name: "backups"
+    driver_opts:
+      com.docker.network.bridge.name: "br-backups"
+    ipam:
+      driver: "default"
+      config:
+        - subnet: "{{ docker_net_backups }}"
+
+  glances:
+    driver: "bridge"
+    name: "glances"
+    driver_opts:
+      com.docker.network.bridge.name: "br-glances"
+    ipam:
+      driver: "default"
+      config:
+        - subnet: "{{ docker_net_glances }}"
+
+  ups:
+    driver: "bridge"
+    name: "ups"
+    driver_opts:
+      com.docker.network.bridge.name: "br-ups"
+    ipam:
+      driver: "default"
+      config:
+        - subnet: "{{ docker_net_ups }}"
 
 services:
   proxy:
@@ -44,9 +71,13 @@ services:
       traefik.http.routers.proxy_https.middlewares: "file.common, file.monitoring-auth"
       traefik.http.routers.proxy_https.service: "proxy"
       traefik.http.routers.proxy_https.tls: "true"
+    extra_hosts:
+      - "home-assistant:172.30.170.1"
+      - "router:{{ router_ip }}"
     networks:
       glances:
       public:
+        ipv4_address: "{{ docker_ip_proxy }}"
     ports:
       - "80:80"
       - "443:443"
@@ -58,7 +89,7 @@ services:
       - "{{ docker_appdata_dir }}/traefik/acme:/etc/traefik/acme"
 
   proxy_error_pages:
-    container_name: error_pages
+    container_name: proxy_error_pages
     image: "nginx:stable-alpine"
     restart: "unless-stopped"
     environment:
@@ -94,7 +125,7 @@ services:
       GLANCES_OPT: -w
     labels:
       <<: *proxy-enabled
-      traefik.docker.network: "docker-apps_glances"
+      traefik.docker.network: "glances"
       traefik.http.services.glances.loadbalancer.server.port: 61208
       traefik.http.routers.glances_http_internal.entryPoints: "http"
       traefik.http.routers.glances_http_internal.rule: "Host(`glances.{{ internal_hostname }}`)"
@@ -133,6 +164,8 @@ services:
       traefik.tcp.routers.mosquitto.tls: "true"
     networks:
       public:
+    expose:
+      - 1883
     volumes:
       - "{{ docker_appdata_dir }}/mosquitto/config:/mosquitto/config:ro"
       - "{{ docker_appdata_dir }}/mosquitto/data:/mosquitto/data"
@@ -156,8 +189,9 @@ services:
       - 3551
     networks:
       ups:
+        ipv4_address: "{{ docker_ip_ups }}"
     ports:
-      # TODO: remove port mapping when HASS is dockerized and uses the ups network
+      # TODO: remove port mapping and dnat rules when HASS is dockerized and uses the ups network
       - "3551:3551"
     volumes:
       - "{{ docker_appdata_dir }}/apcupsd/apcupsd.conf:/etc/apcupsd/apcupsd.conf:ro"
@@ -178,7 +212,7 @@ services:
       SYNC_DEST: "GCS:avatar-automate-backup"
       SYNC_OPTS: "-v -x -L"
     networks:
-      - "backup"
+      backups:
     volumes:
       - "{{ docker_appdata_dir }}:/appdata"
       - "{{ docker_appdata_dir }}/appdata-backup:/config"

@@ -1,8 +1,17 @@
 system_appdata_uid: 875
 system_appdata_gid: 875
 
+# Docker
 docker_apps_dir: '/opt/docker-apps'
 docker_appdata_dir: '{{ docker_apps_dir }}/appdata'
+
+docker_net_host: "172.17.0.1/16"
+docker_net_public: "172.30.170.0/24"
+docker_ip_proxy: "172.30.170.50"
+docker_net_backups: "172.30.171.0/24"
+docker_net_glances: "172.30.172.0/24"
+docker_net_ups: "172.30.173.0/24"
+docker_ip_ups: "172.30.173.50"
 
 # Home-Assistant
 homeassistant_home: "/home/homeassistant"
