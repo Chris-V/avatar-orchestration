@@ -3,10 +3,18 @@ version: "3.7"
 x-timezone: &timezone "{{ timezone }}"
 x-proxy-enabled: &proxy-enabled
   traefik.enable: "true"
-  traefik.docker.network: "docker-apps_public"
+  traefik.docker.network: "public"
 
 networks:
   public:
+    driver: "bridge"
+    name: "public"
+    driver_opts:
+      com.docker.network.bridge.name: "br-public"
+    ipam:
+      driver: "default"
+      config:
+        - subnet: "{{ docker_net_public }}"
 
 services:
   proxy:
@@ -22,6 +30,7 @@ services:
       traefik.proxy.frontend.rule: "Host:traefik.{{ internal_hostname }}"
     networks:
       public:
+        ipv4_address: "{{ docker_ip_proxy }}"
     ports:
       - "80:80"
     volumes:

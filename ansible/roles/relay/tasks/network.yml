@@ -1,25 +1,46 @@
 - name: Disable wireless power saving mode
+  notify: reload udev
   copy:
     dest: "/etc/udev/rules.d/81-wifi-powersave.rules"
-    owner: root
-    group: root
+    owner: "root"
+    group: "root"
     mode: 0644
-    content: 'ACTION=="add", SUBSYSTEM=="net", KERNEL=="wl*", RUN+="/usr/bin/iw dev $name set power_save off"'
-  notify: reload udev
+    content: |
+      ACTION=="add", SUBSYSTEM=="net", KERNEL=="wl*", RUN+="/usr/bin/iw dev $name set power_save off"
+
+- name: Blacklist IPTables
+  notify: reload kernel modules
+  copy:
+    dest: "/etc/modprobe.d/noiptables.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+    content: |
+      install ip_tables /bin/false
+      install ip6_tables /bin/false
+
+- name: Obfuscate IPTables
+  file:
+    state: "link"
+    src: "/usr/bin/iptables-nft"
+    path: "/usr/local/sbin/iptables"
+    owner: "root"
+    group: "root"
+    mode: 0755
 
 - name: Copy NFTables configuration
-  template:
-    src: etc/nftables.conf.j2
-    dest: /etc/nftables.conf
-    force: yes
-    owner: root
-    group: root
-    mode: 0600
-    validate: 'nft -c -f %s'
   notify: reload nftables
+  template:
+    src: "etc/nftables.conf.j2"
+    dest: "/etc/nftables.conf"
+    force: yes
+    owner: "root"
+    group: "root"
+    mode: 0600
+    validate: "nft -c -f %s"
 
 - name: Enable NFTables
   systemd:
-    name: nftables.service
-    state: started
+    name: "nftables.service"
+    state: "started"
     enabled: yes
