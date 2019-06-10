@@ -1,0 +1,25 @@
+- name: Create hubz device group
+  group:
+    name: "hubz"
+    state: "present"
+
+- name: Copy UDEV rules for HUSBZB-1
+  notify: reload udev
+  copy:
+    dest: "/etc/udev/rules.d/99-hubz.rules"
+    owner: "root"
+    group: "root"
+    mode: 0644
+    content: |
+      SUBSYSTEM=="tty", ATTRS{interface}=="HubZ Z-Wave Com Port", SYMLINK+="zwave", GROUP="hubz", MODE="0660"
+      SUBSYSTEM=="tty", ATTRS{interface}=="HubZ ZigBee Com Port", SYMLINK+="zigbee", GROUP="hubz", MODE="0660"
+
+- name: Copy UDEV rules for UPS
+  notify: reload udev
+  copy:
+    dest: "/etc/udev/rules.d/99-ups.rules"
+    owner: "root"
+    group: "root"
+    mode: 0644
+    content: |
+      SUBSYSTEM=="usbmisc", ATTRS{manufacturer}=="American Power Conversion", ATTRS{serial}=="4B1622P31617  ", SYMLINK+="ups", OWNER="root"

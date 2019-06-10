@@ -5,27 +5,11 @@
     name: "python-requests"
     state: "present"
 
-- name: Create hubz device group
-  group:
-    name: "hubz"
-    state: "present"
-
 - name: Add homeassistant to hubz
   user:
     name: "homeassistant"
     append: yes
     groups: "hubz"
-
-- name: Copy UDEV rules for HUSBZB-1
-  copy:
-    dest: "/etc/udev/rules.d/99-hubz.rules"
-    owner: "root"
-    group: "root"
-    mode: 0644
-    content: |
-      SUBSYSTEM=="tty", ATTRS{interface}=="HubZ Z-Wave Com Port", SYMLINK+="zwave", GROUP="hubz", MODE="0660"
-      SUBSYSTEM=="tty", ATTRS{interface}=="HubZ ZigBee Com Port", SYMLINK+="zigbee", GROUP="hubz", MODE="0660"
-  notify: reload udev
 
 - name: Copy poweroff key
   copy:
