@@ -1,9 +1,24 @@
+- name: Reload udev rules
+  listen: reload udev
+  command: "udevadm control --reload; udevadm trigger"
+
 - name: Activate WOL
   listen: activate wol
   command: "ethtool -s {{ ansible_facts['default_ipv4']['interface'] }} wol g"
+
+- name: Reload systemd
+  listen: reload systemd
+  systemd:
+    daemon_reload: yes
 
 - name: Reload NFTables
   listen: reload nftables
   systemd:
     name: "nftables.service"
     state: "reloaded"
+
+- name: Restart Docker
+  listen: restart docker
+  systemd:
+    name: "docker.service"
+    state: "restarted"

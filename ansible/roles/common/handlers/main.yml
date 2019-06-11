@@ -3,3 +3,13 @@
   systemd:
     name: sshd.service
     state: reloaded
+
+- name: Reload sysctl
+  listen: reload sysctl
+  command: "sysctl --system"
+
+- name: Reload kernel modules
+  listen: reload kernel modules
+  systemd:
+    name: "systemd-modules-load.service"
+    state: "restarted"

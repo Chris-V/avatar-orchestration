@@ -3,6 +3,27 @@
     name: "docker docker-compose"
     state: "present"
 
+- block:
+    - file:
+        state: "directory"
+        path: "/etc/systemd/system/docker.service.d"
+        owner: "root"
+        group: "root"
+        mode: 0755
+    - name: Copy docker service unit overrides
+      copy:
+        dest: "/etc/systemd/system/docker.service.d/10-args.conf"
+        owner: "root"
+        group: "root"
+        mode: 0644
+        content: |
+          [Service]
+          ExecStart=
+          ExecStart=/usr/bin/dockerd -H fd:// --iptables=false --bip={{ docker_net_host }} --fixed-cidr={{ docker_net_host }}
+      notify:
+        - reload systemd
+        - restart docker
+
 - name: Enable Docker
   systemd:
     name: "docker.service"

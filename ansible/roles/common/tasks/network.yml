@@ -13,3 +13,32 @@
     owner: root
     group: root
     mode: 0644
+
+- name: Disable IPV6
+  notify: reload sysctl
+  copy:
+    dest: "/etc/sysctl.d/40-ipv6.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+    content: "net.ipv6.conf.all.disable_ipv6 = 1"
+
+- name: Blacklist IPTables
+  notify: reload kernel modules
+  copy:
+    dest: "/etc/modprobe.d/noiptables.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+    content: |
+      install ip_tables /bin/false
+      install ip6_tables /bin/false
+
+- name: Obfuscate IPTables
+  file:
+    state: "link"
+    src: "/usr/bin/iptables-nft"
+    path: "/usr/local/sbin/iptables"
+    owner: "root"
+    group: "root"
+    mode: 0755

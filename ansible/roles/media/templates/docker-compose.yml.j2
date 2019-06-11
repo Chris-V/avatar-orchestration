@@ -4,7 +4,7 @@ x-timezone: &timezone " {{ timezone }} "
 
 x-proxy-enabled: &proxy-enabled
   traefik.enable: "true"
-  traefik.docker.network: "docker_public"
+  traefik.docker.network: "public"
 
 x-minecraft-rcon-port: &minecraft-rcon-port 25575
 x-minecraft-rcon-password: &minecraft-rcon-password "{{ rcon_password }}"
@@ -15,27 +15,59 @@ x-minecraft-version: &minecraft-version "{{ minecraft_version }}"
 networks:
   public:
     driver: "bridge"
+    name: "public"
+    driver_opts:
+      com.docker.network.bridge.name: "br-public"
+    ipam:
+      driver: "default"
+      config:
+        - subnet: "{{ docker_net_public }}"
+
   glances:
     driver: "bridge"
+    name: "glances"
+    driver_opts:
+      com.docker.network.bridge.name: "br-glances"
+    ipam:
+      driver: "default"
+      config:
+        - subnet: "{{ docker_net_glances }}"
+
   media:
     driver: "bridge"
+    name: "media"
+    driver_opts:
+      com.docker.network.bridge.name: "br-media"
+    ipam:
+      driver: "default"
+      config:
+        - subnet: "{{ docker_net_media }}"
+
   minecraft:
     driver: "bridge"
+    name: "minecraft"
+    driver_opts:
+      com.docker.network.bridge.name: "br-minecraft"
+    ipam:
+      driver: "default"
+      config:
+        - subnet: "{{ docker_net_minecraft }}"
 
 services:
   proxy:
-    container_name: proxy
+    container_name: "proxy"
     image: "traefik:alpine"
-    restart: unless-stopped
+    restart: "unless-stopped"
     environment:
       TZ: *timezone
     labels:
       <<: *proxy-enabled
-      traefik.proxy.backend: proxy
+      traefik.proxy.backend: "proxy"
       traefik.proxy.port: 8080
       traefik.proxy.frontend.rule: "Host:traefik.{{ internal_hostname }}"
     networks:
       public:
+        ipv4_address: "{{ docker_ip_proxy }}"
       glances:
       media:
         aliases:
@@ -51,18 +83,24 @@ services:
       - "{{ docker_appdata_dir }}/traefik.toml:/traefik.toml:ro"
 
   glances:
-    container_name: glances
+    container_name: "glances"
     image: "nicolargo/glances:latest-alpine"
-    pid: host
-    restart: unless-stopped
+    pid: "host"
+    restart: "unless-stopped"
     environment:
       TZ: *timezone
       GLANCES_OPT: -w
     labels:
       <<: *proxy-enabled
-      traefik.glances.backend: glances
+      traefik.docker.network: "glances"
+      traefik.glances.backend: "glances"
       traefik.glances.port: 61208
       traefik.glances.frontend.rule: "Host:glances.{{ internal_hostname }}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "1"
     networks:
       glances:
     volumes:
@@ -70,9 +108,9 @@ services:
       - "{{ docker_appdata_dir }}/glances.conf:/glances/conf/glances.conf:ro"
 
   vpn:
-    container_name: vpn
+    container_name: "vpn"
     image: "microbug/cryptostorm-client:latest"
-    restart: unless-stopped
+    restart: "unless-stopped"
     cap_add:
       - NET_ADMIN
     environment:
@@ -85,10 +123,10 @@ services:
       media:
 
   deluge:
-    container_name: deluge
+    container_name: "deluge"
     image: "linuxserver/deluge:latest"
     network_mode: "service:vpn"
-    restart: unless-stopped
+    restart: "unless-stopped"
     depends_on:
       - proxy
       - vpn
@@ -99,7 +137,8 @@ services:
       UMASK_SET: '022'
     labels:
       <<: *proxy-enabled
-      traefik.deluge.backend: vpn
+      traefik.docker.network: "media"
+      traefik.deluge.backend: "vpn"
       traefik.deluge.port: 8112
       traefik.deluge.frontend.rule: "Host:deluge.docker.localhost,deluge.{{ internal_hostname }}"
     volumes:
@@ -107,23 +146,25 @@ services:
       - "{{ downloads_dir }}:/downloads"
 
   plex:
-    container_name: plex
+    container_name: "plex"
     image: "linuxserver/plex:latest"
-    restart: unless-stopped
+    restart: "unless-stopped"
     devices:
       - "/dev/dri:/dev/dri"
     environment:
       TZ: *timezone
       PUID: {{ system_appdata_uid }}
       PGID: {{ system_media_gid }}
-      VERSION: docker
+      VERSION: "docker"
     labels:
       <<: *proxy-enabled
-      traefik.plex.backend: plex
+      traefik.docker.network: "media"
+      traefik.plex.backend: "plex"
       traefik.plex.port: 32400
       traefik.plex.frontend.rule: "Host:plex.docker.localhost,plex.{{ internal_hostname }}"
     networks:
       media:
+        ipv4_address: "{{ docker_ip_plex }}"
     ports:
       - "32400:32400"
     volumes:
@@ -133,16 +174,17 @@ services:
       - "{{ plex_transcode_dir }}:/transcode"
 
   jackett:
-    container_name: jackett
+    container_name: "jackett"
     image: "linuxserver/jackett:latest"
-    restart: unless-stopped
+    restart: "unless-stopped"
     environment:
       TZ: *timezone
       PUID: {{ system_appdata_uid }}
       PGID: {{ system_data_gid }}
     labels:
       <<: *proxy-enabled
-      traefik.jackett.backend: jackett
+      traefik.docker.network: "media"
+      traefik.jackett.backend: "jackett"
       traefik.jackett.port: 9117
       traefik.jackett.frontend.rule: "Host:jackett.docker.localhost,jackett.{{ internal_hostname }}"
     networks:
@@ -152,9 +194,9 @@ services:
       - "{{ jackett_downloads_dir }}:/downloads"
 
   sonarr:
-    container_name: sonarr
+    container_name: "sonarr"
     image: "linuxserver/sonarr:preview"
-    restart: unless-stopped
+    restart: "unless-stopped"
     depends_on:
       - deluge
       - jackett
@@ -165,7 +207,8 @@ services:
       PGID: {{ system_media_gid }}
     labels:
       <<: *proxy-enabled
-      traefik.sonarr.backend: sonarr
+      traefik.docker.network: "media"
+      traefik.sonarr.backend: "sonarr"
       traefik.sonarr.port: 8989
       traefik.sonarr.frontend.rule: "Host:sonarr.docker.localhost,sonarr.{{ internal_hostname }}"
     networks:
@@ -176,9 +219,9 @@ services:
       - "{{ downloads_dir }}:/downloads:ro"
 
   radarr:
-    container_name: radarr
+    container_name: "radarr"
     image: "linuxserver/radarr:latest"
-    restart: unless-stopped
+    restart: "unless-stopped"
     depends_on:
       - deluge
       - jackett
@@ -189,7 +232,8 @@ services:
       PGID: {{ system_media_gid }}
     labels:
       <<: *proxy-enabled
-      traefik.radarr.backend: radarr
+      traefik.docker.network: "media"
+      traefik.radarr.backend: "radarr"
       traefik.radarr.port: 7878
       traefik.radarr.frontend.rule: "Host:radarr.docker.localhost,radarr.{{ internal_hostname }}"
     networks:
@@ -200,7 +244,7 @@ services:
       - "{{ downloads_dir }}:/downloads:ro"
 
   minecraft:
-    container_name: minecraft
+    container_name: "minecraft"
     image: "itzg/minecraft-server"
     restart: "unless-stopped"
     user: "{{ system_appdata_uid }}:{{ system_appdata_gid }}"
@@ -228,22 +272,23 @@ services:
       OPS: "{{ minecraft_username }}"
       WHITELIST: "{{ minecraft_username }}"
     networks:
-      public:
       minecraft:
+        ipv4_address: "{{ docker_ip_minecraft }}"
     ports:
       - "25565:25565"
     volumes:
       - "{{ minecraft_data_dir }}:/data"
 
   minecraft-map:
-    container_name: minecraft-map
+    container_name: "minecraft-map"
     image: "nginx:stable-alpine"
     restart: "unless-stopped"
     environment:
       TZ: *timezone
     labels:
       <<: *proxy-enabled
-      traefik.minecraft-map.backend: minecraft-map
+      traefik.docker.network: "public"
+      traefik.minecraft-map.backend: "minecraft-map"
       traefik.minecraft-map.port: 80
       traefik.minecraft-map.frontend.rule: "Host:minecraft-map.{{ internal_hostname }}"
     networks:
@@ -252,7 +297,7 @@ services:
       - "{{ minecraft_map_dir }}:/usr/share/nginx/html:ro"
 
   minecraft-backup:
-    container_name: minecraft-backup
+    container_name: "minecraft-backup"
     image: "itzg/mc-backup"
     restart: "always"
     user: "{{ system_appdata_uid }}:{{ system_appdata_gid }}"
@@ -274,7 +319,7 @@ services:
       - "{{ minecraft_backups_dir }}:/backups"
 
   appdata-backup:
-    container_name: appdata-backup
+    container_name: "appdata-backup"
     build:
       context: "{{ docker_srv_dir }}/docker-images/docker-volumes-backup"
       network: "host"
