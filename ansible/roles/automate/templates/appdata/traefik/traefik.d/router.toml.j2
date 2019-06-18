@@ -15,7 +15,5 @@
 [http.services]
 
   [http.services.router.LoadBalancer]
-    method = "wrr"
     [[http.services.router.LoadBalancer.servers]]
       URL = "http://router/"
-      Weight = 1

@@ -99,49 +99,33 @@
 [http.services]
 
   [http.services.media-glances.LoadBalancer]
-    method = "wrr"
     [[http.services.media-glances.LoadBalancer.servers]]
       URL = "http://glances.{{ media_host }}/"
-      Weight = 1
 
   [http.services.media-traefik.LoadBalancer]
-    method = "wrr"
     [[http.services.media-traefik.LoadBalancer.servers]]
       URL = "http://traefik.{{ media_host }}/"
-      Weight = 1
 
   [http.services.media-deluge.LoadBalancer]
-     method = "wrr"
      [[http.services.media-deluge.LoadBalancer.servers]]
        URL = "http://deluge.{{ media_host }}/"
-       Weight = 1
 
   [http.services.media-jackett.LoadBalancer]
-    method = "wrr"
     [[http.services.media-jackett.LoadBalancer.servers]]
       URL = "http://jackett.{{ media_host }}/"
-      Weight = 1
 
   [http.services.media-plex.LoadBalancer]
-    method = "wrr"
     [[http.services.media-plex.LoadBalancer.servers]]
       URL = "http://plex.{{ media_host }}/"
-      Weight = 1
 
   [http.services.media-radarr.LoadBalancer]
-    method = "wrr"
     [[http.services.media-radarr.LoadBalancer.servers]]
       URL = "http://radarr.{{ media_host }}/"
-      Weight = 1
 
   [http.services.media-sonarr.LoadBalancer]
-    method = "wrr"
     [[http.services.media-sonarr.LoadBalancer.servers]]
       URL = "http://sonarr.{{ media_host }}/"
-      Weight = 1
 
   [http.services.media-minecraft-map.LoadBalancer]
-    method = "wrr"
     [[http.services.media-minecraft-map.LoadBalancer.servers]]
       URL = "http://minecraft-map.{{ media_host }}/"
-      Weight = 1

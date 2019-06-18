@@ -15,7 +15,5 @@
 [http.services]
 
   [http.services.home-assistant.LoadBalancer]
-    method = "wrr"
     [[http.services.home-assistant.LoadBalancer.servers]]
       URL = "http://home-assistant:35072/"
-      Weight = 1

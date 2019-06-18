@@ -27,13 +27,9 @@
 [http.services]
 
   [http.services.relay-south-glances.LoadBalancer]
-    method = "wrr"
     [[http.services.relay-south-glances.LoadBalancer.servers]]
       URL = "http://glances.{{ relay_south_host }}/"
-      Weight = 1
 
   [http.services.relay-south-traefik.LoadBalancer]
-    method = "wrr"
     [[http.services.relay-south-traefik.LoadBalancer.servers]]
       URL = "http://traefik.{{ relay_south_host }}/"
-      Weight = 1
