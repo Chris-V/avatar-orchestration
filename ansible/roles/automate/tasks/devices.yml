@@ -1,8 +1,3 @@
-- name: Create hubz device group
-  group:
-    name: "hubz"
-    state: "present"
-
 - name: Copy UDEV rules for HUSBZB-1
   notify: reload udev
   copy:
@@ -11,8 +6,8 @@
     group: "root"
     mode: 0644
     content: |
-      SUBSYSTEM=="tty", ATTRS{interface}=="HubZ Z-Wave Com Port", SYMLINK+="zwave", GROUP="hubz", MODE="0660"
-      SUBSYSTEM=="tty", ATTRS{interface}=="HubZ ZigBee Com Port", SYMLINK+="zigbee", GROUP="hubz", MODE="0660"
+      SUBSYSTEM=="tty", ATTRS{interface}=="HubZ Z-Wave Com Port", SYMLINK+="zwave", GROUP="homeassistant", MODE="0660"
+      SUBSYSTEM=="tty", ATTRS{interface}=="HubZ ZigBee Com Port", SYMLINK+="zigbee", GROUP="homeassistant", MODE="0660"
 
 - name: Copy UDEV rules for UPS
   notify: reload udev

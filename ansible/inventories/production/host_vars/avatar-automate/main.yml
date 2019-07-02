@@ -6,3 +6,9 @@ ansible_host: avatar-automate-ansible
 ssh_port: "{{ automate_ssh }}"
 internal_ip: "{{ automate_ip }}"
 internal_hostname: "{{ automate_host }}"
+
+wan_if: "enp0s25"
+
+add_homeassistant_to_authorized_keys: no
+homeassistant_config_owner: "Chris-V"
+homeassistant_config_repo: "homeassistant-config"

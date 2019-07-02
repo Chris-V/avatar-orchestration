@@ -3,25 +3,23 @@
     name: "docker docker-compose"
     state: "present"
 
-- file:
-    state: "directory"
-    path: "/etc/systemd/system/docker.service.d"
-    owner: "root"
-    group: "root"
-    mode: 0755
-- name: Copy docker service unit overrides
-  notify:
-    - reload systemd
-    - restart docker
-  copy:
-    dest: "/etc/systemd/system/docker.service.d/10-args.conf"
-    owner: "root"
-    group: "root"
-    mode: 0644
-    content: |
-      [Service]
-      ExecStart=
-      ExecStart=/usr/bin/dockerd -H fd:// --iptables=false --bip={{ docker_net_host }} --fixed-cidr={{ docker_net_host }}
+- block:
+    - file:
+        state: "directory"
+        path: "/etc/systemd/system/docker.service.d"
+        owner: "root"
+        group: "root"
+        mode: 0755
+    - name: Copy docker service unit overrides
+      notify:
+        - reload systemd
+        - restart docker
+      template:
+        src: "etc/systemd/system/docker.service.d/10-args.conf.j2"
+        dest: "/etc/systemd/system/docker.service.d/10-args.conf"
+        owner: "root"
+        group: "docker"
+        mode: 0644
 
 - name: Enable Docker
   systemd:
@@ -29,24 +27,128 @@
     state: "started"
     enabled: yes
 
-- name: Create docker directories
+- name: Create docker apps root
   file:
     path: "{{ docker_apps_dir }}"
     state: "directory"
     owner: "root"
     group: "docker"
-    mode: 0750
-
-# TODO: Copying whole directories is tricky. Because it resets some permissions then re-hardens them. So we get tons of "changed" output
-
-- name: Copy appdata files
-  copy:
-    src: "appdata"
-    dest: "{{ docker_appdata_dir }}/.."
+    mode: 0755
+- name: Create docker appdata root
+  file:
+    path: "{{ docker_appdata_dir }}"
+    state: "directory"
     owner: "docker-appdata"
     group: "docker-appdata"
-    directory_mode: 0750
-    mode: 0640
+    mode: 0755
+
+- block:
+    - name: Create APC directories
+      loop:
+        - { path: "", mode: "u=rwx,g=rx,o=" }
+      file:
+        path: "{{ docker_appdata_dir }}/apcupsd/{{ item.path }}"
+        state: "directory"
+        owner: "docker-appdata"
+        group: "docker-appdata"
+        mode: "{{ item.mode }}"
+    - name: Copy APC files
+      loop:
+        - { path: "apcupsd.conf", mode: "u=rw,g=r,o=" }
+      copy:
+        src: "appdata/apcupsd/{{ item.path }}"
+        dest: "{{ docker_appdata_dir }}/apcupsd/{{ item.path }}"
+        owner: "docker-appdata"
+        group: "docker-appdata"
+        mode: "{{ item.mode }}"
+
+- block:
+    - name: Create appdata-backup directories
+      loop:
+        - { path: "", mode: "u=rwx,g=rx,o=" }
+      file:
+        path: "{{ docker_appdata_dir }}/appdata-backup/{{ item.path }}"
+        state: "directory"
+        owner: "docker-appdata"
+        group: "docker-appdata"
+        mode: "{{ item.mode }}"
+    - name: Copy appdata-backup files
+      loop:
+        - { path: "backup_acl.sh", mode: "u=rwx,g=rx,o=" }
+        - { path: "filters.txt", mode: "u=rw,go=" }
+        - { host_file: yes, path: "gcs_auth.json", mode: "u=r,go=" }
+      copy:
+        src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/appdata-backup/{{ item.path }}"
+        dest: "{{ docker_appdata_dir }}/appdata-backup/{{ item.path }}"
+        owner: "docker-appdata"
+        group: "docker-appdata"
+        mode: "{{ item.mode }}"
+    - name: Copy appdata-backup templates
+      loop:
+        - { path: "rclone.conf", mode: "u=rw,go=" }
+      template:
+        src: "appdata/appdata-backup/{{ item.path }}.j2"
+        dest: "{{ docker_appdata_dir }}/appdata-backup/{{ item.path }}"
+        owner: "docker-appdata"
+        group: "docker-appdata"
+        mode: "{{ item.mode }}"
+
+- block:
+    - name: Create Mosquitto directories
+      loop:
+        - { path: "", mode: "u=rwx,g=rx,o=" }
+        - { path: "config/", mode: "u=rwx,g=rx,o=" }
+        - { path: "data/", mode: "u=rwx,go=" }
+      file:
+        path: "{{ docker_appdata_dir }}/mosquitto/{{ item.path }}"
+        state: "directory"
+        owner: "docker-appdata"
+        group: "docker-appdata"
+        mode: "{{ item.mode }}"
+    - name: Copy Mosquitto files
+      loop:
+        - { path: "config/mosquitto.conf", mode: "u=rw,g=r,o=" }
+        - { host_file: yes, path: "config/acl", mode: "u=r,go=" }
+        - { host_file: yes, path: "config/passwords", mode: "u=r,go=" }
+      copy:
+        src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/mosquitto/{{ item.path }}"
+        dest: "{{ docker_appdata_dir }}/mosquitto/{{ item.path }}"
+        owner: "docker-appdata"
+        group: "docker-appdata"
+        mode: "{{ item.mode }}"
+
+- block:
+    - name: Create Traefik directories
+      loop:
+        - { path: "", mode: "u=rwx,g=rx,o=" }
+        - { path: "traefik.d/", mode: "u=rwx,g=rx,o=" }
+        - { path: "acme/", mode: "u=rwx,go=" }
+      file:
+        path: "{{ docker_appdata_dir }}/traefik/{{ item.path }}"
+        state: "directory"
+        owner: "docker-appdata"
+        group: "docker-appdata"
+        mode: "{{ item.mode }}"
+    - name: Copy Traefik files
+      loop:
+        - { host_file: yes, path: "acme/gce_service_account.json", mode: "u=r,go=" }
+        - { host_file: yes, path: "traefik.d/monitoring.htpasswd", mode: "u=r,go=" }
+      copy:
+        src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/traefik/{{ item.path }}"
+        dest: "{{ docker_appdata_dir }}/traefik/{{ item.path }}"
+        owner: "docker-appdata"
+        group: "docker-appdata"
+        mode: "{{ item.mode }}"
+    - name: Copy Traefik templates
+      with_filetree: "../templates/appdata/traefik/"
+      when: "item.state == 'file' "
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ docker_appdata_dir }}/traefik/{{ item.path | replace('.j2', '') }}"
+        owner: "docker-appdata"
+        group: "docker-appdata"
+        mode: "u=rw,g=r,o="
+
 - name: Copy www files
   copy:
     src: "www"
@@ -56,36 +158,19 @@
     directory_mode: 0755
     mode: 0644
 
-- name: Copy appdata templates
-  with_filetree: "../templates/appdata/"
-  when: "item.state == 'file'"
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ docker_appdata_dir }}/{{ item.path | replace('.j2', '') }}"
-    owner: "docker-appdata"
-    group: "docker-appdata"
-    mode: "u=rwX,g=rX,o="
-
-- name: Harden appdata permissions
-  loop:
-    - { state: "directory", path: "{{ docker_appdata_dir }}/traefik/acme" }
-    - { state: "file", path: "{{ docker_appdata_dir }}/traefik/traefik.d/monitoring.htpasswd" }
-    - { state: "file", path: "{{ docker_appdata_dir }}/traefik/traefik.d/gce_service_account.json" }
-    - { state: "directory", path: "{{ docker_appdata_dir }}/mosquitto/data" }
-    - { state: "file", path: "{{ docker_appdata_dir }}/mosquitto/config/passwords" }
-    - { state: "file", path: "{{ docker_appdata_dir }}/mosquitto/config/acl" }
-    - { state: "file", path: "{{ docker_appdata_dir }}/appdata-backup/gcs_auth.json" }
-  file:
-    path: "{{ item.path }}"
-    state: "{{ item.state }}"
-    recurse: "{{ (item.state == 'directory') | bool }}"
-    mode: "u=rwX,go="
-
-- name: Copy docker compose
-  template:
-    src: "docker-compose.yml.j2"
-    dest: "{{ docker_apps_dir }}/docker-compose.yml"
-    owner: "root"
-    group: "docker"
-    mode: 0640
-    validate: "docker-compose -f %s config"
+- block:
+    - register: homeassistant_uid_result
+      command: "id -u homeassistant"
+    - register: homeassistant_gid_result
+      command: "id -g homeassistant"
+    - set_fact:
+        homeassistant_uid: "{{ homeassistant_uid_result.stdout }}"
+        homeassistant_gid: "{{ homeassistant_gid_result.stdout }}"
+    - name: Copy docker compose
+      template:
+        src: "docker-compose.yml.j2"
+        dest: "{{ docker_apps_dir }}/docker-compose.yml"
+        owner: "root"
+        group: "docker"
+        mode: 0640
+        validate: "docker-compose -f %s config"

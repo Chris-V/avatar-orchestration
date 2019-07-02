@@ -41,4 +41,4 @@ read -n 1 -s -r -p "Press any key to continue."
 
 echo
 echo "ISO generated. Time to DD it"
-echo "\$ dd if=$(echo ${SOURCE_DIR}/build/out/*.iso) of=/dev/myusbdrive"
+echo "\$ dd if=$SOURCE_DIR/build/out/*.iso of=/dev/myusbdrive status=progress"

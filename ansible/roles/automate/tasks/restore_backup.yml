@@ -1,0 +1,33 @@
+- name: Install ansible requirements
+  pacman:
+    name: "python-docker"
+    state: "present"
+
+- register: acl_backup
+  stat:
+    path: "{{ docker_appdata_dir }}/acl.txt"
+
+- when: not acl_backup.stat.exists
+  block:
+    - name: Copy initial backed up appdata
+      docker_container:
+        auto_remove: yes
+        cleanup: yes
+        detach: no
+        keep_volumes: no
+        image: "bcardiff/rclone:latest"
+        name: "rclone_restore_backup"
+        state: "started"
+        env:
+          TZ: "{{ timezone }}"
+          SYNC_SRC: "{{ rclone_gce_key }}:{{ gce_backup_bucket }}"
+          SYNC_DEST: "/appdata"
+          SYNC_OPTS: "-v -x"
+        volumes:
+          - "{{ docker_appdata_dir }}:/appdata"
+          - "{{ docker_appdata_dir }}/appdata-backup:/config"
+
+    - name: Restore backed up ACLs
+      command: "getfacl --restore=acl.txt"
+      args:
+        chdir: "{{ docker_appdata_dir }}"

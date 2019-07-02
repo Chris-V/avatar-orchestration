@@ -1,6 +1,9 @@
 - name: Reload udev rules
   listen: reload udev
-  command: "udevadm control --reload; udevadm trigger"
+  command: "udevadm control --reload-rules"
+- name: Trigger udev rules
+  listen: reload udev
+  command: "udevadm trigger"
 
 - name: Reload systemd
   listen: reload systemd

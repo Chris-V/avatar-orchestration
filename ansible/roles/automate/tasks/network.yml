@@ -14,10 +14,3 @@
     name: "nftables.service"
     state: "started"
     enabled: yes
-
-- name: Update hosts file
-  blockinfile:
-    state: "present"
-    path: "/etc/hosts"
-    block: |
-      {{ living_room_tv_ip }} tv-lr.devices.local

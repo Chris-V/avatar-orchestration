@@ -1,92 +1,118 @@
-# TODO: Split in two: 'become root' and 'become homeassistant'
-
-- name: Install host requirements for home-asssisant
+- name: Install ansible requirements
   pacman:
     name: "python-requests"
     state: "present"
 
-- name: Add homeassistant to hubz
-  user:
-    name: "homeassistant"
-    append: yes
-    groups: "hubz"
+- block:
+    - name: Create .ssh/ directory
+      file:
+        path: "{{ homeassistant_config_key_path | dirname }}"
+        state: "directory"
+        owner: "homeassistant"
+        group: "homeassistant"
+        mode: 0740
+    - name: Generate home-assistant deploy key
+      become: yes
+      become_user: homeassistant
+      openssh_keypair:
+        path: "{{ homeassistant_config_key_path }}"
+        type: "rsa"
+        size: 4096
+        state: "present"
+        force: "{{ homeassistant_recreate_config_key | bool }}"
+        owner: "homeassistant"
+        group: "homeassistant"
+    - name: Read public home-assistant deploy key
+      register: "public_deploy_key"
+      slurp:
+        src: "{{ homeassistant_config_key_path }}.pub"
+    - name: Upload home-assistant deploy key to GitHub
+      github_deploy_key:
+        name: "automate-homeassistant"
+        owner: "{{ homeassistant_config_owner }}"
+        repo: "{{ homeassistant_config_repo }}"
+        token: "{{ github_token }}"
+        read_only: yes
+        force: "{{ homeassistant_recreate_config_key | bool }}"
+        key: "{{ public_deploy_key['content'] | b64decode }}"
+        state: "present"
 
-- name: Copy poweroff key
-  copy:
-    src: 'homeassistant/poweroff_rsa'
-    dest: '{{ homeassistant_poweroff_key }}'
+- name: Create Home-Assistant appdata directories
+  loop:
+    - { path: "", mode: "u=rwx,g=rx,o=" }
+    - { path: "config/", mode: "u=rwx,g=rx,o=" }
+    - { path: "ssh/", mode: "u=rwx,go=" }
+  file: &create_appdata_dir
+    path: "{{ docker_appdata_dir }}/home-assistant/{{ item.path }}"
+    state: "directory"
     owner: "homeassistant"
     group: "homeassistant"
-    mode: 0600
-- name: Copy public poweroff key
-  copy:
-    dest: '{{ homeassistant_poweroff_key }}.pub'
-    owner: "homeassistant"
-    group: "homeassistant"
-    mode: 0644
-    content: "{{ poweroff_public_key }}"
-- name: Copy SSH config
-  template:
-    src: 'homeassistant/ssh_config.j2'
-    dest: '{{ homeassistant_home }}/.ssh/config'
-    owner: "homeassistant"
-    group: "homeassistant"
-    mode: 0600
-    validate: "/usr/sbin/sshd -T -f %s"
-
-- name: Generate home-assistant deploy key
-  become: yes
-  become_user: homeassistant
-  openssh_keypair:
-    path: "{{ homeassistant_config_key }}"
-    type: "rsa"
-    size: 4096
-    state: "present"
-    force: "{{ homeassistant_config_key_force | bool }}"
-    owner: "homeassistant"
-    group: "homeassistant"
-- name: Read public home-assistant deploy key
-  register: "public_deploy_key"
-  slurp:
-    src: "{{ homeassistant_config_key }}.pub"
-- name: Upload home-assistant deploy key to GitHub
-  github_deploy_key:
-    name: "automate-homeassistant"
-    owner: "{{ homeassistant_config_owner }}"
-    repo: "{{ homeassistant_config_repo }}"
-    token: "{{ github_token }}"
-    read_only: yes
-    force: "{{ homeassistant_config_key_force | bool }}"
-    key: "{{ public_deploy_key['content'] | b64decode }}"
-    state: "present"
+    mode: "{{ item.mode }}"
 
 - name: Pull home-assistant configuration
   become: yes
   become_user: homeassistant
-  tags:
-    - homeassistant
   git:
-    dest: "{{ homeassistant_home }}/.homeassistant"
+    dest: "{{ docker_appdata_dir }}/home-assistant/config"
     repo: "git@github.com:{{ homeassistant_config_owner }}/{{ homeassistant_config_repo }}.git"
-    key_file: "{{ homeassistant_config_key }}"
+    key_file: "{{ homeassistant_config_key_path }}"
     accept_hostkey: yes
-    umask: "0037"
+    umask: "0027"
 
-- name: Copy home-assistant secrets
-  tags:
-    - homeassistant
-  template:
-    src: 'homeassistant/secrets.yaml.j2'
-    dest: '{{ homeassistant_home }}/.homeassistant/secrets.yaml'
+- name: Check HACS presence
+  register: hacs_cloned
+  stat:
+    path: "{{ docker_appdata_dir }}/home-assistant/config/custom_components/hacs"
+- when: not hacs_cloned.stat.exists
+  block:
+    - name: Clone HACS
+      become: yes
+      become_user: homeassistant
+      git:
+        dest: &hacs_tmp_path "/tmp/hacs"
+        repo: "{{ homeassistant_hacs_repo }}"
+        key_file: "{{ homeassistant_config_key_path }}"
+        accept_hostkey: yes
+        depth: 1
+        umask: "0027"
+    - name: Install HACS
+      copy:
+        src: "/tmp/hacs/custom_components/hacs"
+        dest: "{{ docker_appdata_dir }}/home-assistant/config/custom_components"
+        remote_src: yes
+        owner: "homeassistant"
+        group: "homeassistant"
+        mode: "preserve"
+    - name: Cleanup HACS clone
+      file:
+        path: *hacs_tmp_path
+        state: "absent"
+
+- name: Create additional Home-Assistant directories # Must be done after initial clone
+  loop:
+    - { path: "config/.secrets", mode: "u=rwx,go=" }
+  file: *create_appdata_dir
+
+- name: Copy Home-Assistant files
+  loop:
+    - { path: "ssh/poweroff_rsa", mode: "u=rw,go=" }
+    - { host_file: yes, path: "config/.secrets/gcp.json", mode: "u=r,go=" }
+  copy:
+    src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/home-assistant/{{ item.path }}"
+    dest: "{{ docker_appdata_dir }}/home-assistant/{{ item.path }}"
     owner: "homeassistant"
     group: "homeassistant"
-    mode: 0600
+    mode: "{{ item.mode }}"
 
-# TODO: Restore / fetch other secret files (mutable)
-#  * html5_push_registrations.conf
-#  * known_devices.yaml
-#  * pyozw.sqlite
-#  * .storage
-#  * .uuid
-#  * zigbee.db
-#  * zwcfg_0xce33fce5.xml
+- name: Copy Home-Assistant templates
+  loop:
+    - { path: "ssh/config", mode: "u=rw,go=" }
+    - { path: "ssh/known_hosts", mode: "u=rw,go=" }
+    - { path: "ssh/poweroff_rsa.pub", mode: "u=rw,g=r,o=" }
+    - { host_file: yes, path: "config/secrets.yaml", mode: "u=r,go=" }
+  template:
+    src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/home-assistant/{{ item.path }}.j2"
+    dest: "{{ docker_appdata_dir }}/home-assistant/{{ item.path }}"
+    owner: "homeassistant"
+    group: "homeassistant"
+    mode: "{{ item.mode }}"

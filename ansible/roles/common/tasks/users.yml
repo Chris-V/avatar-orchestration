@@ -56,13 +56,12 @@
   user:
     name: homeassistant
     groups: ssh,poweroff
-    append: "{{ inventory_hostname == 'avatar-automate' }}"
     create_home: yes
     state: present
     shell: /usr/bin/fish
     password: '{{ homeassistant_password }}'
 - name: Add authorized keys to homeassistant
-  when: "not inventory_hostname == 'avatar-automate'"
+  when: "add_homeassistant_to_authorized_keys | bool"
   authorized_key:
     exclusive: yes
     state: present

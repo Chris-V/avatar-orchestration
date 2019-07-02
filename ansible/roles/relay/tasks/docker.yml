@@ -11,18 +11,15 @@
         group: "root"
         mode: 0755
     - name: Copy docker service unit overrides
-      copy:
-        dest: "/etc/systemd/system/docker.service.d/10-args.conf"
-        owner: "root"
-        group: "root"
-        mode: 0644
-        content: |
-          [Service]
-          ExecStart=
-          ExecStart=/usr/bin/dockerd -H fd:// --iptables=false --bip={{ docker_net_host }} --fixed-cidr={{ docker_net_host }}
       notify:
         - reload systemd
         - restart docker
+      template:
+        src: "etc/systemd/system/docker.service.d/10-args.conf.j2"
+        dest: "/etc/systemd/system/docker.service.d/10-args.conf"
+        owner: "root"
+        group: "docker"
+        mode: 0644
 
 - name: Enable Docker
   systemd:
@@ -74,12 +71,12 @@
     group: 'docker'
     mode: 0640
   loop:
-    - { filename: 'traefik.toml' }
+    - { filename: "traefik.toml" }
 
 - name: Copy host-specific plant gateway config
   template:
-    src: 'host_files/{{ inventory_hostname }}/plantgw.yaml.j2'
-    dest: '{{ docker_appdata_dir }}/plantgw/plantgw.yaml'
+    src: "{{ host_files }}plantgw.yaml.j2"
+    dest: "{{ docker_appdata_dir }}/plantgw/plantgw.yaml"
     owner: "root"
     group: "docker"
     mode: 0640

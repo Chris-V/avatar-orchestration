@@ -105,7 +105,6 @@ services:
       glances:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "{{ docker_appdata_dir }}/glances.conf:/glances/conf/glances.conf:ro"
 
   vpn:
     container_name: "vpn"

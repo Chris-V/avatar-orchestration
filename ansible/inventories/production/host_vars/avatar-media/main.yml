@@ -6,3 +6,5 @@ ansible_host: avatar-media-ansible
 ssh_port: "{{ media_ssh }}"
 internal_ip: "{{ media_ip }}"
 internal_hostname: "{{ media_host }}"
+
+wan_if: "enp6s0"

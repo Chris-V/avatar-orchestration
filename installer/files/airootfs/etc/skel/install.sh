@@ -14,9 +14,12 @@ SRV_UUID=2F2DD333-0858-4634-89BD-EB10FCF3990D
 
 MOUNT=/mnt
 
-PACKAGES="base base-devel syslinux gptfdisk openssh sudo python"
+BIOS_PACKAGES="syslinux"
+EFI_PACKAGES="grub efibootmgr"
+PACKAGES="base base-devel gptfdisk openssh sudo python"
 
-hostname=avatar
+hostname=avatar-xyz
+boot_system=EFI
 install_disk=
 root_password=
 ssh_port=
@@ -70,6 +73,7 @@ function prompt_settings {
 
     available_disks=$(lsblk -dplnx size -o name,size | grep -Ev "boot|rpmb|loop" | tac)
     install_disk=$(dialog --stdout --title "Installation disk" --default-item "$install_disk" --menu "Select installation disk" "$DIALOG_HEIGHT" "$DIALOG_WIDTH" 0 ${available_disks})
+    boot_system=$(dialog --stdout --title "Boot system" --default-item "$boot_system" --menu "Select boot system" "$DIALOG_HEIGHT" "$DIALOG_WIDTH" 0 EFI "EFI (Grub)" BIOS "BIOS (SysLinux)")
 }
 
 prompt_settings
@@ -115,20 +119,32 @@ echo
 
 dd if=/dev/zero of=${install_disk} bs=1024 count=1024
 
+if [[ "$boot_system" = "BIOS" ]] ; then
+  boot_part_fs=ext4
+  boot_part_label=boot
+  boot_part_path=$MOUNT/boot
+  boot_part_definition="size=550M,type=0FC63DAF-8483-4772-8E79-3D69D8477DE4,bootable,uuid=${BOOT_UUID},name=$boot_part_label"
+else
+  boot_part_fs=fat
+  boot_part_label=efi
+  boot_part_path=$MOUNT/efi
+  boot_part_definition="size=550M,type=C12A7328-F81F-11D2-BA4B-00A0C93EC93B,uuid=${BOOT_UUID},name=$boot_part_label"
+fi
+
 sfdisk ${install_disk} <<EOF
 label: gpt
-size=550M,type=0FC63DAF-8483-4772-8E79-3D69D8477DE4,bootable,uuid=${BOOT_UUID},name=boot
+$boot_part_definition
 size=32G,type=4F68BCE3-E8CD-4DB1-96E7-FBCAF984B709,uuid=${ROOT_UUID},name=arch
 type=3B8F8425-20E0-4F3B-907F-1A25A76F98E8,uuid=${SRV_UUID},name=server
 EOF
 
-mkfs.ext4 ${install_disk}1
-mkfs.ext4 ${install_disk}2
-mkfs.ext4 ${install_disk}3
+"mkfs.$boot_part_fs" "${install_disk}1"
+mkfs.ext4 "${install_disk}2"
+mkfs.ext4 "${install_disk}3"
 
 mount PARTLABEL=arch $MOUNT
-mkdir -p $MOUNT/boot $MOUNT/srv
-mount PARTLABEL=boot $MOUNT/boot
+mkdir -p $boot_part_path $MOUNT/srv
+mount PARTLABEL=$boot_part_label $boot_part_path
 mount PARTLABEL=server $MOUNT/srv
 
 echo
@@ -142,7 +158,13 @@ curl -s "https://www.archlinux.org/mirrorlist/?country=CA&country=US&protocol=ht
 > /etc/pacman.d/mirrorlist
 
 echo "Copying OS files..."
-pacstrap $MOUNT $PACKAGES
+if [[ "$boot_system" = "BIOS" ]] ; then
+  PACKAGES="$PACKAGES $BIOS_PACKAGES"
+else
+  PACKAGES="$PACKAGES $EFI_PACKAGES"
+fi
+
+pacstrap $MOUNT "$PACKAGES"
 
 echo "Generating fstab..."
 genfstab -t PARTLABEL $MOUNT >> $MOUNT/etc/fstab
@@ -175,11 +197,12 @@ echo
 echo "--- Configure bootloader ---"
 echo
 
-syslinux-install_update -i -a -m -c $MOUNT
+if [[ "$boot_system" = "BIOS" ]] ; then
+  syslinux-install_update -i -a -m -c $MOUNT
 
-cp splash.png $MOUNT/boot/syslinux/
+  cp splash.png $MOUNT/boot/syslinux/
 
-cat <<EOF > $MOUNT/boot/syslinux/syslinux.cfg
+  cat <<EOF > $MOUNT/boot/syslinux/syslinux.cfg
 DEFAULT arch
 PROMPT 0
 TIMEOUT 30
@@ -229,6 +252,26 @@ LABEL poweroff
 	MENU LABEL Poweroff
 	COM32 poweroff.c32
 EOF
+else
+  chrooted grub-install --target=x86_64-efi --efi-directory=/efi --bootloader-id=grub
+
+  cat <<EOF >> $MOUNT/etc/grub.d/40_custom
+set timeout=1
+
+menuentry "Poweroff" {
+	echo "System shutting down..."
+	halt
+}
+
+menuentry "System restart" {
+	echo "System rebooting..."
+	reboot
+}
+EOF
+
+  chrooted grub-mkconfig -o /boot/grub/grub.cfg
+fi
+
 
 echo
 echo "--- Configure SSH ---"

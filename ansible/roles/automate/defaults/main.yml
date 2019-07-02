@@ -1,1 +1,4 @@
-homeassistant_config_key_force: False
+homeassistant_recreate_config_key: False
+homeassistant_hacs_repo: "git@github.com:custom-components/hacs.git"
+
+wan_if: "eth0"

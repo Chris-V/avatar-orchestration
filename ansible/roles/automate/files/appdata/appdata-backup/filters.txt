@@ -1,0 +1,21 @@
+# Home-Assistant
++ /appdata/home-assistant/config/.custom_storage/**
++ /appdata/home-assistant/config/.HA_VERSION
++ /appdata/home-assistant/config/html5_push_registrations.conf
++ /appdata/home-assistant/config/known_devices.yaml
++ /appdata/home-assistant/config/options.xml
++ /appdata/home-assistant/config/pyozw.sqlite
++ /appdata/home-assistant/config/.storage/**
++ /appdata/home-assistant/config/.uuid
++ /appdata/home-assistant/config/zigbee.db
++ /appdata/home-assistant/config/zwcfg_*.xml
++ /appdata/home-assistant/config/zwscene.xml
+
+# Mosquitto
++ /appdata/mosquitto/data/**
+
+# Treafik
++ /appdata/traefik/acme/**
+
+# Nothing else
+- *

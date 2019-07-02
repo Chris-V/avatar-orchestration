@@ -55,7 +55,7 @@ services:
       - "proxy_error_pages"
     environment:
       TZ: *timezone
-      GCE_SERVICE_ACCOUNT_FILE: "/traefik.d/gce_service_account.json"
+      GCE_SERVICE_ACCOUNT_FILE: "/etc/traefik/acme/gce_service_account.json"
     labels:
       <<: *proxy-enabled
       traefik.http.services.proxy.loadbalancer.server.port: 8080
@@ -72,7 +72,6 @@ services:
       traefik.http.routers.proxy_https.service: "proxy"
       traefik.http.routers.proxy_https.tls: "true"
     extra_hosts:
-      - "home-assistant:172.30.170.1"
       - "router:{{ router_ip }}"
     networks:
       glances:
@@ -112,12 +111,43 @@ services:
     volumes:
       - "/srv/www/error_pages:/usr/share/nginx/html:ro"
 
+  home-assistant:
+    container_name: home-assistant
+    image: "avatary/home-assistant:0.95.4"
+    restart: "unless-stopped"
+    depends_on:
+      - "apcupsd"
+      - "mosquitto"
+    devices:
+      - "/dev/zwave:/dev/zwave"
+      - "/dev/zigbee:/dev/zigbee"
+    environment:
+      TZ: *timezone
+      PUID: "{{ homeassistant_uid }}"
+      PGID: "{{ homeassistant_gid }}"
+    extra_hosts:
+      - "tv-lr.devices.local:{{ living_room_tv_ip }}"
+    labels:
+      <<: *proxy-enabled
+      traefik.http.services.home-assistant.loadbalancer.server.port: 8123
+      traefik.http.routers.home-assistant_http.entryPoints: "http"
+      traefik.http.routers.home-assistant_http.rule: &hass_router_rule "Host(`home-assistant.{{ domain_name }}`)"
+      traefik.http.routers.home-assistant_http.middlewares: "common@file, redirect-https@file"
+      traefik.http.routers.home-assistant_https.entryPoints: "https"
+      traefik.http.routers.home-assistant_https.rule: *hass_router_rule
+      traefik.http.routers.home-assistant_https.middlewares: "common@file"
+      traefik.http.routers.home-assistant_https.service: "home-assistant"
+      traefik.http.routers.home-assistant_https.tls: "true"
+    networks:
+      public:
+      ups:
+    volumes:
+      - "{{ docker_appdata_dir }}/home-assistant/config:/config"
+      - "{{ docker_appdata_dir }}/home-assistant/ssh:/home/hass/.ssh"
+
   glances:
     container_name: glances
-    image: "avatary/glances:arm64-latest"
-    build:
-      # TODO: develop has future in 'requirements.txt', but Docker images don't install it.
-      context: "https://github.com/Chris-V/glances.git#fix_dockerfile_pip:docker-files/devel-arm"
+    image: "nicolargo/glances:latest-alpine"
     pid: "host"
     restart: "unless-stopped"
     environment:
@@ -173,9 +203,7 @@ services:
   apcupsd:
     container_name: apcupsd
     restart: "unless-stopped"
-    image: "avatary/apcupsd:aarch64"
-    build:
-      context: "https://github.com/gersilex/apcupsd-docker.git#master"
+    image: "gersilex/apcupsd:latest"
     healthcheck:
       test: "/sbin/apcaccess status | grep -q 'STATUS *: ONLINE' || exit 1"
       interval: 30s
@@ -189,28 +217,20 @@ services:
       - 3551
     networks:
       ups:
-        ipv4_address: "{{ docker_ip_ups }}"
-    ports:
-      # TODO: remove port mapping and dnat rules when HASS is dockerized and uses the ups network
-      - "3551:3551"
     volumes:
       - "{{ docker_appdata_dir }}/apcupsd/apcupsd.conf:/etc/apcupsd/apcupsd.conf:ro"
 
   appdata-backup:
     container_name: appdata-backup
-    image: "avatary/rclone:aarch64"
-    build:
-      context: "https://github.com/bcardiff/docker-rclone.git#master"
-      args:
-        ARCH: "arm64"
+    image: "bcardiff/rclone:latest"
     restart: "always"
     environment:
       TZ: *timezone
-      CRON: "0 5 * * *"
+      CRON: "0 5 * * * /config/backup_acl.sh && "
       CRON_ABORT: "0 6 * * *"
       SYNC_SRC: "/appdata"
-      SYNC_DEST: "GCS:avatar-automate-backup"
-      SYNC_OPTS: "-v -x -L"
+      SYNC_DEST: "{{ rclone_gce_key }}:{{ gce_backup_bucket }}"
+      SYNC_OPTS: "-v -x -L --filter-from /config/filters.txt"
     networks:
       backups:
     volumes:
