@@ -27,6 +27,17 @@
     state: "started"
     enabled: yes
 
+- name: Create docker directories
+  loop:
+    - "{{ docker_srv_dir }}"
+    - "{{ docker_srv_dir }}/jobs"
+  file:
+    path: "{{ item }}"
+    state: "directory"
+    owner: "root"
+    group: "docker"
+    mode: "ug=rwX,o="
+
 - name: Create data directories
   loop:
     - { path: "{{ backups_dir }}" }
@@ -49,16 +60,6 @@
     group: "{{ item.group | default('docker-appdata', true) }}"
     mode: "{{ item.mode | default('ug=rwx,o=', true) }}"
 
-- name: Create docker directories
-  loop:
-    - "{{ docker_srv_dir }}"
-  file:
-    path: "{{ item }}"
-    state: "directory"
-    owner: "root"
-    group: "docker"
-    mode: "ug=rwX,o="
-
 - name: Copy docker images
   copy:
     src: "docker-images"
@@ -70,11 +71,11 @@
 
 - name: Copy docker compose
   loop:
-    - "docker-compose"
-    - "docker-compose.jobs"
+    - { path: "docker-compose.yml" }
+    - { path: "jobs/docker-compose.yml" }
   template:
-    src: "{{ item }}.yml.j2"
-    dest: "{{ docker_srv_dir }}/{{ item }}.yml"
+    src: "docker/{{ item.path }}.j2"
+    dest: "{{ docker_srv_dir }}/{{ item.path }}"
     owner: "root"
     group: "docker"
     mode: "ug=rw,o="
