@@ -3,18 +3,15 @@
   SendAnonymousUsage = false
 
 [Log]
-  Level = "INFO"
+  Level = "WARN"
 
 [AccessLog]
 
 [Providers]
   [Providers.File]
     Directory = "/traefik.d"
-    Watch = true
   [Providers.Docker]
-    Endpoint = "unix:///var/run/docker.sock"
-    Exposedbydefault = false
-    Watch = true
+    ExposedByDefault = false
 
 [ServersTransport]
   MaxIdleConnsPerHost = 50
@@ -22,23 +19,23 @@
     DialTimeout = 15
     ResponseHeaderTimeout = 5
 
-[TLSOptions]
-  [TLSOptions.default]
-    SniStrict = true
-    MinVersion = "VersionTLS12"
-    CipherSuites = [
-      "TLS_CHACHA20_POLY1305_SHA256",
-      "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
-      "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305",
-      "TLS_AES_256_GCM_SHA384",
-    ]
+[TLS]
+  [TLS.Options]
+    [TLS.Options.default]
+      SniStrict = true
+      MinVersion = "VersionTLS12"
+      CipherSuites = [
+        "TLS_CHACHA20_POLY1305_SHA256",
+        "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
+        "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305",
+        "TLS_AES_256_GCM_SHA384",
+      ]
 
 [ACME]
   Email = "{{ acme_email }}"
   Storage = "/etc/traefik/acme/acme.json"
   KeyType = "RSA4096"
   OnHostRule = false
-  ACMELogging = true
 
   [ACME.DNSChallenge]
     Resolvers = ["1.1.1.1:53", "1.0.0.1:53"]
