@@ -1,0 +1,42 @@
+- name: Update pacman cache
+  pacman:
+    update_cache: yes
+
+- name: Install common libraries
+  pacman:
+    name: git nftables openssh python sudo tmux vim
+    state: present
+
+- name: Install Yay (AUR wrapper)
+  become: no
+  aur:
+    name: yay
+    use: makepkg
+    skip_installed: yes
+
+- name: Configure journald limits
+  block:
+    - file:
+        state: "directory"
+        path: "/etc/systemd/journald.conf.d"
+        owner: "root"
+        group: "root"
+        mode: 0755
+    - notify: reload journald
+      copy:
+        dest: "/etc/systemd/journald.conf.d/10-max_size.conf"
+        owner: "root"
+        group: "root"
+        mode: 0644
+        content: |
+          [Journal]
+          SystemMaxUse=2G
+
+- name: Increase memory maps
+  notify: reload sysctl
+  copy:
+    dest: "/etc/sysctl.d/50-memory.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+    content: "vm.max_map_count=262144"

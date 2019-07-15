@@ -4,6 +4,12 @@
     name: sshd.service
     state: reloaded
 
+- name: Reload Journald
+  listen: reload journald
+  systemd:
+    name: systemd-journald.service
+    state: restarted
+
 - name: Reload sysctl
   listen: reload sysctl
   command: "sysctl --system"

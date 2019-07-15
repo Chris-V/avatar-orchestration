@@ -169,11 +169,6 @@ services:
       traefik.http.routers.glances_https.middlewares: "common@file, monitoring-auth@file"
       traefik.http.routers.glances_https.service: "glances"
       traefik.http.routers.glances_https.tls: "true"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "200k"
-        max-file: "1"
     networks:
       glances:
     volumes:

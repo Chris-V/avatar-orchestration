@@ -53,11 +53,6 @@ services:
       traefik.glances.backend: "glances"
       traefik.glances.port: 61208
       traefik.glances.frontend.rule: "Host:glances.{{ internal_hostname }}"
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "200k"
-        max-file: "1"
     networks:
       public:
     volumes:
