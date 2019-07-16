@@ -1,0 +1,83 @@
+#!/bin/sh
+
+update_user() {
+  echo "Updating ${1}'s profile"
+  put_elastic \
+    "_security/user/${1}" \
+    "{ \"password\": \"${2}\", \"roles\": [${3}] }"
+}
+update_password() {
+  echo "Updating ${1}'s password"
+  put_elastic \
+    "_security/user/${1}/_password" \
+    "{ \"password\": \"${2}\" }"
+}
+
+put_elastic() {
+  wget -qO- \
+    --server-response \
+    --method PUT \
+    --header="Content-Type: application/json" \
+    --http-user='{{ elastic.builtin_users.elastic.username | replace("\\", "\\\\") | replace("'", "\\'") }}' \
+    --http-password='{{ elastic.builtin_users.elastic.password | replace("\\", "\\\\") | replace("'", "\\'") }}' \
+    --body-data="${2}" \
+    "http://elasticsearch:9200/${1}"
+  echo
+  echo -----
+}
+
+run() {
+{% for user in elastic.builtin_users.values() %}
+    update_password '{{ user.username }}' '{{ user.password | replace("\\", "\\\\") | replace("'", "\\'") }}'
+{% endfor %}
+
+{% for user in elastic.hosts.values() %}
+    update_user '{{ user.username }}' '{{ user.password | replace("\\", "\\\\") | replace("'", "\\'") }}' '"ingest_admin", "{{ user.username }}"'
+{% endfor %}
+
+    echo "Creating metrics index policy"
+    put_elastic "_ilm/policy/avatar-metrics" '{
+      "policy": {
+        "phases": {
+          "hot": {
+            "actions": {
+              "rollover": {
+                "max_size": "4GB",
+                "max_age": "5d"
+              }
+            }
+          },
+          "delete": {
+            "min_age": "10d",
+            "actions": {
+              "delete": {}
+            }
+          }
+        }
+      }
+    }'
+
+    echo "Creating logs index policy"
+    put_elastic "_ilm/policy/avatar-logs" '{
+      "policy": {
+        "phases": {
+          "hot": {
+            "actions": {
+              "rollover": {
+                "max_size": "4GB",
+                "max_age": "7d"
+              }
+            }
+          },
+          "delete": {
+            "min_age": "30d",
+            "actions": {
+              "delete": {}
+            }
+          }
+        }
+      }
+    }'
+}
+
+run

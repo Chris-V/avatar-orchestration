@@ -1,0 +1,9 @@
+# https://www.elastic.co/guide/en/elastic-stack-overview/current/defining-roles.html#roles-management-file
+
+{% for elastic_host in elastic.hosts.values() %}
+{{ elastic_host.username }}:
+  cluster: ["manage_pipeline", "manage_index_templates", "read_ilm", "monitor"]
+  indices:
+    - names: ["*-{{ elastic_host.username }}-*"]
+      privileges: ["manage", "index"]
+{% endfor %}

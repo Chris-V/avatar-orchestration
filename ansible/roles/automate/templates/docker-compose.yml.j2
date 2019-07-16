@@ -26,6 +26,16 @@ networks:
       config:
         - subnet: "{{ docker_net_backups }}"
 
+  elastic:
+    driver: "bridge"
+    name: "elastic"
+    driver_opts:
+      com.docker.network.bridge.name: "br-elastic"
+    ipam:
+      driver: "default"
+      config:
+        - subnet: "{{ docker_net_elastic }}"
+
   glances:
     driver: "bridge"
     name: "glances"
@@ -47,22 +57,36 @@ networks:
         - subnet: "{{ docker_net_ups }}"
 
 volumes:
+  elasticsearch-data:
+    driver: "local"
+  filebeat-data:
+    driver: "local"
+  journalbeat-data:
+    driver: "local"
+  kibana-data:
+    driver: "local"
+  metricbeat-data:
+    driver: "local"
   home-assistant-libs:
     driver: "local"
 
 services:
   proxy:
     container_name: proxy
-    image: "traefik:2.0.0-beta8"
+    image: "traefik:2.0.0-alpha8"
     restart: "unless-stopped"
     depends_on:
       - "proxy_error_pages"
     environment:
       TZ: *timezone
       GCE_SERVICE_ACCOUNT_FILE: "/etc/traefik/acme/gce_service_account.json"
+    labels:
+      co.elastic.logs/enabled: "true"
+      co.elastic.logs/module: "traefik"
     extra_hosts:
       - "router:{{ router_ip }}"
     networks:
+      elastic:
       glances:
       public:
         ipv4_address: "{{ docker_ip_proxy }}"
@@ -100,6 +124,113 @@ services:
     volumes:
       - "/srv/www/error_pages:/usr/share/nginx/html:ro"
 
+  elasticsearch:
+    container_name: elasticsearch
+    restart: "unless-stopped"
+    image: "docker.elastic.co/elasticsearch/elasticsearch:7.2.0"
+    environment:
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m -Des.enforce.bootstrap.checks=true"
+    labels:
+      <<: *proxy-enabled
+      traefik.docker.network: "elastic"
+      traefik.http.services.elasticsearch.loadbalancer.server.port: 9200
+      traefik.http.routers.elasticsearch.entryPoints: "https"
+      traefik.http.routers.elasticsearch.rule: "Host(`elasticsearch.{{ domain_name }}`)"
+      traefik.http.routers.elasticsearch.middlewares: "common@file, whitelist-home@file"
+      traefik.http.routers.elasticsearch.service: "elasticsearch"
+      traefik.http.routers.elasticsearch.tls: "true"
+      co.elastic.logs/enabled: "true"
+      co.elastic.logs/module: "elasticsearch"
+    networks:
+      elastic:
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - "elasticsearch-data:/usr/share/elasticsearch/data"
+      - "{{ docker_appdata_dir }}/elasticsearch/elasticsearch.keystore:/usr/share/elasticsearch/config/elasticsearch.keystore:ro"
+      - "{{ docker_appdata_dir }}/elasticsearch/roles.yml:/usr/share/elasticsearch/config/roles.yml:ro"
+      - "{{ docker_appdata_dir }}/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro"
+
+  kibana:
+    container_name: kibana
+    restart: "unless-stopped"
+    image: "docker.elastic.co/kibana/kibana:7.2.0"
+    depends_on:
+      - "elasticsearch"
+    user: "1000:0"
+    labels:
+      <<: *proxy-enabled
+      traefik.docker.network: "elastic"
+      traefik.http.services.kibana.loadbalancer.server.port: 5601
+      traefik.http.routers.kibana_http.entryPoints: "http"
+      traefik.http.routers.kibana_http.rule: &kibana_router_rule "Host(`kibana.{{ domain_name }}`)"
+      traefik.http.routers.kibana_http.middlewares: "common@file, redirect-https@file"
+      traefik.http.routers.kibana_https.entryPoints: "https"
+      traefik.http.routers.kibana_https.rule: *kibana_router_rule
+      traefik.http.routers.kibana_https.middlewares: "common@file"
+      traefik.http.routers.kibana_https.service: "kibana"
+      traefik.http.routers.kibana_https.tls: "true"
+      co.elastic.logs/enabled: "true"
+      co.elastic.logs/module: "kibana"
+    networks:
+      elastic:
+    volumes:
+      - "kibana-data:/usr/share/kibana/data"
+      - "{{ docker_appdata_dir }}/kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro"
+
+  filebeat:
+    container_name: filebeat
+    restart: "unless-stopped"
+    image: "docker.elastic.co/beats/filebeat:7.2.0"
+    command: "-e -strict.perms=false"
+    user: "root"
+    depends_on:
+      - "elasticsearch"
+    networks:
+      elastic:
+    volumes:
+      - "filebeat-data:/usr/share/filebeat/data"
+      - "{{ docker_appdata_dir }}/filebeat/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro"
+      - "/var/lib/docker/containers:/var/lib/docker/containers:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  metricbeat:
+    container_name: metricbeat
+    restart: "unless-stopped"
+    image: "docker.elastic.co/beats/metricbeat:7.2.0"
+    command: "-e -strict.perms=false -e -system.hostfs=/hostfs"
+    user: "root"
+    depends_on:
+      - "elasticsearch"
+    networks:
+      elastic:
+    volumes:
+      - "metricbeat-data:/usr/share/metricbeat/data"
+      - "{{ docker_appdata_dir }}/metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "/proc:/hostfs/proc:ro"
+      - "/:/hostfs:ro"
+
+  journalbeat:
+    container_name: journalbeat
+    restart: "unless-stopped"
+    image: "docker.elastic.co/beats/journalbeat:7.2.0"
+    command: "-e -strict.perms=false"
+    user: "root"
+    depends_on:
+      - "elasticsearch"
+    networks:
+      elastic:
+    volumes:
+      - "journalbeat-data:/usr/share/journalbeat/data"
+      - "{{ docker_appdata_dir }}/journalbeat/journalbeat.yml:/usr/share/journalbeat/journalbeat.yml:ro"
+      - "/var/log/journal:/var/log/journal:ro"
+      - "/etc/machine-id:/etc/machine-id:ro"
+      - "/run/systemd:/run/systemd:ro"
+      - "/etc/hostname:/etc/hostname:ro"
+
   home-assistant:
     container_name: home-assistant
     image: "avatary/home-assistant:0.96"
@@ -127,6 +258,16 @@ services:
       traefik.http.routers.home-assistant_https.middlewares: "common@file"
       traefik.http.routers.home-assistant_https.service: "home-assistant"
       traefik.http.routers.home-assistant_https.tls: "true"
+      co.elastic.logs/enabled: "true"
+      co.elastic.logs/include_lines: "[a-zA-Z0-9]+"
+      co.elastic.logs/exclude_lines: '(linuxserver\.io|accept donations)'
+      co.elastic.logs/multiline.match: "after"
+      co.elastic.logs/multiline.pattern: "^  "
+      co.elastic.logs/processors.1.dissect.tokenizer: "%{} %{} %{level} (%{thread}) [%{component}] %{message}"
+      co.elastic.logs/processors.1.dissect.target_prefix: "homeassistant"
+      co.elastic.logs/processors.2.copy_fields.ignore_missing: "true"
+      co.elastic.logs/processors.2.copy_fields.fields.0.from: "homeassistant.level"
+      co.elastic.logs/processors.2.copy_fields.fields.0.to: "log.level"
     networks:
       public:
       ups:
@@ -134,35 +275,6 @@ services:
       - "{{ docker_appdata_dir }}/home-assistant/config:/config"
       - "{{ docker_appdata_dir }}/home-assistant/ssh:/home/hass/.ssh"
       - "home-assistant-libs:/.local"
-
-  glances:
-    container_name: glances
-    image: "nicolargo/glances:latest-alpine"
-    pid: "host"
-    restart: "unless-stopped"
-    environment:
-      TZ: *timezone
-      GLANCES_OPT: -w
-    labels:
-      <<: *proxy-enabled
-      traefik.docker.network: "glances"
-      traefik.http.services.glances.loadbalancer.server.port: 61208
-      traefik.http.routers.glances_http_internal.entryPoints: "http"
-      traefik.http.routers.glances_http_internal.rule: "Host(`glances.{{ internal_hostname }}`)"
-      traefik.http.routers.glances_http_internal.middlewares: "common@file"
-      traefik.http.routers.glances_http_internal.service: "glances"
-      traefik.http.routers.glances_http.entryPoints: "http"
-      traefik.http.routers.glances_http.rule: &glances_router_rule "Host(`glances-automate.{{ domain_name }}`)"
-      traefik.http.routers.glances_http.middlewares: "common@file, redirect-https@file"
-      traefik.http.routers.glances_https.entryPoints: "https"
-      traefik.http.routers.glances_https.rule: *glances_router_rule
-      traefik.http.routers.glances_https.middlewares: "common@file, monitoring-auth@file"
-      traefik.http.routers.glances_https.service: "glances"
-      traefik.http.routers.glances_https.tls: "true"
-    networks:
-      glances:
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   mosquitto:
     container_name: mosquitto
@@ -177,6 +289,7 @@ services:
       traefik.tcp.routers.mosquitto.rule: "HostSNI(`mqtt.{{ domain_name }}`)"
       traefik.tcp.routers.mosquitto.service: "mosquitto"
       traefik.tcp.routers.mosquitto.tls: "true"
+      co.elastic.logs/enabled: "true"
     networks:
       public:
     expose:
@@ -200,10 +313,38 @@ services:
       TZ: *timezone
     expose:
       - 3551
+    labels:
+      co.elastic.logs/enabled: "true"
     networks:
       ups:
     volumes:
       - "{{ docker_appdata_dir }}/apcupsd/apcupsd.conf:/etc/apcupsd/apcupsd.conf:ro"
+
+  glances:
+    container_name: glances
+    image: "nicolargo/glances:latest-alpine"
+    pid: "host"
+    restart: "unless-stopped"
+    environment:
+      TZ: *timezone
+      GLANCES_OPT: -w
+    labels:
+      <<: *proxy-enabled
+      traefik.docker.network: "glances"
+      traefik.http.services.glances.loadbalancer.server.port: 61208
+      traefik.http.routers.glances_http.entryPoints: "http"
+      traefik.http.routers.glances_http.rule: &glances_router_rule "Host(`glances-automate.{{ domain_name }}`)"
+      traefik.http.routers.glances_http.middlewares: "common@file, redirect-https@file"
+      traefik.http.routers.glances_https.entryPoints: "https"
+      traefik.http.routers.glances_https.rule: *glances_router_rule
+      traefik.http.routers.glances_https.middlewares: "common@file, monitoring-auth@file"
+      traefik.http.routers.glances_https.service: "glances"
+      traefik.http.routers.glances_https.tls: "true"
+      co.elastic.logs/enabled: "true"
+    networks:
+      glances:
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
   appdata-backup:
     container_name: appdata-backup
@@ -216,6 +357,12 @@ services:
       SYNC_SRC: "/appdata"
       SYNC_DEST: "{{ rclone_gce_key }}:{{ gce_backup_bucket }}"
       SYNC_OPTS: "-v -x -L --filter-from /config/filters.txt"
+    labels:
+      co.elastic.logs/enabled: "true"
+      co.elastic.logs/include_lines: "(error|warn|fail|INFO  : |INFO: Starting|Transferred:|Errors:|Checks:|Elapsed time:)"
+      co.elastic.logs/multiline.match: "after"
+      co.elastic.logs/multiline.max_lines: 6
+      co.elastic.logs/multiline.pattern: "^(Transferred|Errors|Checks|Elapsed time):"
     networks:
       backups:
     volumes:

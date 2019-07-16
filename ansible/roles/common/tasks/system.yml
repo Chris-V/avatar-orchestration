@@ -1,4 +1,5 @@
 - name: Update pacman cache
+  changed_when: false
   pacman:
     update_cache: yes
 

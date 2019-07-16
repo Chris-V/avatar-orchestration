@@ -6,6 +6,9 @@
     usersFile = "/traefik.d/monitoring.htpasswd"
     removeHeader = true
 
+  [http.middlewares.whitelist-home.IPWhitelist]
+    sourceRange = ["127.0.0.1/32", "{{ trusted_subnet }}"]
+
   [http.middlewares.common.Chain]
     middlewares = ["compress", "harden-headers", "harden-headers-custom"]
 

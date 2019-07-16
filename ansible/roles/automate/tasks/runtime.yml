@@ -1,0 +1,6 @@
+- name: Start docker apps
+  docker_compose:
+    project_src: "{{ docker_apps_dir }}"
+    state: "present"
+    build: yes
+    pull: yes

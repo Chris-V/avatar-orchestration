@@ -1,0 +1,11 @@
+server.host: "0.0.0.0"
+server.name: "Kibana"
+
+logging.quiet: true
+
+status.allowAnonymous: false
+
+elasticsearch:
+  hosts: "{{ elastic.hostname }}"
+  username: "{{ elastic.builtin_users.kibana.username }}"
+  password: "{{ elastic.builtin_users.kibana.password }}"

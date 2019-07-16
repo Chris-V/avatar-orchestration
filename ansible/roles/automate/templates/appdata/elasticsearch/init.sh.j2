@@ -1,0 +1,5 @@
+#!/bin/sh
+
+apk update && \
+apk add bash wget && \
+/elastic/wait-for-it.sh elasticsearch:9200 -s -t 90 -- /elastic/init_config.sh

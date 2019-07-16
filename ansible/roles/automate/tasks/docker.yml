@@ -1,6 +1,6 @@
 - name: Install docker packages
   pacman:
-    name: "docker docker-compose"
+    name: "docker docker-compose python-docker"
     state: "present"
 
 - block:
@@ -158,19 +158,11 @@
     directory_mode: 0755
     mode: 0644
 
-- block:
-    - register: homeassistant_uid_result
-      command: "id -u homeassistant"
-    - register: homeassistant_gid_result
-      command: "id -g homeassistant"
-    - set_fact:
-        homeassistant_uid: "{{ homeassistant_uid_result.stdout }}"
-        homeassistant_gid: "{{ homeassistant_gid_result.stdout }}"
-    - name: Copy docker compose
-      template:
-        src: "docker-compose.yml.j2"
-        dest: "{{ docker_apps_dir }}/docker-compose.yml"
-        owner: "root"
-        group: "docker"
-        mode: 0640
-        validate: "docker-compose -f %s config"
+- name: Copy docker compose
+  template:
+    src: "docker-compose.yml.j2"
+    dest: "{{ docker_apps_dir }}/docker-compose.yml"
+    owner: "root"
+    group: "docker"
+    mode: 0640
+    validate: "docker-compose -f %s config"

@@ -1,0 +1,10 @@
+- block:
+    - register: homeassistant_uid_result
+      command: "id -u homeassistant"
+      changed_when: false
+    - register: homeassistant_gid_result
+      command: "id -g homeassistant"
+      changed_when: false
+    - set_fact:
+        homeassistant_uid: "{{ homeassistant_uid_result.stdout }}"
+        homeassistant_gid: "{{ homeassistant_gid_result.stdout }}"

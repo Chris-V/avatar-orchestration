@@ -11,6 +11,7 @@ docker_ip_proxy: "172.30.170.50"
 docker_net_backups: "172.30.171.0/24"
 docker_net_glances: "172.30.172.0/24"
 docker_net_ups: "172.30.173.0/24"
+docker_net_elastic: "172.30.174.0/24"
 
 homeassistant_config_key_path: "/home/homeassistant/.ssh/github_rsa"
 

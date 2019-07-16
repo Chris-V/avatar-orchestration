@@ -26,6 +26,10 @@ max_line_length = off
 indent_size = 2
 max_line_length = off
 
+[*.{json,json.j2}]
+indent_size = 2
+max_line_length = off
+
 [nftables.{conf,conf.j2}]
 indent_style = tab
 indent_size = 1

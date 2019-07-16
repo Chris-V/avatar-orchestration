@@ -1,8 +1,3 @@
-- name: Install ansible requirements
-  pacman:
-    name: "python-docker"
-    state: "present"
-
 - register: acl_backup
   stat:
     path: "{{ docker_appdata_dir }}/acl.txt"

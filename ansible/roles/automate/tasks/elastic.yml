@@ -1,0 +1,38 @@
+- name: Create Elastic's appdata directories
+  loop:
+    - { path: "elasticsearch", mode: "u=rwx,g=rx,o=" }
+    - { path: "filebeat", mode: "u=rwx,g=rx,o=" }
+    - { path: "journalbeat", mode: "u=rwx,g=rx,o=" }
+    - { path: "kibana", mode: "u=rwx,g=rx,o=" }
+    - { path: "metricbeat", mode: "u=rwx,g=rx,o=" }
+  file:
+    path: "{{ docker_appdata_dir }}/{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "{{ item.mode }}"
+
+- name: Copy Elastic's files
+  loop:
+    - { path: "elasticsearch/elasticsearch.yml", mode: "u=rw,g=r,o=" }
+    - { path: "elasticsearch/elasticsearch.keystore", mode: "u=rw,g=r,o=", host_file: true }
+  copy:
+    src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/{{ item.path }}"
+    dest: "{{ docker_appdata_dir }}/{{ item.path }}"
+    owner: "root"
+    group: "root"
+    mode: "{{ item.mode }}"
+
+- name: Copy Elastic templates
+  loop:
+    - { path: "elasticsearch/roles.yml", mode: "u=rw,g=r,o=" }
+    - { path: "filebeat/filebeat.yml", mode: "u=rw,g=r,o=" }
+    - { path: "journalbeat/journalbeat.yml", mode: "u=rw,g=r,o=" }
+    - { path: "kibana/kibana.yml", mode: "u=rw,g=r,o=" }
+    - { path: "metricbeat/metricbeat.yml", mode: "u=rw,g=r,o=" }
+  template:
+    src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/{{ item.path }}.j2"
+    dest: "{{ docker_appdata_dir }}/{{ item.path }}"
+    owner: "root"
+    group: "root"
+    mode: "{{ item.mode }}"

@@ -1,8 +1,23 @@
+- import_tasks: facts.yml
+  tags: [ "always" ]
+
 - import_tasks: users.yml
+  tags: [ "system" ]
 - import_tasks: devices.yml
+  tags: [ "system" ]
 - import_tasks: network.yml
+  tags: [ "system" ]
+
 - import_tasks: docker.yml
+  tags: [ "docker", "elastic", "homeassistant" ]
 - import_tasks: homeassistant.yml
-  tags:
-    - homeassistant
+  tags: [ "docker", "homeassistant" ]
+- import_tasks: elastic.yml
+  tags: [ "docker", "elastic" ]
+
 - import_tasks: restore_backup.yml
+  tags: [ "runtime" ]
+- import_tasks: elastic_runtime.yml
+  tags: [ "runtime", "elastic" ]
+- import_tasks: runtime.yml
+  tags: [ "runtime" ]
