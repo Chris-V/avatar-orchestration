@@ -10,7 +10,6 @@ x-minecraft-rcon-port: &minecraft-rcon-port 25575
 x-minecraft-rcon-password: &minecraft-rcon-password "{{ rcon_password }}"
 x-minecraft-level-name: &minecraft-level-name "Ultimate"
 x-minecraft-type: &minecraft-type "vanilla"
-x-minecraft-version: &minecraft-version "{{ minecraft_version }}"
 
 networks:
   public:
@@ -252,7 +251,7 @@ services:
       MOTD: "The ultimate Minecraft server"
       ICON: "https://i.imgur.com/6VOFSL3.jpg"
       TYPE: *minecraft-type
-      VERSION: *minecraft-version
+      VERSION: "{{ minecraft_version }}"
       GUI: "false"
       MEMORY: "9G"
       JVM_OPTS: "-d64 -server"

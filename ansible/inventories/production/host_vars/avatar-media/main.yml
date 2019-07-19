@@ -7,4 +7,6 @@ ssh_port: "{{ media_ssh }}"
 internal_ip: "{{ media_ip }}"
 internal_hostname: "{{ media_host }}"
 
+minecraft_version: "1.14.4"
+
 wan_if: "enp6s0"

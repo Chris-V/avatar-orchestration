@@ -1,7 +1,6 @@
 version: "3.7"
 
 x-timezone: &timezone "{{ timezone }}"
-x-minecraft-version: &minecraft-version "{{ minecraft_version }}"
 
 services:
   minecraft-overviewer:
@@ -15,7 +14,7 @@ services:
     restart: "no"
     environment:
       TZ: *timezone
-      MINECRAFT_VERSION: *minecraft-version
+      MINECRAFT_VERSION: "{{ minecraft_version }}"
       RENDER_MAP: "true"
       RENDER_POI: "true"
     network_mode: "host"
