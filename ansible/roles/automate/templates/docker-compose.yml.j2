@@ -46,6 +46,10 @@ networks:
       config:
         - subnet: "{{ docker_net_ups }}"
 
+volumes:
+  home-assistant-libs:
+    driver: "local"
+
 services:
   proxy:
     container_name: proxy
@@ -113,7 +117,7 @@ services:
 
   home-assistant:
     container_name: home-assistant
-    image: "avatary/home-assistant:0.95.4"
+    image: "avatary/home-assistant:0.96.2"
     restart: "unless-stopped"
     depends_on:
       - "apcupsd"
@@ -144,6 +148,7 @@ services:
     volumes:
       - "{{ docker_appdata_dir }}/home-assistant/config:/config"
       - "{{ docker_appdata_dir }}/home-assistant/ssh:/home/hass/.ssh"
+      - "home-assistant-libs:/.local"
 
   glances:
     container_name: glances
