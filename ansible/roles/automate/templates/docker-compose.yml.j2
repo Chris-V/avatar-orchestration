@@ -60,21 +60,6 @@ services:
     environment:
       TZ: *timezone
       GCE_SERVICE_ACCOUNT_FILE: "/etc/traefik/acme/gce_service_account.json"
-    labels:
-      <<: *proxy-enabled
-      traefik.http.services.proxy.loadbalancer.server.port: 8080
-      traefik.http.routers.proxy_http_internal.entryPoints: "http"
-      traefik.http.routers.proxy_http_internal.rule: "Host(`traefik.{{ internal_hostname }}`)"
-      traefik.http.routers.proxy_http_internal.middlewares: "common@file"
-      traefik.http.routers.proxy_http_internal.service: "proxy"
-      traefik.http.routers.proxy_http.entryPoints: "http"
-      traefik.http.routers.proxy_http.rule: &traefik_router_rule "Host(`traefik-automate.{{ domain_name }}`)"
-      traefik.http.routers.proxy_http.middlewares: "common@file, redirect-https@file"
-      traefik.http.routers.proxy_https.entryPoints: "https"
-      traefik.http.routers.proxy_https.rule: *traefik_router_rule
-      traefik.http.routers.proxy_https.middlewares: "common@file, monitoring-auth@file"
-      traefik.http.routers.proxy_https.service: "proxy"
-      traefik.http.routers.proxy_https.tls: "true"
     extra_hosts:
       - "router:{{ router_ip }}"
     networks:
