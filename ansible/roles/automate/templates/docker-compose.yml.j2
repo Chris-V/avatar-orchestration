@@ -53,7 +53,7 @@ volumes:
 services:
   proxy:
     container_name: proxy
-    image: "traefik:2.0.0-beta1"
+    image: "traefik:2.0.0-beta8"
     restart: "unless-stopped"
     depends_on:
       - "proxy_error_pages"
