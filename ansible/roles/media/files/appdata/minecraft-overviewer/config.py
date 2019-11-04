@@ -1,5 +1,5 @@
 import os
-from observer import MultiplexingObserver, LoggingObserver, JSObserver
+from .observer import MultiplexingObserver, LoggingObserver, JSObserver
 
 
 def format_player_poi(poi):

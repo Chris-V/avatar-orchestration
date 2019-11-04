@@ -9,7 +9,7 @@ x-proxy-enabled: &proxy-enabled
 x-minecraft-rcon-port: &minecraft-rcon-port 25575
 x-minecraft-rcon-password: &minecraft-rcon-password "{{ rcon_password }}"
 x-minecraft-level-name: &minecraft-level-name "Ultimate"
-x-minecraft-type: &minecraft-type "vanilla"
+x-minecraft-type: &minecraft-type "fabric"
 
 networks:
   public:
@@ -293,7 +293,6 @@ services:
     container_name: "minecraft-backup"
     image: "itzg/mc-backup"
     restart: "always"
-    user: "{{ system_appdata_uid }}:{{ system_appdata_gid }}"
     environment:
       TZ: *timezone
       BACKUP_NAME: *minecraft-level-name
@@ -302,8 +301,8 @@ services:
       RCON_PASSWORD: *minecraft-rcon-password
       RCON_PORT: *minecraft-rcon-port
       TYPE: *minecraft-type
-      INITIAL_DELAY: 43200
-      INTERVAL_SEC: 86400
+      BACKUP_INTERVAL: 1d
+      INITIAL_DELAY: 12h
       PRUNE_BACKUPS_DAYS: 21
     networks:
       minecraft:
