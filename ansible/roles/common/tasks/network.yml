@@ -14,6 +14,14 @@
     group: root
     mode: 0644
 
+- name: Configure DNS
+  file:
+    state: "link"
+    src: "/run/systemd/resolve/resolv.conf"
+    path: "/etc/resolv.conf"
+    owner: "root"
+    group: "root"
+
 - name: Disable IPV6
   notify: reload sysctl
   copy:
@@ -21,24 +29,15 @@
     owner: "root"
     group: "root"
     mode: 0644
-    content: "net.ipv6.conf.all.disable_ipv6 = 1"
+    content: "net.ipv6.conf.all.disable_ipv6=1"
 
-- name: Blacklist IPTables
-  notify: reload kernel modules
-  copy:
-    dest: "/etc/modprobe.d/noiptables.conf"
-    owner: "root"
-    group: "root"
-    mode: 0644
-    content: |
-      install ip_tables /bin/false
-      install ip6_tables /bin/false
-
-- name: Obfuscate IPTables
+- name: Cleanup old files
+  loop:
+    - { path: "/etc/modprobe.d/noiptables.conf" }
+    - { path: "/usr/local/sbin/iptables" }
   file:
-    state: "link"
-    src: "/usr/bin/iptables-nft"
-    path: "/usr/local/sbin/iptables"
-    owner: "root"
-    group: "root"
-    mode: 0755
+    state: "absent"
+    path: "{{ item.path }}"
+
+# TODO: Docker doesn't want chain to exist first, so the deamon fails to start after nftables.
+#  https://wiki.archlinux.org/index.php/Nftables#Working_with_Docker doesn't work.

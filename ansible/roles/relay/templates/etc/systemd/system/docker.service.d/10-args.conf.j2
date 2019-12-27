@@ -2,7 +2,6 @@
 ExecStart=
 ExecStart=/usr/bin/dockerd \
     -H fd:// \
-    --iptables=false \
     --bip {{ docker_net_host }} \
     --fixed-cidr {{ docker_net_host }} \
     --log-driver json-file \

@@ -95,7 +95,6 @@
 
 - name: Copy Home-Assistant files
   loop:
-    - { path: "ssh/poweroff_rsa", mode: "u=rw,go=" }
     - { host_file: yes, path: "config/.secrets/gcp.json", mode: "u=r,go=" }
   copy:
     src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/home-assistant/{{ item.path }}"
@@ -106,9 +105,9 @@
 
 - name: Copy Home-Assistant templates
   loop:
-    - { path: "ssh/config", mode: "u=rw,go=" }
-    - { path: "ssh/known_hosts", mode: "u=rw,go=" }
-    - { path: "ssh/poweroff_rsa.pub", mode: "u=rw,g=r,o=" }
+    - { path: "config/.secrets/ssh_config", mode: "u=rw,go=" }
+    - { path: "config/.secrets/ssh_known_hosts", mode: "u=rw,go=" }
+    - { host_file: yes, path: "config/.secrets/poweroff_rsa.pub", mode: "u=rw,g=r,o=" }
     - { host_file: yes, path: "config/secrets.yaml", mode: "u=r,go=" }
   template:
     src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/home-assistant/{{ item.path }}.j2"

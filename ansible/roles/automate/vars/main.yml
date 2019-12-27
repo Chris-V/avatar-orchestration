@@ -14,5 +14,7 @@ docker_net_ups: "172.30.173.0/24"
 docker_net_elastic: "172.30.174.0/24"
 
 homeassistant_config_key_path: "/home/homeassistant/.ssh/github_rsa"
+homeassistant_container_config_path: "/config"
+homeassistant_container_user: "hass"
 
 rclone_gce_key: "GCS"

@@ -1,0 +1,18 @@
+Host media
+  HostName {{ media_host }}
+  Port {{ media_ssh }}
+  IdentityFile {{ homeassistant_container_config_path }}/.secrets/poweroff_rsa
+  UserKnownHostsFile {{ homeassistant_container_config_path }}/.secrets/ssh_known_hosts
+  User {{ homeassistant_container_user }}
+Host relay_north
+  HostName {{ relay_north_host }}
+  Port {{ relay_north_ssh }}
+  IdentityFile {{ homeassistant_container_config_path }}/.secrets/poweroff_rsa
+  UserKnownHostsFile {{ homeassistant_container_config_path }}/.secrets/ssh_known_hosts
+  User {{ homeassistant_container_user }}
+Host relay_south
+  HostName {{ relay_south_host }}
+  Port {{ relay_south_ssh }}
+  IdentityFile {{ homeassistant_container_config_path }}/.secrets/poweroff_rsa
+  UserKnownHostsFile {{ homeassistant_container_config_path }}/.secrets/ssh_known_hosts
+  User {{ homeassistant_container_user }}
