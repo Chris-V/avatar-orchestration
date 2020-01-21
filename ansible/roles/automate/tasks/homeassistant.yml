@@ -96,6 +96,9 @@
 - name: Copy Home-Assistant files
   loop:
     - { host_file: yes, path: "config/.secrets/gcp.json", mode: "u=r,go=" }
+    - { host_file: yes, path: "config/.secrets/id_homeassistant", mode: "u=r,go=" }
+    - { host_file: yes, path: "config/.secrets/id_router_homeassistant", mode: "u=r,go=" }
+    - { host_file: yes, path: "config/.secrets/id_router_homeassistant.pub", mode: "u=r,g=r,o=" }
   copy:
     src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/home-assistant/{{ item.path }}"
     dest: "{{ docker_appdata_dir }}/home-assistant/{{ item.path }}"
@@ -107,7 +110,7 @@
   loop:
     - { path: "config/.secrets/ssh_config", mode: "u=rw,go=" }
     - { path: "config/.secrets/ssh_known_hosts", mode: "u=rw,go=" }
-    - { host_file: yes, path: "config/.secrets/poweroff_rsa.pub", mode: "u=rw,g=r,o=" }
+    - { host_file: yes, path: "config/.secrets/id_homeassistant.pub", mode: "u=r,g=r,o=" }
     - { host_file: yes, path: "config/secrets.yaml", mode: "u=r,go=" }
   template:
     src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/home-assistant/{{ item.path }}.j2"

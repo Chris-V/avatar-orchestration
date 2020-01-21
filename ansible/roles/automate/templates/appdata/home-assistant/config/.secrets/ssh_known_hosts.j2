@@ -1,3 +1,4 @@
-[{{ media_host }}]:{{ media_ssh }},[{{ media_ip }}]:{{ media_ssh }} {{ homeassistant_public_key }}
-[{{ relay_south_host }}]:{{ relay_south_ssh }},[{{ relay_south_ip }}]:{{ relay_south_ssh }} {{ homeassistant_public_key }}
-[{{ relay_north_host }}]:{{ relay_north_ssh }},[{{ relay_north_ip }}]:{{ relay_north_ssh }} {{ homeassistant_public_key }}
+[{{ network.servers.router.ip }}]:{{ network.servers.router.ports.ssh }} {{ network.servers.router.services.sshd.ed25519_pub_key }}
+[{{ network.servers.media.host }}]:{{ network.servers.media.ports.ssh }},[{{ network.servers.media.ip }}]:{{ network.servers.media.ports.ssh }} {{ network.servers.media.services.sshd.ed25519_pub_key }}
+[{{ network.servers.relay_north.host }}]:{{ network.servers.relay_north.ports.ssh }},[{{ network.servers.relay_north.ip }}]:{{ network.servers.relay_north.ports.ssh }} {{ network.servers.relay_north.services.sshd.ed25519_pub_key }}
+[{{ network.servers.relay_south.host }}]:{{ network.servers.relay_south.ports.ssh }},[{{ network.servers.relay_south.ip }}]:{{ network.servers.relay_south.ports.ssh }} {{ network.servers.relay_south.services.sshd.ed25519_pub_key }}

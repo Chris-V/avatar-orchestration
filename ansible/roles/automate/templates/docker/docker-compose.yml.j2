@@ -101,10 +101,9 @@ services:
 
   home-assistant:
     container_name: home-assistant
-    image: "homeassistant/home-assistant:0.103.4"
+    image: "homeassistant/home-assistant:0.104.3"
     restart: "unless-stopped"
-    user: "{{ homeassistant_uid }}:{{ homeassistant_gid }}"
-    command: "/config/docker/run"
+    entrypoint: "/config/docker/entrypoint"
     depends_on:
       - "apcupsd"
       - "mosquitto"
@@ -113,6 +112,8 @@ services:
       - "/dev/zigbee:/dev/zigbee"
     environment:
       TZ: *timezone
+      GUID: "{{ homeassistant_uid }}"
+      GGID: "{{ homeassistant_gid }}"
       UMASK: "007"
     labels:
       <<: *proxy-enabled
@@ -138,6 +139,8 @@ services:
     networks:
       public:
       ups:
+    ports:
+      - "1400:1400"
     volumes:
       - "{{ docker_appdata_dir }}/home-assistant/config:{{ homeassistant_container_config_path }}"
 

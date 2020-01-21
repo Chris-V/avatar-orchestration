@@ -1,4 +1,7 @@
 homeassistant_recreate_config_key: False
 homeassistant_hacs_repo: "git@github.com:hacs/integrations.git"
 
+router_ssh_user: "user"
+homeassistant_ssh_user: "hass"
+
 wan_if: "eth0"

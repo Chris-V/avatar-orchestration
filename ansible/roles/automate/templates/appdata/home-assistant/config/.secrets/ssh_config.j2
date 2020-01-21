@@ -1,18 +1,24 @@
+Host router
+  HostName {{ network.servers.router.ip }}
+  Port {{ network.servers.router.ports.ssh }}
+  IdentityFile {{ homeassistant_container_config_path }}/.secrets/id_router_homeassistant
+  UserKnownHostsFile {{ homeassistant_container_config_path }}/.secrets/ssh_known_hosts
+  User {{ router_ssh_user }}
 Host media
-  HostName {{ media_host }}
-  Port {{ media_ssh }}
-  IdentityFile {{ homeassistant_container_config_path }}/.secrets/poweroff_rsa
+  HostName {{ network.servers.media.host }}
+  Port {{ network.servers.media.ports.ssh }}
+  IdentityFile {{ homeassistant_container_config_path }}/.secrets/id_homeassistant
   UserKnownHostsFile {{ homeassistant_container_config_path }}/.secrets/ssh_known_hosts
-  User {{ homeassistant_container_user }}
+  User {{ homeassistant_ssh_user }}
 Host relay_north
-  HostName {{ relay_north_host }}
-  Port {{ relay_north_ssh }}
-  IdentityFile {{ homeassistant_container_config_path }}/.secrets/poweroff_rsa
+  HostName {{ network.servers.relay_north.host }}
+  Port {{ network.servers.relay_north.ports.ssh }}
+  IdentityFile {{ homeassistant_container_config_path }}/.secrets/id_homeassistant
   UserKnownHostsFile {{ homeassistant_container_config_path }}/.secrets/ssh_known_hosts
-  User {{ homeassistant_container_user }}
+  User {{ homeassistant_ssh_user }}
 Host relay_south
-  HostName {{ relay_south_host }}
-  Port {{ relay_south_ssh }}
-  IdentityFile {{ homeassistant_container_config_path }}/.secrets/poweroff_rsa
+  HostName {{ network.servers.relay_south.host }}
+  Port {{ network.servers.relay_south.ports.ssh }}
+  IdentityFile {{ homeassistant_container_config_path }}/.secrets/id_homeassistant
   UserKnownHostsFile {{ homeassistant_container_config_path }}/.secrets/ssh_known_hosts
-  User {{ homeassistant_container_user }}
+  User {{ homeassistant_ssh_user }}

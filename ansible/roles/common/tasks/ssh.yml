@@ -8,3 +8,5 @@
     mode: 0644
     validate: '/usr/bin/sshd -t -f %s'
   notify: reload sshd
+
+# TODO: Copy sshd keys so we can easily generate ssh_known_hosts
