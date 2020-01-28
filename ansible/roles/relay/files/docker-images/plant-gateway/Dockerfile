@@ -1,7 +1,7 @@
-FROM lsiobase/alpine:3.9
+FROM lsiobase/alpine:3.11
 LABEL maintainer="avatary"
 
-ARG PLANT_GATEWAY_VERSION=0.5.1
+ARG PLANT_GATEWAY_VERSION=0.7.0
 
 RUN \
     apk add --no-cache --virtual .build_deps make gcc pkgconf glib-dev libc-dev && \

@@ -3,7 +3,6 @@ version: "3.7"
 x-timezone: &timezone "{{ timezone }}"
 x-proxy-enabled: &proxy-enabled
   traefik.enable: "true"
-  traefik.docker.network: "public"
 
 networks:
   public:
@@ -19,15 +18,14 @@ networks:
 services:
   proxy:
     container_name: proxy
-    image: "traefik:alpine"
+    image: "traefik:2.1"
     restart: "unless-stopped"
     environment:
       TZ: *timezone
     labels:
       <<: *proxy-enabled
-      traefik.proxy.backend: "proxy"
-      traefik.proxy.port: 8080
-      traefik.proxy.frontend.rule: "Host:traefik.{{ internal_hostname }}"
+      traefik.http.routers.api.rule: "Host(`traefik.{{ internal_hostname }}`)"
+      traefik.http.routers.api.service: "api@internal"
     networks:
       public:
         ipv4_address: "{{ docker_ip_proxy }}"
@@ -42,7 +40,7 @@ services:
     image: "avatary/glances:arm64-latest"
     build:
       # TODO: develop has future in 'requirements.txt', but Docker images don't install it.
-      context: "https://github.com/Chris-V/glances.git#fix_dockerfile_pip:docker-files/devel-arm"
+      context: "https://github.com/nicolargo/glances.git#develop:docker-files/devel-arm"
     pid: "host"
     restart: "unless-stopped"
     environment:
@@ -50,9 +48,9 @@ services:
       GLANCES_OPT: -w
     labels:
       <<: *proxy-enabled
-      traefik.glances.backend: "glances"
-      traefik.glances.port: 61208
-      traefik.glances.frontend.rule: "Host:glances.{{ internal_hostname }}"
+      traefik.http.routers.glances.entryPoints: "http"
+      traefik.http.routers.glances.rule: "Host(`glances.{{ internal_hostname }}`)"
+      traefik.http.services.glances.loadbalancer.server.port: 61208
     networks:
       public:
     volumes:

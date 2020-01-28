@@ -8,3 +8,8 @@ internal_ip: "{{ relay_south_ip }}"
 internal_hostname: "{{ relay_south_host }}"
 
 wan_if: "wlan0"
+
+traefik:
+  entrypoints:
+    trusted_ips:
+      - "{{ network.servers.automate.ip }}/32"

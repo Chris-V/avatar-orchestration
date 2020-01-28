@@ -1,1 +1,4 @@
 wan_if: "eth0"
+traefik:
+  entrypoints:
+    trusted_ips: []

@@ -3,15 +3,10 @@
   pacman:
     update_cache: yes
 
-- name: Remove common libraries
-  pacman:
-    name: iptables
-    state: absent
-
 - name: Install common libraries
   pacman:
     name: git nftables iptables-nft openssh python sudo tmux vim
-    state: present
+    state: latest
 
 - name: Install Yay (AUR wrapper)
   become: no
