@@ -1,21 +1,41 @@
-- name: Reload SSH daemon
-  listen: reload sshd
+- name: Reload systemd
+  listen: "reload systemd"
   systemd:
-    name: sshd.service
-    state: reloaded
+    daemon_reload: yes
 
+- name: Restart Docker
+  listen: "restart docker"
+  systemd:
+    name: "docker.service"
+    state: "restarted"
 - name: Reload Journald
-  listen: reload journald
+  listen: "reload journald"
   systemd:
     name: systemd-journald.service
     state: restarted
+- name: Reload NFTables
+  listen: "reload nftables"
+  systemd:
+    name: "nftables.service"
+    state: "reloaded"
+- name: Reload SSHd
+  listen: "reload sshd"
+  systemd:
+    name: "sshd.service"
+    state: "reloaded"
 
-- name: Reload sysctl
-  listen: reload sysctl
+- name: Reload kernel attributes
+  listen: "reload kernel"
   command: "sysctl --system"
-
 - name: Reload kernel modules
-  listen: reload kernel modules
+  listen: "reload kernel"
   systemd:
     name: "systemd-modules-load.service"
     state: "restarted"
+
+- name: Reload udev rules
+  listen: "reload udev"
+  command: "udevadm control --reload-rules"
+- name: Trigger udev rules
+  listen: "reload udev"
+  command: "udevadm trigger"

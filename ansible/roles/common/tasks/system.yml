@@ -34,7 +34,7 @@
           SystemMaxUse=2G
 
 - name: Increase memory maps
-  notify: reload sysctl
+  notify: reload kernel
   copy:
     dest: "/etc/sysctl.d/50-memory.conf"
     owner: "root"

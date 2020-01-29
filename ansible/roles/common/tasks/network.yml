@@ -23,7 +23,7 @@
     group: "root"
 
 - name: Disable IPV6
-  notify: reload sysctl
+  notify: reload kernel
   copy:
     dest: "/etc/sysctl.d/40-ipv6.conf"
     owner: "root"
