@@ -1,10 +1,14 @@
-- block:
-    - register: homeassistant_uid_result
+- name: Gather home-assistant user facts
+  block:
+    - name: Find home-assistant uid
+      register: homeassistant_uid_result
       command: "id -u homeassistant"
       changed_when: false
-    - register: homeassistant_gid_result
+    - name: Find home-assistant gid
+      register: homeassistant_gid_result
       command: "id -g homeassistant"
       changed_when: false
-    - set_fact:
+    - name: Register home-assistant user facts
+      set_fact:
         homeassistant_uid: "{{ homeassistant_uid_result.stdout }}"
         homeassistant_gid: "{{ homeassistant_gid_result.stdout }}"

@@ -6,7 +6,7 @@
 - name: Install common libraries
   pacman:
     name: git nftables iptables-nft openssh python sudo tmux vim
-    state: latest
+    state: present
 
 - name: Install Yay (AUR wrapper)
   become: no
@@ -17,13 +17,15 @@
 
 - name: Configure journald limits
   block:
-    - file:
+    - name: Create journald conf directory
+      file:
         state: "directory"
         path: "/etc/systemd/journald.conf.d"
         owner: "root"
         group: "root"
         mode: 0755
-    - notify: reload journald
+    - name: Copy journald configs
+      notify: reload journald
       copy:
         dest: "/etc/systemd/journald.conf.d/10-max_size.conf"
         owner: "root"

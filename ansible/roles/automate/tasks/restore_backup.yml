@@ -1,8 +1,10 @@
-- register: acl_backup
+- name: Check if backup restoration is required
+  register: acl_backup
   stat:
     path: "{{ docker_appdata_dir }}/acl.txt"
 
-- when: not acl_backup.stat.exists
+- name: Restore backup
+  when: not acl_backup.stat.exists
   block:
     - name: Copy initial backed up appdata
       docker_container:

@@ -1,2 +1,10 @@
+galaxy_info:
+  author: "Chris-V"
+  license: "MIT"
+  description: "Meta-role aggregating all Avatar Media server configurations."
+  min_ansible_version: "2.9.2"
+  platforms:
+    - name: "Arch Linux"
+      versions: ["all"]
 dependencies:
   - role: common

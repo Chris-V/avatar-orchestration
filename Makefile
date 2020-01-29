@@ -25,6 +25,9 @@ prepare:
 installer:
 	sudo ./installer/make-iso.sh
 
+lint:
+	ansible-lint ansible/all.yml
+
 ansible:
 	ansible-playbook \
 		--vault-id default@./secrets/.ansible-vault-password \
@@ -38,6 +41,7 @@ ansible-check:
 		-i ./ansible/inventories/$(inventory)/inventory.yml \
 		--check
 		ansible/$(playbook).yml
+
 
 ansible-encrypt:|check-defined-file
 	ansible-vault encrypt \

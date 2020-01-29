@@ -1,6 +1,6 @@
 # Fetch existing (or not!) checksum
 
-- name: Lookup remote elastic checksum
+- name: Lookup remote elastic checksum file
   register: elastic_remote_checksum_file
   stat:
     path: &remote_checksum_file "{{ docker_appdata_dir }}/elasticsearch/checksum"
@@ -8,22 +8,26 @@
     get_checksum: no
     get_mime: no
 
-- when: not elastic_remote_checksum_file.stat.exists
+- name: Set default remote elastic checksum fact
+  when: not elastic_remote_checksum_file.stat.exists
   set_fact:
     elastic_remote_checksum: "0"
 
-- when: elastic_remote_checksum_file.stat.exists
+- name: Set stored remote elastic checksum
+  when: elastic_remote_checksum_file.stat.exists
   block:
-    - name: Read remote elastic checksum
+    - name: Read remote elastic checksum file
       register: elastic_remote_checksum_b64
       slurp:
         src: *remote_checksum_file
-    - set_fact:
+    - name: Update remote elastic checksum fact
+      set_fact:
         elastic_remote_checksum: "{{ elastic_remote_checksum_b64.content | b64decode }}"
 
 # Calculate expected checksum
 
-- become: no
+- name: Set local elastic checksum
+  become: no
   delegate_to: localhost
   block:
     - name: Calculate elastic checksum
@@ -37,14 +41,16 @@
         checksum_algorithm: "sha512"
         get_attributes: no
         get_mime: no
-    - set_fact:
+    - name: Update local elastic checksum fact
+      set_fact:
         elastic_local_checksum: |
           {{ elastic | hash('sha512') }}
           {{ elastic_local_files.results | map(attribute='stat.checksum') | join() }}
 
 # Update elastic settings if appropriate
 
-- when: elastic_remote_checksum != elastic_local_checksum
+- name: Update elastic configurations
+  when: elastic_remote_checksum != elastic_local_checksum
   block:
     - name: Start elasticsearch container
       docker_compose:

@@ -3,8 +3,10 @@
     name: "docker docker-compose"
     state: "present"
 
-- block:
-    - file:
+- name: Configure docker service
+  block:
+    - name: Create systemd docker config directory
+      file:
         state: "directory"
         path: "/etc/systemd/system/docker.service.d"
         owner: "root"

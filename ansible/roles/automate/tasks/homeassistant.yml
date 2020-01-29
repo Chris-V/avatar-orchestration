@@ -55,6 +55,7 @@
   git:
     dest: "{{ docker_appdata_dir }}/home-assistant/config"
     repo: "git@github.com:{{ homeassistant_config_owner }}/{{ homeassistant_config_repo }}.git"
+    version: "master"
     key_file: "{{ homeassistant_config_key_path }}"
     accept_hostkey: yes
     umask: "0027"
@@ -71,6 +72,7 @@
       git:
         dest: &hacs_tmp_path "/tmp/hacs"
         repo: "{{ homeassistant_hacs_repo }}"
+        version: "master"
         key_file: "{{ homeassistant_config_key_path }}"
         accept_hostkey: yes
         depth: 1

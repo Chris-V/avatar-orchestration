@@ -3,8 +3,10 @@
     name: "docker docker-compose python-docker"
     state: "present"
 
-- block:
-    - file:
+- name: Configure docker service
+  block:
+    - name: Create systemd docker config directory
+      file:
         state: "directory"
         path: "/etc/systemd/system/docker.service.d"
         owner: "root"
@@ -42,7 +44,8 @@
     group: "docker-appdata"
     mode: 0755
 
-- block:
+- name: Configure APC
+  block:
     - name: Create APC directories
       loop:
         - { path: "", mode: "u=rwx,g=rx,o=" }
@@ -62,7 +65,8 @@
         group: "docker-appdata"
         mode: "{{ item.mode }}"
 
-- block:
+- name: Configure appdata-backup
+  block:
     - name: Create appdata-backup directories
       loop:
         - { path: "", mode: "u=rwx,g=rx,o=" }
@@ -93,7 +97,8 @@
         group: "docker-appdata"
         mode: "{{ item.mode }}"
 
-- block:
+- name: Configure Mosquitto
+  block:
     - name: Create Mosquitto directories
       loop:
         - { path: "", mode: "u=rwx,g=rx,o=" }
@@ -117,7 +122,8 @@
         group: "docker-appdata"
         mode: "{{ item.mode }}"
 
-- block:
+- name: Configure Traefik
+  block:
     - name: Create Traefik directories
       loop:
         - { path: "", mode: "u=rwx,g=rx,o=" }
@@ -140,7 +146,7 @@
         group: "docker-appdata"
         mode: "{{ item.mode }}"
     - name: Copy Traefik templates
-      with_filetree: "../templates/appdata/traefik/"
+      with_filetree: "{{ '../templates/appdata/traefik/' }}"
       when: "item.state == 'file' "
       template:
         src: "{{ item.src }}"
