@@ -1,23 +1,23 @@
-[global]
-    checkNewVersion = false
-    sendAnonymousUsage = false
-    defaultEntryPoints = ["http"]
+[Global]
+  CheckNewVersion = false
+  SendAnonymousUsage = false
 
-[log]
-    logLevel = "WARN"
+[Log]
+  Level = "ERROR"
 
-[accessLog]
+[AccessLog]
 
-[entrypoints]
-    [entrypoints.http]
-        address = ":80"
+[Providers]
+  [Providers.Docker]
+    ExposedByDefault = false
+    Network = "public"
 
-[retry]
+[EntryPoints]
+  [EntryPoints.http]
+    Address = ":80"
+
+    [EntryPoints.http.forwardedHeaders]
+      TrustedIPs = {{ (['127.0.0.1/32'] + traefik.entrypoints.trusted_ips) | tojson }}
 
 [api]
-    dashboard = true
-
-[docker]
-    endpoint = "unix:///var/run/docker.sock"
-    watch = true
-    exposedbydefault = false
+  Dashboard = true

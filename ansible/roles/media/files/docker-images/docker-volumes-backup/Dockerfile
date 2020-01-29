@@ -1,4 +1,4 @@
-FROM lsiobase/alpine:3.9
+FROM lsiobase/alpine:3.11
 LABEL maintainer="avatary"
 
 ARG ROTATE_BACKUPS_VERSION=6.0

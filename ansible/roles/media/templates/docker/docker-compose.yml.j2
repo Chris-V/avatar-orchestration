@@ -4,7 +4,6 @@ x-timezone: &timezone " {{ timezone }} "
 
 x-proxy-enabled: &proxy-enabled
   traefik.enable: "true"
-  traefik.docker.network: "public"
 
 x-minecraft-rcon-port: &minecraft-rcon-port 25575
 x-minecraft-rcon-password: &minecraft-rcon-password "{{ rcon_password }}"
@@ -55,15 +54,14 @@ networks:
 services:
   proxy:
     container_name: "proxy"
-    image: "traefik:alpine"
+    image: "traefik:2.1"
     restart: "unless-stopped"
     environment:
       TZ: *timezone
     labels:
       <<: *proxy-enabled
-      traefik.proxy.backend: "proxy"
-      traefik.proxy.port: 8080
-      traefik.proxy.frontend.rule: "Host:traefik.{{ internal_hostname }}"
+      traefik.http.routers.api.rule: "Host(`traefik.docker.localhost`, `traefik.{{ internal_hostname }}`)"
+      traefik.http.routers.api.service: "api@internal"
     networks:
       public:
         ipv4_address: "{{ docker_ip_proxy }}"
@@ -92,9 +90,9 @@ services:
     labels:
       <<: *proxy-enabled
       traefik.docker.network: "glances"
-      traefik.glances.backend: "glances"
-      traefik.glances.port: 61208
-      traefik.glances.frontend.rule: "Host:glances.{{ internal_hostname }}"
+      traefik.http.routers.glances.entryPoints: "http"
+      traefik.http.routers.glances.rule: "Host(`glances.docker.localhost`, `glances.{{ internal_hostname }}`)"
+      traefik.http.services.glances.loadbalancer.server.port: 61208
     networks:
       glances:
     volumes:
@@ -114,6 +112,7 @@ services:
       FORWARDING_PORT: {{ deluge_incoming_port }}
     networks:
       media:
+      public:
 
   deluge:
     container_name: "deluge"
@@ -130,13 +129,30 @@ services:
       UMASK_SET: '022'
     labels:
       <<: *proxy-enabled
-      traefik.docker.network: "media"
-      traefik.deluge.backend: "vpn"
-      traefik.deluge.port: 8112
-      traefik.deluge.frontend.rule: "Host:deluge.docker.localhost,deluge.{{ internal_hostname }}"
+      traefik.http.routers.deluge.entryPoints: "http"
+      traefik.http.routers.deluge.rule: "Host(`deluge.docker.localhost`, `deluge.{{ internal_hostname }}`)"
+      traefik.http.services.deluge.loadbalancer.server.port: 8112
     volumes:
       - "{{ deluge_config_dir }}:/config"
       - "{{ downloads_dir }}:/downloads"
+
+  jackett:
+    container_name: "jackett"
+    image: "linuxserver/jackett:latest"
+    network_mode: "service:vpn"
+    restart: "unless-stopped"
+    environment:
+      TZ: *timezone
+      PUID: {{ system_appdata_uid }}
+      PGID: {{ system_data_gid }}
+    labels:
+      <<: *proxy-enabled
+      traefik.http.routers.jackett.entryPoints: "http"
+      traefik.http.routers.jackett.rule: "Host(`jackett.docker.localhost`, `jackett.{{ internal_hostname }}`)"
+      traefik.http.services.jackett.loadbalancer.server.port: 9117
+    volumes:
+      - "{{ jackett_config_dir }}:/config"
+      - "{{ jackett_downloads_dir }}:/downloads"
 
   plex:
     container_name: "plex"
@@ -152,9 +168,9 @@ services:
     labels:
       <<: *proxy-enabled
       traefik.docker.network: "media"
-      traefik.plex.backend: "plex"
-      traefik.plex.port: 32400
-      traefik.plex.frontend.rule: "Host:plex.docker.localhost,plex.{{ internal_hostname }}"
+      traefik.http.routers.plex.entryPoints: "http"
+      traefik.http.routers.plex.rule: "Host(`plex.docker.localhost`, `plex.{{ internal_hostname }}`)"
+      traefik.http.services.plex.loadbalancer.server.port: 32400
     networks:
       media:
         ipv4_address: "{{ docker_ip_plex }}"
@@ -165,26 +181,6 @@ services:
       - "{{ series_dir }}:/data/series:ro"
       - "{{ movies_dir }}:/data/movies:ro"
       - "{{ plex_transcode_dir }}:/transcode"
-
-  jackett:
-    container_name: "jackett"
-    image: "linuxserver/jackett:latest"
-    restart: "unless-stopped"
-    environment:
-      TZ: *timezone
-      PUID: {{ system_appdata_uid }}
-      PGID: {{ system_data_gid }}
-    labels:
-      <<: *proxy-enabled
-      traefik.docker.network: "media"
-      traefik.jackett.backend: "jackett"
-      traefik.jackett.port: 9117
-      traefik.jackett.frontend.rule: "Host:jackett.docker.localhost,jackett.{{ internal_hostname }}"
-    networks:
-      media:
-    volumes:
-      - "{{ jackett_config_dir }}:/config"
-      - "{{ jackett_downloads_dir }}:/downloads"
 
   sonarr:
     container_name: "sonarr"
@@ -201,9 +197,9 @@ services:
     labels:
       <<: *proxy-enabled
       traefik.docker.network: "media"
-      traefik.sonarr.backend: "sonarr"
-      traefik.sonarr.port: 8989
-      traefik.sonarr.frontend.rule: "Host:sonarr.docker.localhost,sonarr.{{ internal_hostname }}"
+      traefik.http.routers.sonarr.entryPoints: "http"
+      traefik.http.routers.sonarr.rule: "Host(`sonarr.docker.localhost`, `sonarr.{{ internal_hostname }}`)"
+      traefik.http.services.sonarr.loadbalancer.server.port: 8989
     networks:
       media:
     volumes:
@@ -226,9 +222,9 @@ services:
     labels:
       <<: *proxy-enabled
       traefik.docker.network: "media"
-      traefik.radarr.backend: "radarr"
-      traefik.radarr.port: 7878
-      traefik.radarr.frontend.rule: "Host:radarr.docker.localhost,radarr.{{ internal_hostname }}"
+      traefik.http.routers.radarr.entryPoints: "http"
+      traefik.http.routers.radarr.rule: "Host(`radarr.docker.localhost`, `radarr.{{ internal_hostname }}`)"
+      traefik.http.services.radarr.loadbalancer.server.port: 7878
     networks:
       media:
     volumes:
@@ -238,7 +234,7 @@ services:
 
   minecraft:
     container_name: "minecraft"
-    image: "itzg/minecraft-server"
+    image: "itzg/minecraft-server:latest"
     restart: "unless-stopped"
     user: "{{ system_appdata_uid }}:{{ system_appdata_gid }}"
     stdin_open: true
@@ -274,16 +270,15 @@ services:
 
   minecraft-map:
     container_name: "minecraft-map"
-    image: "nginx:stable-alpine"
+    image: "nginx:latest"
     restart: "unless-stopped"
     environment:
       TZ: *timezone
     labels:
       <<: *proxy-enabled
-      traefik.docker.network: "public"
-      traefik.minecraft-map.backend: "minecraft-map"
-      traefik.minecraft-map.port: 80
-      traefik.minecraft-map.frontend.rule: "Host:minecraft-map.{{ internal_hostname }}"
+      traefik.http.routers.minecraft-map.entryPoints: "http"
+      traefik.http.routers.minecraft-map.rule: "Host(`minecraft-map.docker.localhost`, `minecraft-map.{{ internal_hostname }}`)"
+      traefik.http.services.minecraft-map.loadbalancer.server.port: 80
     networks:
       public:
     volumes:
@@ -291,7 +286,7 @@ services:
 
   minecraft-backup:
     container_name: "minecraft-backup"
-    image: "itzg/mc-backup"
+    image: "itzg/mc-backup:latest"
     restart: "always"
     environment:
       TZ: *timezone
