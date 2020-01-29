@@ -47,11 +47,19 @@ ansible-encrypt:|check-defined-file
 	ansible-vault encrypt \
 		--vault-id default@./secrets/.ansible-vault-password \
 		$(file)
+ansible-encrypt-all:
+	ansible-vault encrypt \
+		--vault-id default@./secrets/.ansible-vault-password \
+		$$(cat vault-files.txt | paste -sd " " -)
 
 ansible-decrypt:|check-defined-file
 	ansible-vault decrypt \
 		--vault-id default@./secrets/.ansible-vault-password \
 		$(file)
+ansible-decrypt-all:
+	ansible-vault decrypt \
+		--vault-id default@./secrets/.ansible-vault-password \
+		$$(cat vault-files.txt | paste -sd " " -)
 
 check-defined-% : __check_defined_FORCE
 	@:$(call check_defined, $*)
