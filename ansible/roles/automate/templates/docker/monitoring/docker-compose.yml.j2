@@ -37,12 +37,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: "elastic"
-      traefik.http.services.elasticsearch.loadbalancer.server.port: 9200
       traefik.http.routers.elasticsearch.entryPoints: "https"
       traefik.http.routers.elasticsearch.rule: "Host(`elasticsearch.{{ domain_name }}`)"
       traefik.http.routers.elasticsearch.middlewares: "common@file, whitelist-home@file"
-      traefik.http.routers.elasticsearch.service: "elasticsearch"
       traefik.http.routers.elasticsearch.tls: "true"
+      traefik.http.services.elasticsearch.loadbalancer.server.port: 9200
+
       co.elastic.logs/enabled: "true"
       co.elastic.logs/module: "elasticsearch"
     networks:
@@ -68,15 +68,12 @@ services:
     labels:
       traefik.enable: "true"
       traefik.docker.network: "elastic"
-      traefik.http.services.kibana.loadbalancer.server.port: 5601
-      traefik.http.routers.kibana_http.entryPoints: "http"
-      traefik.http.routers.kibana_http.rule: &kibana_router_rule "Host(`kibana.{{ domain_name }}`)"
-      traefik.http.routers.kibana_http.middlewares: "common@file, redirect-https@file"
       traefik.http.routers.kibana_https.entryPoints: "https"
-      traefik.http.routers.kibana_https.rule: *kibana_router_rule
+      traefik.http.routers.kibana_https.rule: "Host(`kibana.{{ domain_name }}`)"
       traefik.http.routers.kibana_https.middlewares: "common@file"
-      traefik.http.routers.kibana_https.service: "kibana"
       traefik.http.routers.kibana_https.tls: "true"
+      traefik.http.services.kibana.loadbalancer.server.port: 5601
+
       co.elastic.logs/enabled: "true"
       co.elastic.logs/module: "kibana"
     networks:

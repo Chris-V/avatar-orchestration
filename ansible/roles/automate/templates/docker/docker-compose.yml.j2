@@ -3,7 +3,6 @@ version: "3.7"
 x-timezone: &timezone "{{ timezone }}"
 x-proxy-enabled: &proxy-enabled
   traefik.enable: "true"
-  traefik.docker.network: "public"
 
 networks:
   public:
@@ -49,14 +48,33 @@ networks:
 services:
   proxy:
     container_name: proxy
-    image: "traefik:2.0.0-alpha8"
+    image: "traefik:2.1"
     restart: "unless-stopped"
     depends_on:
-      - "proxy_error_pages"
+      - "error-pages"
     environment:
       TZ: *timezone
       GCE_SERVICE_ACCOUNT_FILE: "/etc/traefik/acme/gce_service_account.json"
     labels:
+      <<: *proxy-enabled
+
+      # dashboard
+      traefik.http.routers.api.entryPoints: "https"
+      traefik.http.routers.api.rule: "Host(`traefik-automate.{{ domain_name }}`)"
+      traefik.http.routers.api.middlewares: "common@file, monitoring-auth@file"
+      traefik.http.routers.api.service: "api@internal"
+      traefik.http.routers.api.tls: "true"
+
+      # global certificate domains
+      traefik.http.routers.api.tls.certresolver: "default"
+      traefik.http.routers.api.tls.domains[0].main: "{{ domain_name }}"
+      traefik.http.routers.api.tls.domains[0].sans: "*.{{ domain_name }}"
+
+      # global redirect to https
+      traefik.http.routers.http-catchall.entrypoints: "http"
+      traefik.http.routers.http-catchall.rule: "HostRegexp(`{catchall:.+}`)"
+      traefik.http.routers.http-catchall.middlewares: "common@file, redirect-https@file"
+
       co.elastic.logs/enabled: "true"
       co.elastic.logs/module: "traefik"
     extra_hosts:
@@ -75,25 +93,20 @@ services:
       - "{{ docker_appdata_dir }}/traefik/traefik.d:/traefik.d:ro"
       - "{{ docker_appdata_dir }}/traefik/acme:/etc/traefik/acme"
 
-  proxy_error_pages:
-    container_name: proxy_error_pages
-    image: "nginx:stable-alpine"
+  error-pages:
+    container_name: error-pages
+    image: "nginx:alpine"
     restart: "unless-stopped"
     environment:
       TZ: *timezone
     labels:
       <<: *proxy-enabled
-      traefik.http.services.error_pages.loadbalancer.server.port: 80
-      traefik.http.routers.error_pages_http.entryPoints: "http"
-      traefik.http.routers.error_pages_http.rule: &error_pages_router_rule "HostRegexp(`{catchall:.*}`)"
-      traefik.http.routers.error_pages_http.priority: 1
-      traefik.http.routers.error_pages_http.middlewares: "common@file, redirect-https@file"
-      traefik.http.routers.error_pages_https.entryPoints: "https"
-      traefik.http.routers.error_pages_https.rule: *error_pages_router_rule
-      traefik.http.routers.error_pages_https.priority: 1
-      traefik.http.routers.error_pages_https.middlewares: "common@file"
-      traefik.http.routers.error_pages_https.service: "error_pages"
-      traefik.http.routers.error_pages_https.tls: "true"
+      traefik.http.services.error-pages.loadbalancer.server.port: 80
+      traefik.http.routers.error-pages.entryPoints: "https"
+      traefik.http.routers.error-pages.rule: "HostRegexp(`{catchall:.+}`)"
+      traefik.http.routers.error-pages.priority: 1
+      traefik.http.routers.error-pages.middlewares: "common@file"
+      traefik.http.routers.error-pages.tls: "true"
     networks:
       public:
     volumes:
@@ -112,20 +125,17 @@ services:
       - "/dev/zigbee:/dev/zigbee"
     environment:
       TZ: *timezone
-      GUID: "{{ homeassistant_uid }}"
-      GGID: "{{ homeassistant_gid }}"
+      PUID: "{{ homeassistant_uid }}"
+      PGID: "{{ homeassistant_gid }}"
       UMASK: "007"
     labels:
       <<: *proxy-enabled
       traefik.http.services.home-assistant.loadbalancer.server.port: 8123
-      traefik.http.routers.home-assistant_http.entryPoints: "http"
-      traefik.http.routers.home-assistant_http.rule: &hass_router_rule "Host(`home-assistant.{{ domain_name }}`)"
-      traefik.http.routers.home-assistant_http.middlewares: "common@file, redirect-https@file"
-      traefik.http.routers.home-assistant_https.entryPoints: "https"
-      traefik.http.routers.home-assistant_https.rule: *hass_router_rule
-      traefik.http.routers.home-assistant_https.middlewares: "common@file"
-      traefik.http.routers.home-assistant_https.service: "home-assistant"
-      traefik.http.routers.home-assistant_https.tls: "true"
+      traefik.http.routers.home-assistant.entryPoints: "https"
+      traefik.http.routers.home-assistant.rule: "Host(`home-assistant.{{ domain_name }}`)"
+      traefik.http.routers.home-assistant.middlewares: "common@file"
+      traefik.http.routers.home-assistant.tls: "true"
+
       co.elastic.logs/enabled: "true"
       co.elastic.logs/include_lines: "[a-zA-Z0-9]+"
       co.elastic.logs/exclude_lines: '(linuxserver\.io|accept donations)'
@@ -155,8 +165,11 @@ services:
       traefik.tcp.services.mosquitto.loadbalancer.server.port: 1883
       traefik.tcp.routers.mosquitto.entryPoints: "mqtts"
       traefik.tcp.routers.mosquitto.rule: "HostSNI(`mqtt.{{ domain_name }}`)"
-      traefik.tcp.routers.mosquitto.service: "mosquitto"
       traefik.tcp.routers.mosquitto.tls: "true"
+      traefik.tcp.routers.mosquitto.tls.certresolver: "default"
+      traefik.tcp.routers.mosquitto.tls.domains[0].main: "{{ domain_name }}"
+      traefik.tcp.routers.mosquitto.tls.domains[0].sans: "*.{{ domain_name }}"
+
       co.elastic.logs/enabled: "true"
     networks:
       public:
@@ -200,14 +213,11 @@ services:
       <<: *proxy-enabled
       traefik.docker.network: "glances"
       traefik.http.services.glances.loadbalancer.server.port: 61208
-      traefik.http.routers.glances_http.entryPoints: "http"
-      traefik.http.routers.glances_http.rule: &glances_router_rule "Host(`glances-automate.{{ domain_name }}`)"
-      traefik.http.routers.glances_http.middlewares: "common@file, redirect-https@file"
-      traefik.http.routers.glances_https.entryPoints: "https"
-      traefik.http.routers.glances_https.rule: *glances_router_rule
-      traefik.http.routers.glances_https.middlewares: "common@file, monitoring-auth@file"
-      traefik.http.routers.glances_https.service: "glances"
-      traefik.http.routers.glances_https.tls: "true"
+      traefik.http.routers.glances.entryPoints: "https"
+      traefik.http.routers.glances.rule: "Host(`glances-automate.{{ domain_name }}`)"
+      traefik.http.routers.glances.middlewares: "common@file, monitoring-auth@file"
+      traefik.http.routers.glances.tls: "true"
+
       co.elastic.logs/enabled: "true"
     networks:
       glances:

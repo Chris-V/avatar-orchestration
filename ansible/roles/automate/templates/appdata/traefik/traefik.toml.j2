@@ -11,7 +11,9 @@
   [Providers.File]
     Directory = "/traefik.d"
   [Providers.Docker]
+    DefaultRule = "Host(`{{ '{{ .Name }}' }}.docker.localhost`, `{{ '{{ .Name }}' }}.{{ domain_name }}`)"
     ExposedByDefault = false
+    Network = "public"
 
 [ServersTransport]
   MaxIdleConnsPerHost = 50
@@ -23,27 +25,15 @@
   [TLS.Options]
     [TLS.Options.default]
       SniStrict = true
-      MinVersion = "VersionTLS12"
-      CipherSuites = [
-        "TLS_CHACHA20_POLY1305_SHA256",
-        "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305",
-        "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305",
-        "TLS_AES_256_GCM_SHA384",
-      ]
+      MinVersion = "VersionTLS13"
 
-[ACME]
+[CertificatesResolvers.default.acme]
   Email = "{{ acme_email }}"
   Storage = "/etc/traefik/acme/acme.json"
   KeyType = "RSA4096"
-  OnHostRule = false
-
-  [ACME.DNSChallenge]
-    Resolvers = ["1.1.1.1:53", "1.0.0.1:53"]
+  [CertificatesResolvers.default.acme.dnsChallenge]
     Provider = "gcloud"
-
-  [[ACME.Domains]]
-    Main = "*.{{ domain_name }}"
-    SANs = ["{{ domain_name }}"]
+    Resolvers = ["1.1.1.1:53", "1.0.0.1:53"]
 
 [EntryPoints]
   [EntryPoints.http]
@@ -58,3 +48,6 @@
         IdleTimeout = 300
   [EntryPoints.mqtts]
     address = ":8883"
+
+[api]
+  Dashboard = true

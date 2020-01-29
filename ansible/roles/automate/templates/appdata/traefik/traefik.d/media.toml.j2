@@ -1,131 +1,99 @@
 [http.routers]
 
-  [http.routers.media-glances-http]
-    entryPoints = ["http"]
-    rule = "Host(`glances-media.{{ domain_name }}`)"
-    middlewares = ["common", "redirect-https"]
-    service = "media-glances"
-  [http.routers.media-glances-https]
+  [http.routers.media-glances]
     entryPoints = ["https"]
     rule = "Host(`glances-media.{{ domain_name }}`)"
     middlewares = ["common", "monitoring-auth"]
     service = "media-glances"
-    [http.routers.media-glances-https.tls]
+    [http.routers.media-glances.tls]
 
-  [http.routers.media-traefik-http]
-    entryPoints = ["http"]
-    rule = "Host(`traefik-media.{{ domain_name }}`)"
-    middlewares = ["common", "redirect-https"]
-    service = "media-traefik"
-  [http.routers.media-traefik-https]
+  [http.routers.media-traefik]
     entryPoints = ["https"]
     rule = "Host(`traefik-media.{{ domain_name }}`)"
     middlewares = ["common", "monitoring-auth"]
     service = "media-traefik"
-    [http.routers.media-traefik-https.tls]
+    [http.routers.media-traefik.tls]
 
-  [http.routers.media-deluge-http]
-    entryPoints = ["http"]
-    rule = "Host(`deluge.{{ domain_name }}`)"
-    middlewares = ["common", "redirect-https"]
-    service = "media-deluge"
-  [http.routers.media-deluge-https]
+  [http.routers.media-deluge]
     entryPoints = ["https"]
     rule = "Host(`deluge.{{ domain_name }}`)"
     middlewares = ["common"]
     service = "media-deluge"
-    [http.routers.media-deluge-https.tls]
+    [http.routers.media-deluge.tls]
 
-  [http.routers.media-jackett-http]
-    entryPoints = ["http"]
-    rule = "Host(`jackett.{{ domain_name }}`)"
-    middlewares = ["common", "redirect-https"]
-    service = "media-jackett"
-  [http.routers.media-jackett-https]
+  [http.routers.media-jackett]
     entryPoints = ["https"]
     rule = "Host(`jackett.{{ domain_name }}`)"
     middlewares = ["common"]
     service = "media-jackett"
-    [http.routers.media-jackett-https.tls]
+    [http.routers.media-jackett.tls]
 
-  [http.routers.media-plex-http]
-    entryPoints = ["http"]
-    rule = "Host(`plex.{{ domain_name }}`)"
-    middlewares = ["common", "redirect-https"]
-    service = "media-plex"
-  [http.routers.media-plex-https]
+  [http.routers.media-plex]
     entryPoints = ["https"]
     rule = "Host(`plex.{{ domain_name }}`)"
     middlewares = ["common"]
     service = "media-plex"
-    [http.routers.media-plex-https.tls]
+    [http.routers.media-plex.tls]
 
-  [http.routers.media-radarr-http]
-    entryPoints = ["http"]
-    rule = "Host(`radarr.{{ domain_name }}`)"
-    middlewares = ["common", "redirect-https"]
-    service = "media-radarr"
-  [http.routers.media-radarr-https]
+  [http.routers.media-radarr]
     entryPoints = ["https"]
     rule = "Host(`radarr.{{ domain_name }}`)"
     middlewares = ["common"]
     service = "media-radarr"
-    [http.routers.media-radarr-https.tls]
+    [http.routers.media-radarr.tls]
 
-  [http.routers.media-sonarr-http]
-    entryPoints = ["http"]
-    rule = "Host(`sonarr.{{ domain_name }}`)"
-    middlewares = ["common", "redirect-https"]
-    service = "media-sonarr"
-  [http.routers.media-sonarr-https]
+  [http.routers.media-sonarr]
     entryPoints = ["https"]
     rule = "Host(`sonarr.{{ domain_name }}`)"
     middlewares = ["common"]
     service = "media-sonarr"
-    [http.routers.media-sonarr-https.tls]
+    [http.routers.media-sonarr.tls]
 
-  [http.routers.media-minecraft-map-http]
-    entryPoints = ["http"]
-    rule = "Host(`minecraft-map.{{ domain_name }}`)"
-    middlewares = ["common", "redirect-https"]
-    service = "media-minecraft-map"
-  [http.routers.media-minecraft-map-https]
+  [http.routers.media-minecraft-map]
     entryPoints = ["https"]
     rule = "Host(`minecraft-map.{{ domain_name }}`)"
     middlewares = ["common"]
     service = "media-minecraft-map"
-    [http.routers.media-minecraft-map-https.tls]
+    [http.routers.media-minecraft-map.tls]
 
 [http.services]
 
   [http.services.media-glances.LoadBalancer]
+    passHostHeader = false
     [[http.services.media-glances.LoadBalancer.servers]]
-      URL = "http://glances.{{ media_host }}/"
+      URL = "http://glances.{{ network.servers.media.host }}/"
 
   [http.services.media-traefik.LoadBalancer]
+    passHostHeader = false
     [[http.services.media-traefik.LoadBalancer.servers]]
-      URL = "http://traefik.{{ media_host }}/"
+      URL = "http://traefik.{{ network.servers.media.host }}/"
 
   [http.services.media-deluge.LoadBalancer]
+    passHostHeader = false
      [[http.services.media-deluge.LoadBalancer.servers]]
-       URL = "http://deluge.{{ media_host }}/"
+       URL = "http://deluge.{{ network.servers.media.host }}/"
 
   [http.services.media-jackett.LoadBalancer]
+    passHostHeader = false
     [[http.services.media-jackett.LoadBalancer.servers]]
-      URL = "http://jackett.{{ media_host }}/"
+      URL = "http://jackett.{{ network.servers.media.host }}/"
 
   [http.services.media-plex.LoadBalancer]
+    passHostHeader = false
     [[http.services.media-plex.LoadBalancer.servers]]
-      URL = "http://plex.{{ media_host }}/"
+      URL = "http://plex.{{ network.servers.media.host }}/"
 
   [http.services.media-radarr.LoadBalancer]
+    passHostHeader = false
     [[http.services.media-radarr.LoadBalancer.servers]]
-      URL = "http://radarr.{{ media_host }}/"
+      URL = "http://radarr.{{ network.servers.media.host }}/"
 
   [http.services.media-sonarr.LoadBalancer]
+    passHostHeader = false
     [[http.services.media-sonarr.LoadBalancer.servers]]
-      URL = "http://sonarr.{{ media_host }}/"
+      URL = "http://sonarr.{{ network.servers.media.host }}/"
 
   [http.services.media-minecraft-map.LoadBalancer]
+    passHostHeader = false
     [[http.services.media-minecraft-map.LoadBalancer.servers]]
-      URL = "http://minecraft-map.{{ media_host }}/"
+      URL = "http://minecraft-map.{{ network.servers.media.host }}/"

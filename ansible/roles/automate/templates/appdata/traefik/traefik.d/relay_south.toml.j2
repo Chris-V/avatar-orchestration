@@ -1,35 +1,27 @@
 [http.routers]
 
-  [http.routers.relay-south-glances-http]
-    entryPoints = ["http"]
-    rule = "Host(`glances-relay-south.{{ domain_name }}`)"
-    middlewares = ["common", "redirect-https"]
-    service = "relay-south-glances"
-  [http.routers.relay-south-glances-https]
+  [http.routers.relay-south-glances]
     entryPoints = ["https"]
     rule = "Host(`glances-relay-south.{{ domain_name }}`)"
     middlewares = ["common", "monitoring-auth"]
     service = "relay-south-glances"
-    [http.routers.relay-south-glances-https.tls]
+    [http.routers.relay-south-glances.tls]
 
-  [http.routers.relay-south-traefik-http]
-    entryPoints = ["http"]
-    rule = "Host(`traefik-relay-south.{{ domain_name }}`)"
-    middlewares = ["common", "redirect-https"]
-    service = "relay-south-traefik"
-  [http.routers.relay-south-traefik-https]
+  [http.routers.relay-south-traefik]
     entryPoints = ["https"]
     rule = "Host(`traefik-relay-south.{{ domain_name }}`)"
     middlewares = ["common", "monitoring-auth"]
     service = "relay-south-traefik"
-    [http.routers.relay-south-traefik-https.tls]
+    [http.routers.relay-south-traefik.tls]
 
 [http.services]
 
   [http.services.relay-south-glances.LoadBalancer]
+    passHostHeader = false
     [[http.services.relay-south-glances.LoadBalancer.servers]]
-      URL = "http://glances.{{ relay_south_host }}/"
+      URL = "http://glances.{{ network.servers.relay_south.host }}/"
 
   [http.services.relay-south-traefik.LoadBalancer]
+    passHostHeader = false
     [[http.services.relay-south-traefik.LoadBalancer.servers]]
-      URL = "http://traefik.{{ relay_south_host }}/"
+      URL = "http://traefik.{{ network.servers.relay_south.host }}/"
