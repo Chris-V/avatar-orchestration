@@ -30,35 +30,28 @@ lint:
 
 ansible:
 	ansible-playbook \
-		--vault-id default@./secrets/.ansible-vault-password \
 		-i ./ansible/inventories/$(inventory)/inventory.yml \
 		$(args) \
 		ansible/$(playbook).yml
 
 ansible-check:
 	ansible-playbook \
-		--vault-id default@./secrets/.ansible-vault-password \
 		-i ./ansible/inventories/$(inventory)/inventory.yml \
 		--check
 		ansible/$(playbook).yml
 
-
 ansible-encrypt:|check-defined-file
-	ansible-vault encrypt \
-		--vault-id default@./secrets/.ansible-vault-password \
-		$(file)
+	ansible-vault encrypt $(file)
+
 ansible-encrypt-all:
 	ansible-vault encrypt \
-		--vault-id default@./secrets/.ansible-vault-password \
 		$$(cat vault-files.txt | paste -sd " " -)
 
 ansible-decrypt:|check-defined-file
-	ansible-vault decrypt \
-		--vault-id default@./secrets/.ansible-vault-password \
-		$(file)
+	ansible-vault decrypt $(file)
+
 ansible-decrypt-all:
 	ansible-vault decrypt \
-		--vault-id default@./secrets/.ansible-vault-password \
 		$$(cat vault-files.txt | paste -sd " " -)
 
 check-defined-% : __check_defined_FORCE
