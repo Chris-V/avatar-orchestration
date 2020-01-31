@@ -5,6 +5,8 @@ ansible/host_files/avatar-automate/appdata/home-assistant/config/.secrets/id_hom
 ansible/host_files/avatar-automate/appdata/home-assistant/config/.secrets/id_router_homeassistant
 ansible/host_files/avatar-automate/appdata/home-assistant/config/.secrets/id_router_homeassistant.pub
 ansible/host_files/avatar-automate/appdata/home-assistant/config/secrets.yaml.j2
+ansible/host_files/avatar-automate/appdata/home-assistant/config/www/secrets/chris.webp
+ansible/host_files/avatar-automate/appdata/home-assistant/config/www/secrets/karine.webp
 ansible/host_files/avatar-automate/appdata/mosquitto/config/passwords
 ansible/host_files/avatar-automate/appdata/traefik/acme/gce_service_account.json
 ansible/host_files/avatar-automate/appdata/traefik/traefik.d/monitoring.htpasswd

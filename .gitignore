@@ -1,7 +1,3 @@
-secret/
-secrets/
-secret.*
-
-ansible/**/*.retry
-
-installer/build/
+/secrets/
+/ansible/*.retry
+/installer/build/
