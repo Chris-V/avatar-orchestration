@@ -21,12 +21,6 @@
     DialTimeout = 15
     ResponseHeaderTimeout = 5
 
-[TLS]
-  [TLS.Options]
-    [TLS.Options.default]
-      SniStrict = true
-      MinVersion = "VersionTLS13"
-
 [CertificatesResolvers.default.acme]
   Email = "{{ acme_email }}"
   Storage = "/etc/traefik/acme/acme.json"
