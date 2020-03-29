@@ -42,11 +42,12 @@
     - { path: "", mode: "u=rwx,g=rx,o=" }
     - { path: "config/", mode: "u=rwx,g=rx,o=" }
     - { path: "ssh/", mode: "u=rwx,go=" }
+    - { path: "s6/", mode: "u=rwx,g=rx,o=", owner: "root" }
   file: &create_appdata_dir
     path: "{{ docker_appdata_dir }}/home-assistant/{{ item.path }}"
     state: "directory"
-    owner: "homeassistant"
-    group: "homeassistant"
+    owner: "{{ item.owner | default('homeassistant') }}"
+    group: "{{ item.group | default('homeassistant') }}"
     mode: "{{ item.mode }}"
 
 - name: Pull home-assistant configuration
@@ -98,6 +99,7 @@
 
 - name: Copy Home-Assistant files
   loop:
+    - { path: "s6/setup-and-run", mode: "u=rwx,g=r,o=", owner: "root" }
     - { host_file: yes, path: "config/.secrets/gcp.json", mode: "u=r,go=" }
     - { host_file: yes, path: "config/.secrets/id_homeassistant", mode: "u=r,go=" }
     - { host_file: yes, path: "config/.secrets/id_router_homeassistant", mode: "u=r,go=" }
@@ -107,8 +109,8 @@
   copy:
     src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/home-assistant/{{ item.path }}"
     dest: "{{ docker_appdata_dir }}/home-assistant/{{ item.path }}"
-    owner: "homeassistant"
-    group: "homeassistant"
+    owner: "{{ item.owner | default('homeassistant') }}"
+    group: "{{ item.group | default('homeassistant') }}"
     mode: "{{ item.mode }}"
 
 - name: Copy Home-Assistant templates

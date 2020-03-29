@@ -101,9 +101,8 @@ services:
 
   home-assistant:
     container_name: home-assistant
-    image: "homeassistant/home-assistant:0.104.3"
+    image: "homeassistant/home-assistant:0.107.7"
     restart: "unless-stopped"
-    entrypoint: "/config/docker/entrypoint"
     depends_on:
       - "apcupsd"
       - "mosquitto"
@@ -115,6 +114,7 @@ services:
       PUID: "{{ homeassistant_uid }}"
       PGID: "{{ homeassistant_gid }}"
       UMASK: "007"
+      PACKAGES: "iputils"
     labels:
       <<: *proxy-enabled
       traefik.http.services.home-assistant.loadbalancer.server.port: 8123
@@ -139,6 +139,7 @@ services:
       - "1400:1400"
     volumes:
       - "{{ docker_appdata_dir }}/home-assistant/config:{{ homeassistant_container_config_path }}"
+      - "{{ docker_appdata_dir }}/home-assistant/s6/setup-and-run:/etc/services.d/home-assistant/run"
 
   mosquitto:
     container_name: mosquitto
