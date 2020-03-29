@@ -35,11 +35,26 @@
     [EntryPoints.http.Transport]
       [EntryPoints.http.Transport.RespondingTimeouts]
         IdleTimeout = 5
+    [EntryPoints.http.http]
+      middlewares = ["common@file"]
+      [EntryPoints.http.http.redirections]
+        [EntryPoints.http.http.redirections.entryPoint]
+          to = "https"
+          scheme = "https"
+
   [EntryPoints.https]
     address = ":443"
     [EntryPoints.https.Transport]
       [EntryPoints.https.Transport.RespondingTimeouts]
         IdleTimeout = 300
+    [EntryPoints.https.http]
+      middlewares = ["common@file"]
+      [EntryPoints.https.http.tls]
+        certResolver = "leresolver"
+        [[EntryPoints.https.http.tls.domains]]
+          main = "{{ domain_name }}"
+          sans = ["*.{{ domain_name }}"]
+
   [EntryPoints.mqtts]
     address = ":8883"
 

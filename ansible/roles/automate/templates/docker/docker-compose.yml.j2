@@ -48,7 +48,7 @@ networks:
 services:
   proxy:
     container_name: proxy
-    image: "traefik:2.1"
+    image: "traefik:2.2"
     restart: "unless-stopped"
     depends_on:
       - "error-pages"
@@ -57,23 +57,11 @@ services:
       GCE_SERVICE_ACCOUNT_FILE: "/etc/traefik/acme/gce_service_account.json"
     labels:
       <<: *proxy-enabled
-
-      # dashboard
       traefik.http.routers.api.entryPoints: "https"
       traefik.http.routers.api.rule: "Host(`traefik-automate.{{ domain_name }}`)"
-      traefik.http.routers.api.middlewares: "common@file, monitoring-auth@file"
+      traefik.http.routers.api.middlewares: "monitoring-auth@file"
       traefik.http.routers.api.service: "api@internal"
       traefik.http.routers.api.tls: "true"
-
-      # global certificate domains
-      traefik.http.routers.api.tls.certresolver: "default"
-      traefik.http.routers.api.tls.domains[0].main: "{{ domain_name }}"
-      traefik.http.routers.api.tls.domains[0].sans: "*.{{ domain_name }}"
-
-      # global redirect to https
-      traefik.http.routers.http-catchall.entrypoints: "http"
-      traefik.http.routers.http-catchall.rule: "HostRegexp(`{catchall:.+}`)"
-      traefik.http.routers.http-catchall.middlewares: "common@file, redirect-https@file"
 
       co.elastic.logs/enabled: "true"
       co.elastic.logs/module: "traefik"
@@ -105,7 +93,6 @@ services:
       traefik.http.routers.error-pages.entryPoints: "https"
       traefik.http.routers.error-pages.rule: "HostRegexp(`{catchall:.+}`)"
       traefik.http.routers.error-pages.priority: 1
-      traefik.http.routers.error-pages.middlewares: "common@file"
       traefik.http.routers.error-pages.tls: "true"
     networks:
       public:
@@ -133,7 +120,6 @@ services:
       traefik.http.services.home-assistant.loadbalancer.server.port: 8123
       traefik.http.routers.home-assistant.entryPoints: "https"
       traefik.http.routers.home-assistant.rule: "Host(`home-assistant.{{ domain_name }}`)"
-      traefik.http.routers.home-assistant.middlewares: "common@file"
       traefik.http.routers.home-assistant.tls: "true"
 
       co.elastic.logs/enabled: "true"
@@ -215,7 +201,7 @@ services:
       traefik.http.services.glances.loadbalancer.server.port: 61208
       traefik.http.routers.glances.entryPoints: "https"
       traefik.http.routers.glances.rule: "Host(`glances-automate.{{ domain_name }}`)"
-      traefik.http.routers.glances.middlewares: "common@file, monitoring-auth@file"
+      traefik.http.routers.glances.middlewares: "monitoring-auth@file"
       traefik.http.routers.glances.tls: "true"
 
       co.elastic.logs/enabled: "true"

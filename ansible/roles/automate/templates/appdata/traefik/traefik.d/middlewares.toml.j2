@@ -1,7 +1,4 @@
 [http.middlewares]
-  [http.middlewares.redirect-https.RedirectScheme]
-    Scheme = "https"
-
   [http.middlewares.monitoring-auth.basicauth]
     usersFile = "/traefik.d/monitoring.htpasswd"
     removeHeader = true
