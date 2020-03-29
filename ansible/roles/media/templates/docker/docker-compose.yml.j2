@@ -234,11 +234,12 @@ services:
 
   minecraft:
     container_name: "minecraft"
-    image: "itzg/minecraft-server:latest"
+    image: "itzg/minecraft-server:openj9"
     restart: "unless-stopped"
     user: "{{ system_appdata_uid }}:{{ system_appdata_gid }}"
     stdin_open: true
     tty: true
+    # Tuning under Open'J9: https://steinborn.me/posts/tuning-minecraft-openj9/
     environment:
       TZ: *timezone
       EULA: "TRUE"
@@ -249,9 +250,8 @@ services:
       TYPE: *minecraft-type
       VERSION: "{{ minecraft_version }}"
       GUI: "false"
-      MEMORY: "9G"
-      JVM_OPTS: "-d64 -server"
-      JVM_XX_OPTS: "-XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+DisableExplicitGC -XX:+AlwaysPreTouch -XX:+ParallelRefProcEnabled -XX:+UseLargePagesInMetaspace -XX:MaxGCPauseMillis=100 -XX:TargetSurvivorRatio=90 -XX:G1NewSizePercent=50 -XX:G1MaxNewSizePercent=80 -XX:G1MixedGCLiveThresholdPercent=35"
+      MEMORY: "{{ minecraft_heap_mb }}M"
+      JVM_XX_OPTS: "-Xmns{{ (minecraft_heap_mb / 2) | int }}M -Xmnx{{ (minecraft_heap_mb * 4 / 5) | int }}M -Xgc:concurrentScavenge -Xgc:dnssExpectedTimeRatioMaximum=3 -Xgc:scvNoAdaptiveTenure -Xdisableexplicitgc -Xtune:virtualized"
       MAX_PLAYERS: 6
       VIEW_DISTANCE: 12
       ENABLE_RCON: "true"
