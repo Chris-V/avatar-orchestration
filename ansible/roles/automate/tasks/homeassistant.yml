@@ -41,6 +41,7 @@
   loop:
     - { path: "", mode: "u=rwx,g=rx,o=" }
     - { path: "config/", mode: "u=rwx,g=rx,o=" }
+    - { path: "openzwave/", mode: "u=rwx,g=rx,o=" }
     - { path: "ssh/", mode: "u=rwx,go=" }
     - { path: "s6/", mode: "u=rwx,g=rx,o=", owner: "root" }
   file: &create_appdata_dir
@@ -90,6 +91,19 @@
       file:
         path: *hacs_tmp_path
         state: "absent"
+
+- name: Pull Open-Zwave configuration
+  become: yes
+  become_user: homeassistant
+  git:
+    dest: "{{ docker_appdata_dir }}/home-assistant/openzwave"
+    repo: "{{ homeassistant_ozw_config_repo }}"
+    version: "1.4/configs"
+    key_file: "{{ homeassistant_config_key_path }}"
+    accept_hostkey: yes
+    depth: 1
+    umask: "0027"
+    force: yes
 
 - name: Create additional Home-Assistant directories # Must be done after initial clone
   loop:

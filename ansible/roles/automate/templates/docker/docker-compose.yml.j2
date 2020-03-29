@@ -139,6 +139,7 @@ services:
       - "1400:1400"
     volumes:
       - "{{ docker_appdata_dir }}/home-assistant/config:{{ homeassistant_container_config_path }}"
+      - "{{ docker_appdata_dir }}/home-assistant/openzwave/config:/openzwave/config"
       - "{{ docker_appdata_dir }}/home-assistant/s6/setup-and-run:/etc/services.d/home-assistant/run"
 
   mosquitto:
