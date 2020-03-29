@@ -40,7 +40,7 @@ services:
     image: "avatary/glances:arm64-latest"
     build:
       # TODO: develop has future in 'requirements.txt', but Docker images don't install it.
-      context: "https://github.com/nicolargo/glances.git#develop:docker-files/devel-arm"
+      context: "https://github.com/nicolargo/glances.git#develop:docker-files/devel"
     pid: "host"
     restart: "unless-stopped"
     environment:

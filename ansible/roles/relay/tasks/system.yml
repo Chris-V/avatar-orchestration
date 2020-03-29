@@ -1,0 +1,14 @@
+- name: Install system libraries
+  pacman:
+    name: fake-hwclock
+    state: present
+
+- name: Enable fake HW clock
+  systemd:
+    name: "fake-hwclock.service"
+    state: "started"
+    enabled: yes
+- name: Enable fake HW clock
+  systemd:
+    name: "fake-hwclock-save.timer"
+    enabled: yes

@@ -286,9 +286,10 @@ echo
 
 echo '
 [Match]
+Name=*
 
 [Network]
-DHCP=yes
+DHCP=ipv4
 ' >> /mnt/etc/systemd/network/20-all.network
 chrooted systemctl enable systemd-networkd.service
 chrooted systemctl enable systemd-resolved.service

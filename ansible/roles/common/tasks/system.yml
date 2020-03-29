@@ -5,7 +5,7 @@
 
 - name: Install common libraries
   pacman:
-    name: git nftables iptables-nft openssh python sudo tmux vim
+    name: git nftables iptables-nft lm_sensors openssh python sudo tmux vim
     state: present
 
 - name: Install Yay (AUR wrapper)
