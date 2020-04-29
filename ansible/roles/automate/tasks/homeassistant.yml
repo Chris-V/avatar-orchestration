@@ -43,7 +43,7 @@
     - { path: "config/", mode: "u=rwx,g=rx,o=" }
     - { path: "openzwave/", mode: "u=rwx,g=rx,o=" }
     - { path: "ssh/", mode: "u=rwx,go=" }
-    - { path: "s6/", mode: "u=rwx,g=rx,o=", owner: "root" }
+    - { path: "docker/", mode: "u=rwx,g=rx,o=", owner: "root" }
   file: &create_appdata_dir
     path: "{{ docker_appdata_dir }}/home-assistant/{{ item.path }}"
     state: "directory"
@@ -113,7 +113,7 @@
 
 - name: Copy Home-Assistant files
   loop:
-    - { path: "s6/setup-and-run", mode: "u=rwx,g=r,o=", owner: "root" }
+    - { path: "docker/run", mode: "u=rwx,g=r,o=", owner: "root" }
     - { host_file: yes, path: "config/.secrets/gcp.json", mode: "u=r,go=" }
     - { host_file: yes, path: "config/.secrets/id_homeassistant", mode: "u=r,go=" }
     - { host_file: yes, path: "config/.secrets/id_router_homeassistant", mode: "u=r,go=" }
@@ -139,3 +139,11 @@
     owner: "homeassistant"
     group: "homeassistant"
     mode: "{{ item.mode }}"
+
+- name: Cleanup old files
+  loop:
+    - { path: "{{ docker_appdata_dir }}/home-assistant/s6/setup-and-run" }
+    - { path: "{{ docker_appdata_dir }}/home-assistant/s6" }
+  file:
+    state: "absent"
+    path: "{{ item.path }}"
