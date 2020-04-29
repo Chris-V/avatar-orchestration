@@ -1,3 +1,6 @@
+- name: Enable NTP sync
+  command: "timedatectl set-ntp true"
+
 - name: Update pacman cache
   changed_when: false
   pacman:
