@@ -45,7 +45,7 @@ services:
     restart: "unless-stopped"
     environment:
       TZ: *timezone
-      GLANCES_OPT: -w
+      GLANCES_OPT: -w --enable-plugin sensors
     labels:
       <<: *proxy-enabled
       traefik.http.routers.glances.entryPoints: "http"
