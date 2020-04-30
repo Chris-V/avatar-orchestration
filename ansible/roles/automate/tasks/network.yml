@@ -1,5 +1,5 @@
 - name: Copy NFTables configuration
-  notify: reload nftables
+  notify: "reload nftables"
   template:
     src: "etc/nftables.conf.j2"
     dest: "/etc/nftables.conf"
@@ -12,5 +12,41 @@
 - name: Enable NFTables
   systemd:
     name: "nftables.service"
+    state: "started"
+    enabled: yes
+
+# Avahi deamon reflector:
+#  https://community.home-assistant.io/t/containers-avoiding-privileged-and-host-network-as-much-as-possible/60792/6
+- name: Install Avahi
+  pacman:
+    name: "avahi"
+    state: "present"
+
+- name: Disable from from systemd-resolved
+  register: "resolved_config"
+  lineinfile:
+    path: "/etc/systemd/resolved.conf"
+    regexp: "^MulticastDNS="
+    insertafter: '^#MulticastDNS='
+    line: "MulticastDNS=no"
+    state: "present"
+
+- name: Restart systemd-resolved
+  when: "resolved_config.changed"
+  systemd:
+    name: "systemd-resolved.service"
+    state: "restarted"
+
+- name: Enable Avahi mDNS reflector
+  lineinfile:
+    path: "/etc/avahi/avahi-daemon.conf"
+    regexp: "^enable-reflector="
+    insertafter: '^#enable-reflector='
+    line: "enable-reflector=yes"
+    state: "present"
+
+- name: Enable Avahi Daemon
+  systemd:
+    name: "avahi-daemon.service"
     state: "started"
     enabled: yes
