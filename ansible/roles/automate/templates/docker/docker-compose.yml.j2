@@ -65,8 +65,6 @@ services:
 
       co.elastic.logs/enabled: "true"
       co.elastic.logs/module: "traefik"
-    extra_hosts:
-      - "router:{{ router_ip }}"
     networks:
       glances:
       public:
@@ -101,7 +99,7 @@ services:
 
   home-assistant:
     container_name: home-assistant
-    image: "homeassistant/home-assistant:0.109.1"
+    image: "homeassistant/home-assistant:0.109.4"
     restart: "unless-stopped"
     depends_on:
       - "apcupsd"

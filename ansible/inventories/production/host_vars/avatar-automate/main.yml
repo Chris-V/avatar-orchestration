@@ -1,11 +1,11 @@
 # Inventory: PRODUCTION
 # Server: Avatar-Automate
 
-ansible_host: avatar-automate-ansible
+ansible_host: "avatar-automate-ansible"
 
-ssh_port: "{{ automate_ssh }}"
-internal_ip: "{{ automate_ip }}"
-internal_hostname: "{{ automate_host }}"
+ssh_port: "{{ network.servers.automate.ports.ssh }}"
+internal_ip: "{{ network.servers.automate.ip }}"
+internal_hostname: "{{ network.servers.automate.host }}"
 
 wan_if: "enp0s25"
 

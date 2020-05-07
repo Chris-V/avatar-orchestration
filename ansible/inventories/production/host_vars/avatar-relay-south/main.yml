@@ -1,11 +1,11 @@
 # Inventory: PRODUCTION
 # Server: Avatar-Relay-South
 
-ansible_host: avatar-relay-south-ansible
+ansible_host: "avatar-relay-south-ansible"
 
-ssh_port: "{{ relay_south_ssh }}"
-internal_ip: "{{ relay_south_ip }}"
-internal_hostname: "{{ relay_south_host }}"
+ssh_port: "{{ network.servers.relay_south.ports.ssh }}"
+internal_ip: "{{ network.servers.relay_south.ip }}"
+internal_hostname: "{{ network.servers.relay_south.host }}"
 
 wan_if: "wlan0"
 

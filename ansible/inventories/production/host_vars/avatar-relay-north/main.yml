@@ -1,11 +1,11 @@
 # Inventory: PRODUCTION
 # Server: Avatar-Relay-North
 
-ansible_host: avatar-relay-north-ansible
+ansible_host: "avatar-relay-north-ansible"
 
-ssh_port: "{{ relay_north_ssh }}"
-internal_ip: "{{ relay_north_ip }}"
-internal_hostname: "{{ relay_north_host }}"
+ssh_port: "{{ network.servers.relay_north.ports.ssh }}"
+internal_ip: "{{ network.servers.relay_north.ip }}"
+internal_hostname: "{{ network.servers.relay_north.host }}"
 
 wan_if: "wlan0"
 
