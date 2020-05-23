@@ -39,8 +39,7 @@ services:
     container_name: glances
     image: "avatary/glances:arm64-latest"
     build:
-      # TODO: develop has future in 'requirements.txt', but Docker images don't install it.
-      context: "https://github.com/nicolargo/glances.git#develop:docker-files/devel"
+      context: "https://github.com/nicolargo/glances.git#master:docker-files/master"
     pid: "host"
     restart: "unless-stopped"
     environment:
