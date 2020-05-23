@@ -37,6 +37,13 @@
     name: "systemd-resolved.service"
     state: "restarted"
 
+- name: Restrict Avahi interfaces
+  lineinfile:
+    path: "/etc/avahi/avahi-daemon.conf"
+    regexp: "^allow-interfaces="
+    insertafter: '^#allow-interfaces=eth0'
+    line: "allow-interfaces=br-public,{{ wan_if }}"
+    state: "present"
 - name: Enable Avahi mDNS reflector
   lineinfile:
     path: "/etc/avahi/avahi-daemon.conf"
