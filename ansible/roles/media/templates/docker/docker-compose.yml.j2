@@ -288,19 +288,17 @@ services:
     container_name: "minecraft-backup"
     image: "itzg/mc-backup:latest"
     restart: "always"
+    network_mode: "service:minecraft"
     environment:
       TZ: *timezone
       BACKUP_NAME: *minecraft-level-name
       LEVEL: *minecraft-level-name
-      RCON_HOST: "minecraft"
       RCON_PASSWORD: *minecraft-rcon-password
       RCON_PORT: *minecraft-rcon-port
       TYPE: *minecraft-type
       BACKUP_INTERVAL: 1d
       INITIAL_DELAY: 12h
       PRUNE_BACKUPS_DAYS: 21
-    networks:
-      minecraft:
     volumes:
       - "{{ minecraft_data_dir }}:/data:ro"
       - "{{ minecraft_backups_dir }}:/backups"
