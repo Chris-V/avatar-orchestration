@@ -1,5 +1,5 @@
 - name: Copy NFTables configuration
-  notify: "reload nftables"
+  register: "nftables_config"
   template:
     src: "etc/nftables.conf.j2"
     dest: "/etc/nftables.conf"
@@ -10,10 +10,16 @@
     validate: "nft -c -f %s"
 
 - name: Enable NFTables
+  register: "nftables_service"
   systemd:
     name: "nftables.service"
     state: "started"
     enabled: yes
+- name: Reload NFTables
+  when: "nftables_config.changed and not nftables_service.changed"
+  systemd:
+    name: "nftables.service"
+    state: "reloaded"
 
 # Avahi deamon reflector:
 #  https://community.home-assistant.io/t/containers-avoiding-privileged-and-host-network-as-much-as-possible/60792/6
@@ -22,7 +28,7 @@
     name: "avahi"
     state: "present"
 
-- name: Disable from from systemd-resolved
+- name: Disable multicast from systemd-resolved
   register: "resolved_config"
   lineinfile:
     path: "/etc/systemd/resolved.conf"

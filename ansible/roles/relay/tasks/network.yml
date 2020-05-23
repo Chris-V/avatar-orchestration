@@ -9,7 +9,7 @@
       ACTION=="add", SUBSYSTEM=="net", KERNEL=="wl*", RUN+="/usr/bin/iw dev $name set power_save off"
 
 - name: Copy NFTables configuration
-  notify: reload nftables
+  register: "nftables_config"
   template:
     src: "etc/nftables.conf.j2"
     dest: "/etc/nftables.conf"
@@ -20,7 +20,37 @@
     validate: "nft -c -f %s"
 
 - name: Enable NFTables
+  register: "nftables_service"
   systemd:
     name: "nftables.service"
     state: "started"
     enabled: yes
+- name: Reload NFTables
+  when: "nftables_config.changed and not nftables_service.changed"
+  systemd:
+    name: "nftables.service"
+    state: "reloaded"
+
+- name: Copy network configurations
+  register: "network_configs"
+  loop:
+    - { filename: "wired.network" }
+    - { filename: "wireless.network" }
+  copy:
+    src: "etc/systemd/network/{{ item.filename }}"
+    dest: "/etc/systemd/network/{{ item.filename }}"
+    owner: "root"
+    group: "root"
+    mode: "u=rw,go=r"
+
+- name: Enable systemd-networkd
+  register: "networkd_service"
+  systemd:
+    name: "systemd-networkd.service"
+    state: "started"
+    enabled: yes
+- name: Restart systemd-networkd
+  when: "network_configs.changed and not networkd_service.changed"
+  systemd:
+    name: "systemd-networkd.service"
+    state: "restarted"

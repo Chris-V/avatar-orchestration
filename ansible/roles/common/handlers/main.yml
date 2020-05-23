@@ -13,11 +13,7 @@
   systemd:
     name: systemd-journald.service
     state: restarted
-- name: Reload NFTables
-  listen: "reload nftables"
-  systemd:
-    name: "nftables.service"
-    state: "reloaded"
+
 - name: Reload SSHd
   listen: "reload sshd"
   systemd:

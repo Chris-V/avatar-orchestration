@@ -14,6 +14,7 @@
   notify: activate wol
 
 - name: Copy NFTables configuration
+  register: "nftables_config"
   template:
     src: "etc/nftables.conf.j2"
     dest: "/etc/nftables.conf"
@@ -21,11 +22,16 @@
     owner: "root"
     group: "root"
     mode: 0600
-    validate: 'nft -c -f %s'
-  notify: reload nftables
+    validate: "nft -c -f %s"
 
 - name: Enable NFTables
+  register: "nftables_service"
   systemd:
     name: "nftables.service"
     state: "started"
     enabled: yes
+- name: Reload NFTables
+  when: "nftables_config.changed and not nftables_service.changed"
+  systemd:
+    name: "nftables.service"
+    state: "reloaded"
