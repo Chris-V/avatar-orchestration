@@ -1,3 +1,4 @@
-- import_tasks: system.yml
+- import_tasks: clock.yml
 - import_tasks: network.yml
+- import_tasks: bluetooth.yml
 - import_tasks: docker.yml
