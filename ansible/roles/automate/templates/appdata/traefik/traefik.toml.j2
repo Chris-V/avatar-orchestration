@@ -27,6 +27,7 @@
   KeyType = "RSA4096"
   [CertificatesResolvers.default.acme.dnsChallenge]
     Provider = "gcloud"
+    DelayBeforeCheck = 60
     Resolvers = ["1.1.1.1:53", "1.0.0.1:53"]
 
 [EntryPoints]
@@ -50,7 +51,7 @@
     [EntryPoints.https.http]
       middlewares = ["common@file"]
       [EntryPoints.https.http.tls]
-        certResolver = "leresolver"
+        certResolver = "default"
         [[EntryPoints.https.http.tls.domains]]
           main = "{{ domain_name }}"
           sans = ["*.{{ domain_name }}"]

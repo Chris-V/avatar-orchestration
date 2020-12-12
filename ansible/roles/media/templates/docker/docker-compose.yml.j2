@@ -54,7 +54,7 @@ networks:
 services:
   proxy:
     container_name: "proxy"
-    image: "traefik:2.2"
+    image: "traefik:2.3"
     restart: "unless-stopped"
     environment:
       TZ: *timezone
@@ -86,7 +86,7 @@ services:
     restart: "unless-stopped"
     environment:
       TZ: *timezone
-      GLANCES_OPT: -w
+      GLANCES_OPT: -w --enable-plugin sensors
     labels:
       <<: *proxy-enabled
       traefik.docker.network: "glances"
@@ -116,7 +116,7 @@ services:
 
   deluge:
     container_name: "deluge"
-    image: "linuxserver/deluge:latest"
+    image: "ghcr.io/linuxserver/deluge:latest"
     network_mode: "service:vpn"
     restart: "unless-stopped"
     depends_on:
@@ -138,7 +138,7 @@ services:
 
   jackett:
     container_name: "jackett"
-    image: "linuxserver/jackett:latest"
+    image: "ghcr.io/linuxserver/jackett:latest"
     network_mode: "service:vpn"
     restart: "unless-stopped"
     environment:
@@ -156,7 +156,7 @@ services:
 
   plex:
     container_name: "plex"
-    image: "linuxserver/plex:latest"
+    image: "ghcr.io/linuxserver/plex:latest"
     restart: "unless-stopped"
     devices:
       - "/dev/dri:/dev/dri"
@@ -184,7 +184,7 @@ services:
 
   sonarr:
     container_name: "sonarr"
-    image: "linuxserver/sonarr:preview"
+    image: "ghcr.io/linuxserver/sonarr:preview"
     restart: "unless-stopped"
     depends_on:
       - deluge
@@ -209,7 +209,7 @@ services:
 
   radarr:
     container_name: "radarr"
-    image: "linuxserver/radarr:latest"
+    image: "ghcr.io/linuxserver/radarr:latest"
     restart: "unless-stopped"
     depends_on:
       - deluge

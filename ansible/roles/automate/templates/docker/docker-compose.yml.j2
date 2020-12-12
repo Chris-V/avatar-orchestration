@@ -48,7 +48,7 @@ networks:
 services:
   proxy:
     container_name: proxy
-    image: "traefik:2.2"
+    image: "traefik:2.3"
     restart: "unless-stopped"
     depends_on:
       - "error-pages"
@@ -99,7 +99,7 @@ services:
 
   home-assistant:
     container_name: home-assistant
-    image: "homeassistant/home-assistant:0.110.1"
+    image: "homeassistant/home-assistant:0.118.5"
     restart: "unless-stopped"
     depends_on:
       - "apcupsd"
@@ -194,7 +194,7 @@ services:
     restart: "unless-stopped"
     environment:
       TZ: *timezone
-      GLANCES_OPT: -w
+      GLANCES_OPT: -w --enable-plugin sensors
     labels:
       <<: *proxy-enabled
       traefik.docker.network: "glances"
