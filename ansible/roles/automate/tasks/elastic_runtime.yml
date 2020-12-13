@@ -2,7 +2,7 @@
 
 - name: Lookup remote elastic checksum file
   register: elastic_remote_checksum_file
-  stat:
+  ansible.builtin.stat:
     path: &remote_checksum_file "{{ docker_appdata_dir }}/elasticsearch/checksum"
     get_attributes: no
     get_checksum: no
@@ -10,7 +10,7 @@
 
 - name: Set default remote elastic checksum fact
   when: not elastic_remote_checksum_file.stat.exists
-  set_fact:
+  ansible.builtin.set_fact:
     elastic_remote_checksum: "0"
 
 - name: Set stored remote elastic checksum
@@ -18,10 +18,10 @@
   block:
     - name: Read remote elastic checksum file
       register: elastic_remote_checksum_b64
-      slurp:
+      ansible.builtin.slurp:
         src: *remote_checksum_file
     - name: Update remote elastic checksum fact
-      set_fact:
+      ansible.builtin.set_fact:
         elastic_remote_checksum: "{{ elastic_remote_checksum_b64.content | b64decode }}"
 
 # Calculate expected checksum
@@ -36,13 +36,13 @@
         - "../templates/appdata/elasticsearch"
       when: item.state == 'file'
       register: "elastic_local_files"
-      stat:
+      ansible.builtin.stat:
         path: "{{ item.src }}"
         checksum_algorithm: "sha512"
         get_attributes: no
         get_mime: no
     - name: Update local elastic checksum fact
-      set_fact:
+      ansible.builtin.set_fact:
         elastic_local_checksum: |
           {{ elastic | hash('sha512') }}
           {{ elastic_local_files.results | map(attribute='stat.checksum') | join() }}
@@ -53,7 +53,7 @@
   when: elastic_remote_checksum != elastic_local_checksum
   block:
     - name: Start elasticsearch container
-      docker_compose:
+      community.docker.docker_compose:
         project_src: "{{ docker_apps_dir }}"
         services:
           - "elasticsearch"
@@ -63,14 +63,14 @@
       loop:
         - "init"
         - "init_config"
-      template:
+      ansible.builtin.template:
         src: "appdata/elasticsearch/{{ item }}.sh.j2"
         dest: "{{ docker_appdata_dir }}/elasticsearch/{{ item }}.sh"
         owner: "root"
         group: "root"
         mode: "700"
     - name: Copy configuration scripts
-      copy:
+      ansible.builtin.copy:
         src: "appdata/elasticsearch/wait-for-it.sh"
         dest: "{{ docker_appdata_dir }}/elasticsearch/wait-for-it.sh"
         owner: "root"
@@ -78,7 +78,7 @@
         mode: "700"
     - name: Execute configuration script
       register: container_output
-      docker_container:
+      community.docker.docker_container:
         command: "/elastic/init.sh"
         cleanup: yes
         detach: no
@@ -92,17 +92,17 @@
         state: "started"
         volumes:
           - "{{ docker_appdata_dir }}/elasticsearch:/elastic:ro"
-    - debug:
+    - ansible.builtin.debug:
         msg: "{{ container_output.ansible_facts.docker_container.Output }}"
 
     - name: Cleanup configuration script
-      file:
+      ansible.builtin.file:
         state: "absent"
         path: "{{ docker_appdata_dir }}/elasticsearch/init_config.sh"
     - name: Update remote checksum file
       vars:
         content: "{{ elastic_local_checksum }}"
-      template:
+      ansible.builtin.template:
         src: "any_content.j2"
         dest: *remote_checksum_file
         owner: "root"

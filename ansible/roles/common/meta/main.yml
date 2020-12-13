@@ -1,0 +1,10 @@
+galaxy_info:
+  author: "Chris-V"
+  license: "MIT"
+  description: "Common role aggregating tasks to perform on all Avatar servers."
+  min_ansible_version: "2.9.2"
+  platforms:
+    - name: "Arch Linux"
+      versions: ["all"]
+dependencies:
+  - role: kewlfft.aur

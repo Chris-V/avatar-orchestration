@@ -1,13 +1,13 @@
 - name: Check if backup restoration is required
   register: acl_backup
-  stat:
+  ansible.builtin.stat:
     path: "{{ docker_appdata_dir }}/acl.txt"
 
 - name: Restore backup
   when: not acl_backup.stat.exists
   block:
     - name: Copy initial backed up appdata
-      docker_container:
+      community.docker.docker_container:
         auto_remove: yes
         cleanup: yes
         detach: no

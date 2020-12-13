@@ -1,18 +1,18 @@
 - name: Install Fish
-  pacman:
+  community.general.pacman:
     name: fish
     state: present
 
 - name: Create groups
-  group:
-    name: '{{ item }}'
-    state: present
   loop:
     - ssh
     - poweroff
+  ansible.builtin.group:
+    name: '{{ item }}'
+    state: present
 
 - name: Create sudoer rule for wheel
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sudoers.d/20-wheel
     line: '%wheel ALL=(ALL) ALL'
     create: yes
@@ -21,7 +21,7 @@
     mode: 0440
     validate: 'visudo -cf %s'
 - name: Create sudoer rule for poweroff
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/sudoers.d/30-poweroff
     line: '%poweroff ALL=NOPASSWD: /usr/bin/poweroff, /usr/bin/halt, /usr/bin/reboot'
     create: yes
@@ -30,40 +30,46 @@
     mode: 0440
     validate: 'visudo -cf %s'
 
-- name: Create user ansible
-  user:
-    name: ansible
-    groups: ssh
-    append: no
-    state: present
+- name: Create and configure `ansible`
+  block:
+    - name: Create user
+      ansible.builtin.user:
+        name: ansible
+        groups: ssh
+        append: no
+        state: present
 
-- name: Create user avatar
-  user:
-    name: avatar
-    groups: wheel,ssh,poweroff
-    append: yes
-    create_home: yes
-    state: present
-    shell: /usr/bin/fish
-    password: '{{ avatar_password }}'
-- name: Add authorized keys to avatar
-  authorized_key:
-    user: avatar
-    state: present
-    key: '{{ avatar_public_key }}'
+- name: Create and configure `avatar`
+  block:
+    - name: Create user
+      ansible.builtin.user:
+        name: avatar
+        groups: wheel,ssh,poweroff
+        append: yes
+        create_home: yes
+        state: present
+        shell: /usr/bin/fish
+        password: '{{ avatar_password }}'
+    - name: Add authorized keys
+      ansible.posix.authorized_key:
+        user: avatar
+        state: present
+        key: '{{ avatar_public_key }}'
 
-- name: Create user homeassistant
-  user:
-    name: homeassistant
-    groups: ssh,poweroff
-    create_home: yes
-    state: present
-    shell: /usr/bin/fish
-    password: '{{ homeassistant_password }}'
-- name: Add authorized keys to homeassistant
-  when: "add_homeassistant_to_authorized_keys | bool"
-  authorized_key:
-    exclusive: yes
-    state: present
-    user: homeassistant
-    key: '{{ homeassistant_public_key }}'
+- name: Create and configure `homeassistant`
+  block:
+    - name: Create user
+      ansible.builtin.user:
+        name: homeassistant
+        groups: ssh,poweroff
+        create_home: yes
+        state: present
+        shell: /usr/bin/fish
+        password: '{{ homeassistant_password }}'
+    - name: Add authorized keys
+      when: "add_homeassistant_to_authorized_keys | bool"
+      ansible.posix.authorized_key:
+        exclusive: yes
+        state: present
+        user: homeassistant
+        key: '{{ homeassistant_public_key }}'

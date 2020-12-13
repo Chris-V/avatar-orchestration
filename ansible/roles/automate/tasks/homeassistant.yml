@@ -1,20 +1,21 @@
 - name: Install ansible requirements
-  pacman:
+  community.general.pacman:
     name: "python-requests"
     state: "present"
 
-- block:
+- name: Generate home-assistant keys for GitHub
+  block:
     - name: Create .ssh/ directory
-      file:
+      ansible.builtin.file:
         path: "{{ homeassistant_config_key_path | dirname }}"
         state: "directory"
         owner: "homeassistant"
         group: "homeassistant"
         mode: 0740
-    - name: Generate home-assistant deploy key
+    - name: Generate key
       become: yes
       become_user: homeassistant
-      openssh_keypair:
+      community.crypto.openssh_keypair:
         path: "{{ homeassistant_config_key_path }}"
         type: "rsa"
         size: 4096
@@ -22,12 +23,12 @@
         force: "{{ homeassistant_recreate_config_key | bool }}"
         owner: "homeassistant"
         group: "homeassistant"
-    - name: Read public home-assistant deploy key
+    - name: Read public key
       register: "public_deploy_key"
-      slurp:
+      ansible.builtin.slurp:
         src: "{{ homeassistant_config_key_path }}.pub"
-    - name: Upload home-assistant deploy key to GitHub
-      github_deploy_key:
+    - name: Upload key to GitHub
+      community.general.github_deploy_key:
         name: "automate-homeassistant"
         owner: "{{ homeassistant_config_owner }}"
         repo: "{{ homeassistant_config_repo }}"
@@ -44,7 +45,7 @@
     - { path: "openzwave/", mode: "u=rwx,g=rx,o=" }
     - { path: "ssh/", mode: "u=rwx,go=" }
     - { path: "docker/", mode: "u=rwx,g=rx,o=", owner: "root" }
-  file: &create_appdata_dir
+  ansible.builtin.file: &create_appdata_dir
     path: "{{ docker_appdata_dir }}/home-assistant/{{ item.path }}"
     state: "directory"
     owner: "{{ item.owner | default('homeassistant') }}"
@@ -54,7 +55,7 @@
 - name: Pull home-assistant configuration
   become: yes
   become_user: homeassistant
-  git:
+  ansible.builtin.git:
     dest: "{{ docker_appdata_dir }}/home-assistant/config"
     repo: "git@github.com:{{ homeassistant_config_owner }}/{{ homeassistant_config_repo }}.git"
     version: "master"
@@ -64,14 +65,15 @@
 
 - name: Check HACS presence
   register: hacs_cloned
-  stat:
+  ansible.builtin.stat:
     path: "{{ docker_appdata_dir }}/home-assistant/config/custom_components/hacs"
-- when: not hacs_cloned.stat.exists
+- name: Configure HACS
+  when: not hacs_cloned.stat.exists
   block:
     - name: Clone HACS
       become: yes
       become_user: homeassistant
-      git:
+      ansible.builtin.git:
         dest: &hacs_tmp_path "/tmp/hacs"
         repo: "{{ homeassistant_hacs_repo }}"
         version: "master"
@@ -80,7 +82,7 @@
         depth: 1
         umask: "0027"
     - name: Install HACS
-      copy:
+      ansible.builtin.copy:
         src: "/tmp/hacs/custom_components/hacs"
         dest: "{{ docker_appdata_dir }}/home-assistant/config/custom_components"
         remote_src: yes
@@ -88,14 +90,14 @@
         group: "homeassistant"
         mode: "preserve"
     - name: Cleanup HACS clone
-      file:
+      ansible.builtin.file:
         path: *hacs_tmp_path
         state: "absent"
 
 - name: Pull Open-Zwave configuration
   become: yes
   become_user: homeassistant
-  git:
+  ansible.builtin.git:
     dest: "{{ docker_appdata_dir }}/home-assistant/openzwave"
     repo: "{{ homeassistant_ozw_config_repo }}"
     version: "1.4/configs"
@@ -109,7 +111,7 @@
   loop:
     - { path: "config/.secrets", mode: "u=rwx,go=" }
     - { path: "config/www/secrets", mode: "u=rwx,go=" }
-  file: *create_appdata_dir
+  ansible.builtin.file: *create_appdata_dir
 
 - name: Copy Home-Assistant files
   loop:
@@ -120,7 +122,7 @@
     - { host_file: yes, path: "config/.secrets/id_router_homeassistant.pub", mode: "u=r,g=r,o=" }
     - { host_file: yes, path: "config/www/secrets/chris.webp", mode: "ug=rw,o=" }
     - { host_file: yes, path: "config/www/secrets/karine.webp", mode: "ug=rw,o=" }
-  copy:
+  ansible.builtin.copy:
     src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/home-assistant/{{ item.path }}"
     dest: "{{ docker_appdata_dir }}/home-assistant/{{ item.path }}"
     owner: "{{ item.owner | default('homeassistant') }}"
@@ -133,7 +135,7 @@
     - { path: "config/.secrets/ssh_known_hosts", mode: "u=rw,go=" }
     - { host_file: yes, path: "config/.secrets/id_homeassistant.pub", mode: "u=r,g=r,o=" }
     - { host_file: yes, path: "config/secrets.yaml", mode: "u=r,go=" }
-  template:
+  ansible.builtin.template:
     src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/home-assistant/{{ item.path }}.j2"
     dest: "{{ docker_appdata_dir }}/home-assistant/{{ item.path }}"
     owner: "homeassistant"
@@ -144,6 +146,6 @@
   loop:
     - { path: "{{ docker_appdata_dir }}/home-assistant/s6/setup-and-run" }
     - { path: "{{ docker_appdata_dir }}/home-assistant/s6" }
-  file:
+  ansible.builtin.file:
     state: "absent"
     path: "{{ item.path }}"

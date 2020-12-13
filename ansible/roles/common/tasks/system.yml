@@ -3,11 +3,11 @@
 
 - name: Update pacman cache
   changed_when: false
-  pacman:
+  community.general.pacman:
     update_cache: yes
 
 - name: Install common libraries
-  pacman:
+  community.general.pacman:
     name: git nftables iptables-nft lm_sensors openssh python sudo tmux vim
     state: present
 
@@ -21,7 +21,7 @@
 - name: Configure journald limits
   block:
     - name: Create journald conf directory
-      file:
+      ansible.builtin.file:
         state: "directory"
         path: "/etc/systemd/journald.conf.d"
         owner: "root"
@@ -29,7 +29,7 @@
         mode: 0755
     - name: Copy journald configs
       notify: reload journald
-      copy:
+      ansible.builtin.copy:
         dest: "/etc/systemd/journald.conf.d/10-max_size.conf"
         owner: "root"
         group: "root"
@@ -40,7 +40,7 @@
 
 - name: Increase memory maps
   notify: reload kernel
-  copy:
+  ansible.builtin.copy:
     dest: "/etc/sysctl.d/50-memory.conf"
     owner: "root"
     group: "root"

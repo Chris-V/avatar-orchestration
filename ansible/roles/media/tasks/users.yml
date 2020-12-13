@@ -1,15 +1,15 @@
 - name: Create system groups
-  group:
-    name: '{{ item.name }}'
-    gid: '{{ item.gid }}'
-    state: present
   loop:
     - { name: &data_group 'data', gid: '{{ system_data_gid }}' }
     - { name: &media_group 'media', gid: '{{ system_media_gid }}' }
     - { name: &appdata 'docker-appdata', gid: '{{ system_appdata_gid }}' }
+  ansible.builtin.group:
+    name: '{{ item.name }}'
+    gid: '{{ item.gid }}'
+    state: present
 
 - name: Create system users
-  user:
+  ansible.builtin.user:
     name: *appdata
     group: *appdata
     groups:

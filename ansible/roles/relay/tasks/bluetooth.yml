@@ -1,5 +1,5 @@
 - name: Install bluez
-  pacman:
+  community.general.pacman:
     name: "bluez"
     state: "present"
 
@@ -13,7 +13,7 @@
 
 - name: Enable bluetooth on boot
   register: "bluetooth_autoenable"
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "/etc/bluetooth/main.conf"
     regexp: "^AutoEnable="
     insertafter: '^#AutoEnable='
@@ -23,7 +23,7 @@
 - name: Enable bluetoothd experimental flag
   block:
     - name: Create systemd bluetooth config directory
-      file:
+      ansible.builtin.file:
         state: "directory"
         path: "/etc/systemd/system/bluetooth.service.d"
         owner: "root"
@@ -31,7 +31,7 @@
         mode: 0755
     - name: Copy bluetooth service unit overrides
       register: "bluetooth_experimental"
-      copy:
+      ansible.builtin.copy:
         src: "etc/systemd/system/bluetooth.service.d/override.conf"
         dest: "/etc/systemd/system/bluetooth.service.d/override.conf"
         owner: "root"
@@ -40,14 +40,14 @@
 
 - name: Enable bluetooth
   register: "bluetooth_service"
-  systemd:
+  ansible.builtin.systemd:
     name: "bluetooth.service"
     daemon_reload: yes
     state: "started"
     enabled: yes
 - name: Restart bluetooth
   when: "(bluetooth_autoenable.changed or bluetooth_service.changed) and not bluetooth_service.changed"
-  systemd:
+  ansible.builtin.systemd:
     name: "bluetooth.service"
     daemon_reload: yes
     state: "restarted"

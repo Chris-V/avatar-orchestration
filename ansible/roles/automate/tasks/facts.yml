@@ -9,6 +9,6 @@
       command: "id -g homeassistant"
       changed_when: false
     - name: Register home-assistant user facts
-      set_fact:
+      ansible.builtin.set_fact:
         homeassistant_uid: "{{ homeassistant_uid_result.stdout }}"
         homeassistant_gid: "{{ homeassistant_gid_result.stdout }}"

@@ -1,5 +1,5 @@
 - name: Install mount packages
-  pacman:
+  community.general.pacman:
     name: arch-install-scripts btrfs-progs fuse3 hdparm smartmontools xfsprogs
     state: present
 
@@ -12,19 +12,19 @@
     aur_only: yes
 
 - name: Create mount directories
-  file:
+  loop:
+    - { path: "/mnt/storage" }
+    - { path: "{{ data_mount }}" }
+    - { path: "{{ storage_mount }}" }
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: directory
     owner: root
     group: root
     mode: 0755
-  loop:
-    - { path: "/mnt/storage" }
-    - { path: "{{ data_mount }}" }
-    - { path: "{{ storage_mount }}" }
 
 - name: Mount data disk
-  mount:
+  ansible.posix.mount:
     state: "mounted"
     src: "LABEL=data"
     path: "/data"
@@ -34,7 +34,7 @@
     passno: "0"
 
 - name: Mount storage disk 1
-  mount:
+  ansible.posix.mount:
     state: "mounted"
     src: "PARTLABEL=storage1"
     path: "/mnt/storage/disk1"
@@ -44,7 +44,7 @@
     passno: "0"
 
 - name: Mount storage merge
-  mount:
+  ansible.posix.mount:
     state: "mounted"
     src: "/mnt/storage/disk*"
     path: "{{ storage_mount }}"

@@ -1,6 +1,6 @@
 - name: Disable wireless power saving mode
   notify: reload udev
-  copy:
+  ansible.builtin.copy:
     dest: "/etc/udev/rules.d/81-wifi-powersave.rules"
     owner: "root"
     group: "root"
@@ -10,7 +10,7 @@
 
 - name: Copy NFTables configuration
   register: "nftables_config"
-  template:
+  ansible.builtin.template:
     src: "etc/nftables.conf.j2"
     dest: "/etc/nftables.conf"
     force: yes
@@ -21,13 +21,13 @@
 
 - name: Enable NFTables
   register: "nftables_service"
-  systemd:
+  ansible.builtin.systemd:
     name: "nftables.service"
     state: "started"
     enabled: yes
 - name: Reload NFTables
   when: "nftables_config.changed and not nftables_service.changed"
-  systemd:
+  ansible.builtin.systemd:
     name: "nftables.service"
     state: "reloaded"
 
@@ -36,7 +36,7 @@
   loop:
     - { filename: "wired.network" }
     - { filename: "wireless.network" }
-  copy:
+  ansible.builtin.copy:
     src: "etc/systemd/network/{{ item.filename }}"
     dest: "/etc/systemd/network/{{ item.filename }}"
     owner: "root"
@@ -45,12 +45,12 @@
 
 - name: Enable systemd-networkd
   register: "networkd_service"
-  systemd:
+  ansible.builtin.systemd:
     name: "systemd-networkd.service"
     state: "started"
     enabled: yes
 - name: Restart systemd-networkd
   when: "network_configs.changed and not networkd_service.changed"
-  systemd:
+  ansible.builtin.systemd:
     name: "systemd-networkd.service"
     state: "restarted"

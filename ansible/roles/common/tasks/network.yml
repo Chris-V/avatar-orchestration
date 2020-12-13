@@ -1,5 +1,5 @@
 - name: Set hostname
-  template:
+  ansible.builtin.template:
     src: "etc/hostname.j2"
     dest: "/etc/hostname"
     owner: "root"
@@ -7,7 +7,7 @@
     mode: 0644
 
 - name: Update hosts file
-  template:
+  ansible.builtin.template:
     src: "etc/hosts.j2"
     dest: '/etc/hosts'
     owner: root
@@ -15,7 +15,7 @@
     mode: 0644
 
 - name: Configure DNS
-  file:
+  ansible.builtin.file:
     state: "link"
     src: "/run/systemd/resolve/resolv.conf"
     path: "/etc/resolv.conf"
@@ -24,7 +24,7 @@
 
 - name: Disable IPV6
   notify: reload kernel
-  copy:
+  ansible.builtin.copy:
     dest: "/etc/sysctl.d/40-ipv6.conf"
     owner: "root"
     group: "root"
@@ -35,7 +35,7 @@
   loop:
     - { path: "/etc/modprobe.d/noiptables.conf" }
     - { path: "/usr/local/sbin/iptables" }
-  file:
+  ansible.builtin.file:
     state: "absent"
     path: "{{ item.path }}"
 

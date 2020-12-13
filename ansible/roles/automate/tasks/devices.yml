@@ -1,6 +1,6 @@
 - name: Copy UDEV rules for HUSBZB-1
   notify: reload udev
-  copy:
+  ansible.builtin.copy:
     dest: "/etc/udev/rules.d/99-hubz.rules"
     owner: "root"
     group: "root"
@@ -11,7 +11,7 @@
 
 - name: Copy UDEV rules for UPS
   notify: reload udev
-  copy:
+  ansible.builtin.copy:
     dest: "/etc/udev/rules.d/99-ups.rules"
     owner: "root"
     group: "root"

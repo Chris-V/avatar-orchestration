@@ -1,5 +1,5 @@
 - name: Copy SSH daemon configs
-  template:
+  ansible.builtin.template:
     src: etc/ssh/sshd_config.j2
     dest: /etc/ssh/sshd_config
     force: yes

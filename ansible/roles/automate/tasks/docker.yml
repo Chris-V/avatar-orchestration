@@ -1,12 +1,12 @@
 - name: Install docker packages
-  pacman:
+  community.general.pacman:
     name: "docker docker-compose python-docker"
     state: "present"
 
 - name: Configure docker service
   block:
     - name: Create systemd docker config directory
-      file:
+      ansible.builtin.file:
         state: "directory"
         path: "/etc/systemd/system/docker.service.d"
         owner: "root"
@@ -16,7 +16,7 @@
       notify:
         - reload systemd
         - restart docker
-      template:
+      ansible.builtin.template:
         src: "etc/systemd/system/docker.service.d/10-args.conf.j2"
         dest: "/etc/systemd/system/docker.service.d/10-args.conf"
         owner: "root"
@@ -24,20 +24,20 @@
         mode: 0644
 
 - name: Enable Docker
-  systemd:
+  ansible.builtin.systemd:
     name: "docker.service"
     state: "started"
     enabled: yes
 
 - name: Create docker apps root
-  file:
+  ansible.builtin.file:
     path: "{{ docker_apps_dir }}"
     state: "directory"
     owner: "root"
     group: "docker"
     mode: 0755
 - name: Create docker appdata root
-  file:
+  ansible.builtin.file:
     path: "{{ docker_appdata_dir }}"
     state: "directory"
     owner: "docker-appdata"
@@ -49,7 +49,7 @@
     - name: Create APC directories
       loop:
         - { path: "", mode: "u=rwx,g=rx,o=" }
-      file:
+      ansible.builtin.file:
         path: "{{ docker_appdata_dir }}/apcupsd/{{ item.path }}"
         state: "directory"
         owner: "docker-appdata"
@@ -58,7 +58,7 @@
     - name: Copy APC files
       loop:
         - { path: "apcupsd.conf", mode: "u=rw,g=r,o=" }
-      copy:
+      ansible.builtin.copy:
         src: "appdata/apcupsd/{{ item.path }}"
         dest: "{{ docker_appdata_dir }}/apcupsd/{{ item.path }}"
         owner: "docker-appdata"
@@ -70,7 +70,7 @@
     - name: Create appdata-backup directories
       loop:
         - { path: "", mode: "u=rwx,g=rx,o=" }
-      file:
+      ansible.builtin.file:
         path: "{{ docker_appdata_dir }}/appdata-backup/{{ item.path }}"
         state: "directory"
         owner: "docker-appdata"
@@ -81,7 +81,7 @@
         - { path: "backup_acl.sh", mode: "u=rwx,g=rx,o=" }
         - { path: "filters.txt", mode: "u=rw,go=" }
         - { host_file: yes, path: "gcs_auth.json", mode: "u=r,go=" }
-      copy:
+      ansible.builtin.copy:
         src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/appdata-backup/{{ item.path }}"
         dest: "{{ docker_appdata_dir }}/appdata-backup/{{ item.path }}"
         owner: "docker-appdata"
@@ -90,7 +90,7 @@
     - name: Copy appdata-backup templates
       loop:
         - { path: "rclone.conf", mode: "u=rw,go=" }
-      template:
+      ansible.builtin.template:
         src: "appdata/appdata-backup/{{ item.path }}.j2"
         dest: "{{ docker_appdata_dir }}/appdata-backup/{{ item.path }}"
         owner: "docker-appdata"
@@ -104,7 +104,7 @@
         - { path: "", mode: "u=rwx,g=rx,o=" }
         - { path: "config/", mode: "u=rwx,g=rx,o=" }
         - { path: "data/", mode: "u=rwx,go=" }
-      file:
+      ansible.builtin.file:
         path: "{{ docker_appdata_dir }}/mosquitto/{{ item.path }}"
         state: "directory"
         owner: "docker-appdata"
@@ -115,7 +115,7 @@
         - { path: "config/mosquitto.conf", mode: "u=rw,g=r,o=" }
         - { host_file: yes, path: "config/acl", mode: "u=r,go=" }
         - { host_file: yes, path: "config/passwords", mode: "u=r,go=" }
-      copy:
+      ansible.builtin.copy:
         src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/mosquitto/{{ item.path }}"
         dest: "{{ docker_appdata_dir }}/mosquitto/{{ item.path }}"
         owner: "docker-appdata"
@@ -129,7 +129,7 @@
         - { path: "", mode: "u=rwx,g=rx,o=" }
         - { path: "traefik.d/", mode: "u=rwx,g=rx,o=" }
         - { path: "acme/", mode: "u=rwx,go=" }
-      file:
+      ansible.builtin.file:
         path: "{{ docker_appdata_dir }}/traefik/{{ item.path }}"
         state: "directory"
         owner: "docker-appdata"
@@ -139,7 +139,7 @@
       loop:
         - { host_file: yes, path: "acme/gce_service_account.json", mode: "u=r,go=" }
         - { host_file: yes, path: "traefik.d/monitoring.htpasswd", mode: "u=r,go=" }
-      copy:
+      ansible.builtin.copy:
         src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/traefik/{{ item.path }}"
         dest: "{{ docker_appdata_dir }}/traefik/{{ item.path }}"
         owner: "docker-appdata"
@@ -148,7 +148,7 @@
     - name: Copy Traefik templates
       with_filetree: "{{ '../templates/appdata/traefik/' }}"
       when: "item.state == 'file' "
-      template:
+      ansible.builtin.template:
         src: "{{ item.src }}"
         dest: "{{ docker_appdata_dir }}/traefik/{{ item.path | replace('.j2', '') }}"
         owner: "docker-appdata"
@@ -156,7 +156,7 @@
         mode: "u=rw,g=r,o="
 
 - name: Copy www files
-  copy:
+  ansible.builtin.copy:
     src: "www"
     dest: "/srv"
     owner: "docker-appdata"
@@ -165,7 +165,7 @@
     mode: 0644
 
 - name: Copy docker compose
-  template:
+  ansible.builtin.template:
     src: "docker/docker-compose.yml.j2"
     dest: "{{ docker_apps_dir }}/docker-compose.yml"
     owner: "root"

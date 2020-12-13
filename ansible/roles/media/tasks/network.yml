@@ -1,10 +1,10 @@
 - name: Install ethernet tools
-  pacman:
+  community.general.pacman:
     name: "ethtool"
     state: "present"
 
 - name: Copy WOL config
-  template:
+  ansible.builtin.template:
     src: "etc/systemd/network/15-wired.link.j2"
     dest: "/etc/systemd/network/15-wired.link"
     force: yes
@@ -15,7 +15,7 @@
 
 - name: Copy NFTables configuration
   register: "nftables_config"
-  template:
+  ansible.builtin.template:
     src: "etc/nftables.conf.j2"
     dest: "/etc/nftables.conf"
     force: yes
@@ -26,12 +26,12 @@
 
 - name: Enable NFTables
   register: "nftables_service"
-  systemd:
+  ansible.builtin.systemd:
     name: "nftables.service"
     state: "started"
     enabled: yes
 - name: Reload NFTables
   when: "nftables_config.changed and not nftables_service.changed"
-  systemd:
+  ansible.builtin.systemd:
     name: "nftables.service"
     state: "reloaded"

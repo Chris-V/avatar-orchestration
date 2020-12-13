@@ -1,12 +1,12 @@
 - name: Install docker packages
-  pacman:
+  community.general.pacman:
     name: "docker docker-compose"
     state: "present"
 
 - name: Configure docker service
   block:
     - name: Create systemd docker config directory
-      file:
+      ansible.builtin.file:
         state: "directory"
         path: "/etc/systemd/system/docker.service.d"
         owner: "root"
@@ -16,7 +16,7 @@
       notify:
         - reload systemd
         - restart docker
-      template:
+      ansible.builtin.template:
         src: "etc/systemd/system/docker.service.d/10-args.conf.j2"
         dest: "/etc/systemd/system/docker.service.d/10-args.conf"
         owner: "root"
@@ -24,7 +24,7 @@
         mode: 0644
 
 - name: Enable Docker
-  systemd:
+  ansible.builtin.systemd:
     name: "docker.service"
     state: "started"
     enabled: yes
@@ -33,7 +33,7 @@
   loop:
     - "{{ docker_srv_dir }}"
     - "{{ docker_srv_dir }}/jobs"
-  file:
+  ansible.builtin.file:
     path: "{{ item }}"
     state: "directory"
     owner: "root"
@@ -54,7 +54,7 @@
     - { path: "{{ minecraft_data_dir }}" }
     - { path: "{{ minecraft_map_dir }}", group: "data", mode: "ug=rwx,o=rx" }
     - { path: "{{ plex_transcode_dir }}" }
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: "directory"
     recurse: no
@@ -63,7 +63,7 @@
     mode: "{{ item.mode | default('ug=rwx,o=', true) }}"
 
 - name: Copy docker images
-  copy:
+  ansible.builtin.copy:
     src: "docker-images"
     dest: "{{ docker_srv_dir }}"
     owner: "root"
@@ -75,7 +75,7 @@
   loop:
     - { path: "docker-compose.yml" }
     - { path: "jobs/docker-compose.yml" }
-  template:
+  ansible.builtin.template:
     src: "docker/{{ item.path }}.j2"
     dest: "{{ docker_srv_dir }}/{{ item.path }}"
     owner: "root"
@@ -84,13 +84,13 @@
     validate: "docker-compose -f %s config"
 
 - name: Copy initial app configs
-  unarchive:
+  ansible.builtin.unarchive:
     creates: "{{ docker_appdata_dir }}"
     src: "{{ appdata_archive }}"
     dest: "{{ docker_srv_dir }}"
 
 - name: Copy managed app configs
-  copy:
+  ansible.builtin.copy:
     src: "appdata/"
     dest: "{{ docker_appdata_dir }}"
     owner: "docker-appdata"
@@ -101,7 +101,7 @@
 - name: Populate managed app configs
   loop:
     - { filename: "traefik.toml" }
-  template:
+  ansible.builtin.template:
     src: "appdata/{{ item.filename }}.j2"
     dest: "{{ docker_appdata_dir }}/{{ item.filename }}"
     owner: "docker-appdata"

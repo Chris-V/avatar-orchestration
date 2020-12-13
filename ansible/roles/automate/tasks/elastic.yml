@@ -6,7 +6,7 @@
     - { path: "{{ docker_appdata_dir }}/journalbeat", mode: "u=rwx,g=rx,o=" }
     - { path: "{{ docker_appdata_dir }}/kibana", mode: "u=rwx,g=rx,o=" }
     - { path: "{{ docker_appdata_dir }}/metricbeat", mode: "u=rwx,g=rx,o=" }
-  file:
+  ansible.builtin.file:
     path: "{{ item.path }}"
     state: "directory"
     owner: "root"
@@ -17,7 +17,7 @@
   loop:
     - { path: "elasticsearch/elasticsearch.yml", mode: "u=rw,g=r,o=" }
     - { path: "elasticsearch/elasticsearch.keystore", mode: "u=rw,g=r,o=", host_file: true }
-  copy:
+  ansible.builtin.copy:
     src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/{{ item.path }}"
     dest: "{{ docker_appdata_dir }}/{{ item.path }}"
     owner: "root"
@@ -31,7 +31,7 @@
     - { path: "journalbeat/journalbeat.yml", mode: "u=rw,g=r,o=" }
     - { path: "kibana/kibana.yml", mode: "u=rw,g=r,o=" }
     - { path: "metricbeat/metricbeat.yml", mode: "u=rw,g=r,o=" }
-  template:
+  ansible.builtin.template:
     src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/{{ item.path }}.j2"
     dest: "{{ docker_appdata_dir }}/{{ item.path }}"
     owner: "root"
@@ -39,7 +39,7 @@
     mode: "{{ item.mode }}"
 
 - name: "Copy docker compose"
-  template:
+  ansible.builtin.template:
     src: "docker/monitoring/docker-compose.yml.j2"
     dest: "{{ docker_apps_dir }}/monitoring/docker-compose.yml"
     owner: "root"

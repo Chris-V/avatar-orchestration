@@ -1,22 +1,22 @@
 - name: Reload systemd
   listen: "reload systemd"
-  systemd:
+  ansible.builtin.systemd:
     daemon_reload: yes
 
 - name: Restart Docker
   listen: "restart docker"
-  systemd:
+  ansible.builtin.systemd:
     name: "docker.service"
     state: "restarted"
 - name: Reload Journald
   listen: "reload journald"
-  systemd:
+  ansible.builtin.systemd:
     name: systemd-journald.service
     state: restarted
 
 - name: Reload SSHd
   listen: "reload sshd"
-  systemd:
+  ansible.builtin.systemd:
     name: "sshd.service"
     state: "reloaded"
 
@@ -25,7 +25,7 @@
   command: "sysctl --system"
 - name: Reload kernel modules
   listen: "reload kernel"
-  systemd:
+  ansible.builtin.systemd:
     name: "systemd-modules-load.service"
     state: "restarted"
 

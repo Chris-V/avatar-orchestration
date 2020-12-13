@@ -1,13 +1,13 @@
 # Avahi deamon reflector:
 #  https://community.home-assistant.io/t/containers-avoiding-privileged-and-host-network-as-much-as-possible/60792/6
 - name: Install Avahi
-  pacman:
+  community.general.pacman:
     name: "avahi"
     state: "present"
 
 - name: Disable multicast from systemd-resolved
   register: "resolved_config"
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "/etc/systemd/resolved.conf"
     regexp: "^MulticastDNS="
     insertafter: '^#MulticastDNS='
@@ -16,19 +16,19 @@
 
 - name: Enable systemd-resolved
   register: "resolved_service"
-  systemd:
+  ansible.builtin.systemd:
     name: "systemd-resolved.service"
     state: "started"
     enabled: yes
 - name: Restart systemd-resolved
   when: "resolved_config.changed and not resolved_service.changed"
-  systemd:
+  ansible.builtin.systemd:
     name: "systemd-resolved.service"
     state: "restarted"
 
 - name: Restrict Avahi interfaces
   register: "avahi_config_1"
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "/etc/avahi/avahi-daemon.conf"
     regexp: "^allow-interfaces="
     insertafter: '^#allow-interfaces=eth0'
@@ -36,7 +36,7 @@
     state: "present"
 - name: Enable Avahi mDNS reflector
   register: "avahi_config_2"
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: "/etc/avahi/avahi-daemon.conf"
     regexp: "^enable-reflector="
     insertafter: '^#enable-reflector='
@@ -45,19 +45,19 @@
 
 - name: Enable Avahi Daemon
   register: "avahi_service"
-  systemd:
+  ansible.builtin.systemd:
     name: "avahi-daemon.service"
     state: "started"
     enabled: yes
 - name: Restart Avahi Daemon
   when: "(avahi_config_1.changed or avahi_config_2.changed) and not avahi_service.changed"
-  systemd:
+  ansible.builtin.systemd:
     name: "avahi-daemon.service"
     state: "restarted"
 
 - name: Copy NFTables configuration
   register: "nftables_config"
-  template:
+  ansible.builtin.template:
     src: "etc/nftables.conf.j2"
     dest: "/etc/nftables.conf"
     force: yes
@@ -68,12 +68,12 @@
 
 - name: Enable NFTables
   register: "nftables_service"
-  systemd:
+  ansible.builtin.systemd:
     name: "nftables.service"
     state: "started"
     enabled: yes
 - name: Reload NFTables
   when: "nftables_config.changed and not nftables_service.changed"
-  systemd:
+  ansible.builtin.systemd:
     name: "nftables.service"
     state: "reloaded"
