@@ -21,6 +21,7 @@
     group: root
     mode: 0440
     validate: 'visudo -cf %s'
+
 - name: Create sudoer rule for poweroff
   ansible.builtin.lineinfile:
     path: /etc/sudoers.d/30-poweroff
@@ -40,37 +41,62 @@
         append: no
         state: present
 
+    - name: Create .ssh/ directory
+      ansible.builtin.file:
+        path: "/home/ansible/.ssh"
+        state: "directory"
+        owner: "ansible"
+        group: "ansible"
+        mode: 0740
+
 - name: Create and configure `avatar`
   block:
     - name: Create user
       ansible.builtin.user:
-        name: avatar
+        name: "{{ users.avatar.username }}"
         groups: wheel,ssh,poweroff
         append: yes
         create_home: yes
         state: present
         shell: /usr/bin/fish
-        password: '{{ avatar_password }}'
+        password: "{{ users.avatar.password }}"
+
+    - name: Create .ssh/ directory
+      ansible.builtin.file:
+        path: "/home/avatar/.ssh"
+        state: "directory"
+        owner: "{{ users.avatar.username }}"
+        group: "{{ users.avatar.username }}"
+        mode: 0740
+
     - name: Add authorized keys
       ansible.posix.authorized_key:
-        user: avatar
+        exclusive: yes
+        key: '{{ users.avatar.pub_key }}'
+        user: "{{ users.avatar.username }}"
         state: present
-        key: '{{ avatar_public_key }}'
 
 - name: Create and configure `homeassistant`
   block:
     - name: Create user
       ansible.builtin.user:
-        name: homeassistant
+        name: "{{ users.homeassistant.username }}"
         groups: ssh,poweroff
         create_home: yes
         state: present
-        shell: /usr/bin/fish
-        password: '{{ homeassistant_password }}'
+        password: '{{ users.homeassistant.password }}'
+
+    - name: Create .ssh/ directory
+      ansible.builtin.file:
+        path: "/home/homeassistant/.ssh"
+        state: "directory"
+        owner: "{{ users.homeassistant.username }}"
+        group: "{{ users.homeassistant.username }}"
+        mode: 0740
+
     - name: Add authorized keys
-      when: "add_homeassistant_to_authorized_keys | bool"
       ansible.posix.authorized_key:
         exclusive: yes
+        key: "{{ users.homeassistant.pub_key }}"
+        user: "{{ users.homeassistant.username }}"
         state: present
-        user: homeassistant
-        key: '{{ homeassistant_public_key }}'

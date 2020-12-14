@@ -9,4 +9,25 @@
     validate: '/usr/bin/sshd -t -f %s'
   notify: reload sshd
 
-# TODO: Copy sshd keys so we can easily generate ssh_known_hosts
+- name: Clean up unused SSH host keys
+  loop:
+    - { path: "/etc/ssh/ssh_host_dsa_key" }
+    - { path: "/etc/ssh/ssh_host_dsa_key.pub" }
+    - { path: "/etc/ssh/ssh_host_rsa_key" }
+    - { path: "/etc/ssh/ssh_host_rsa_key.pub" }
+    - { path: "/etc/ssh/ssh_host_ecdsa_key" }
+    - { path: "/etc/ssh/ssh_host_ecdsa_key.pub" }
+  ansible.builtin.file:
+    state: "absent"
+    path: "{{ item.path }}"
+
+- name: Copy SSH host keys
+  loop:
+    - { host_file: yes, path: "etc/ssh/ssh_host_ed25519_key", mode: "u=rw,go=" }
+    - { host_file: yes, path: "etc/ssh/ssh_host_ed25519_key.pub", mode: "u=rw,go=r" }
+  ansible.builtin.copy:
+    src: "{{ item.host_file | default(False) | ternary(host_files, '') }}{{ item.path }}"
+    dest: "/{{ item.path }}"
+    owner: "root"
+    group: "root"
+    mode: "{{ item.mode }}"

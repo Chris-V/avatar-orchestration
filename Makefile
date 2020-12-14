@@ -1,17 +1,3 @@
-# Check that given variables are set and all have non-empty values,
-# die with an error otherwise.
-#
-# Source: https://stackoverflow.com/a/10858332
-# Params:
-#   1. Variable name(s) to test.
-#   2. (optional) Error message to print.
-check_defined = \
-    $(strip $(foreach 1,$1, \
-        $(call __check_defined,$1,$(strip $(value 2)))))
-__check_defined = \
-    $(if $(value $1),, \
-      $(error Undefined '$1'$(if $2, ($2))))
-
 ifndef inventory
 override inventory = staging
 endif
@@ -19,43 +5,44 @@ ifndef playbook
 override playbook = all
 endif
 
+.PHONY: prepare
 prepare:
 	./prepare.sh
 
+.PHONY: installer
 installer:
 	sudo ./installer/make-iso.sh
 
+.PHONY: lint
 lint:
 	ansible-lint ansible/all.yml
 
+.PHONY: ansible
 ansible:
 	ansible-playbook \
 		-i ./ansible/inventories/$(inventory)/inventory.yml \
 		$(args) \
 		ansible/$(playbook).yml
 
+.PHONY: check
 ansible-check:
 	ansible-playbook \
 		-i ./ansible/inventories/$(inventory)/inventory.yml \
 		--check
 		ansible/$(playbook).yml
 
-ansible-encrypt:|check-defined-file
+.PHONY: ansible-encrypt
+ansible-encrypt:
 	ansible-vault encrypt $(file)
 
+.PHONY: ansible-encrypt-all
 ansible-encrypt-all:
-	ansible-vault encrypt \
-		$$(cat vault-files.txt | paste -sd " " -)
+	parallel -d '\n' -L 1 -P 0 -a vault-files.txt echo -e '\e\[36mEncrypt {}\e\[0m'\; ansible-vault encrypt {}
 
-ansible-decrypt:|check-defined-file
+.PHONY: ansible-decrypt
+ansible-decrypt:
 	ansible-vault decrypt $(file)
 
+.PHONY: ansible-decrypt-all
 ansible-decrypt-all:
-	ansible-vault decrypt \
-		$$(cat vault-files.txt | paste -sd " " -)
-
-check-defined-% : __check_defined_FORCE
-	@:$(call check_defined, $*)
-
-.PHONY: __check_defined_FORCE installer ansible
-__check_defined_FORCE:
+	parallel -d '\n' -L 1 -P 0 -a vault-files.txt echo -e '\e\[36mEncrypt {}\e\[0m'\; ansible-vault decrypt {}

@@ -24,8 +24,7 @@
   become: no
   aur:
     name: yay
-    use: makepkg
-    skip_installed: yes
+    state: present
 
 - name: Configure journald limits
   block:

@@ -15,7 +15,7 @@
     name:
       - mergerfs
       - snapraid
-    aur_only: yes
+    state: present
 
 - name: Create mount directories
   loop:

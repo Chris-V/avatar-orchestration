@@ -8,3 +8,4 @@ galaxy_info:
       versions: ["all"]
 dependencies:
   - role: common
+  - role: kewlfft.aur

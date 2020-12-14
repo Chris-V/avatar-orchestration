@@ -9,6 +9,5 @@ internal_hostname: "{{ network.servers.automate.host }}"
 
 wan_if: "enp0s25"
 
-add_homeassistant_to_authorized_keys: no
 homeassistant_config_owner: "Chris-V"
 homeassistant_config_repo: "homeassistant-config"

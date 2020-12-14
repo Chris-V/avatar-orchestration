@@ -6,13 +6,6 @@
 
 - name: Generate home-assistant keys for GitHub
   block:
-    - name: Create .ssh/ directory
-      ansible.builtin.file:
-        path: "{{ homeassistant_config_key_path | dirname }}"
-        state: "directory"
-        owner: "homeassistant"
-        group: "homeassistant"
-        mode: 0740
     - name: Generate key
       become: yes
       become_user: homeassistant

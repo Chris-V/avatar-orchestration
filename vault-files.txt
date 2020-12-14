@@ -2,6 +2,7 @@ ansible/host_files/avatar-automate/appdata/appdata-backup/gcs_auth.json
 ansible/host_files/avatar-automate/appdata/elasticsearch/elasticsearch.keystore
 ansible/host_files/avatar-automate/appdata/home-assistant/config/.secrets/gcp.json
 ansible/host_files/avatar-automate/appdata/home-assistant/config/.secrets/id_homeassistant
+ansible/host_files/avatar-automate/appdata/home-assistant/config/.secrets/id_homeassistant.pub.j2
 ansible/host_files/avatar-automate/appdata/home-assistant/config/.secrets/id_router_homeassistant
 ansible/host_files/avatar-automate/appdata/home-assistant/config/.secrets/id_router_homeassistant.pub
 ansible/host_files/avatar-automate/appdata/home-assistant/config/secrets.yaml.j2
@@ -10,7 +11,15 @@ ansible/host_files/avatar-automate/appdata/home-assistant/config/www/secrets/kar
 ansible/host_files/avatar-automate/appdata/mosquitto/config/passwords
 ansible/host_files/avatar-automate/appdata/traefik/acme/gce_service_account.json
 ansible/host_files/avatar-automate/appdata/traefik/traefik.d/monitoring.htpasswd
+ansible/host_files/avatar-automate/etc/ssh/ssh_host_ed25519_key
+ansible/host_files/avatar-automate/etc/ssh/ssh_host_ed25519_key.pub
+ansible/host_files/avatar-media/etc/ssh/ssh_host_ed25519_key
+ansible/host_files/avatar-media/etc/ssh/ssh_host_ed25519_key.pub
+ansible/host_files/avatar-relay-north/etc/ssh/ssh_host_ed25519_key
+ansible/host_files/avatar-relay-north/etc/ssh/ssh_host_ed25519_key.pub
 ansible/host_files/avatar-relay-north/plantgw.yaml.j2
+ansible/host_files/avatar-relay-south/etc/ssh/ssh_host_ed25519_key
+ansible/host_files/avatar-relay-south/etc/ssh/ssh_host_ed25519_key.pub
 ansible/host_files/avatar-relay-south/plantgw.yaml.j2
 ansible/inventories/production/group_vars/avatar/vault.yml
 ansible/inventories/production/host_vars/avatar-automate/vault.yml

@@ -10,7 +10,7 @@
     name:
       - pi-bluetooth
       - bluez-utils-compat
-    aur_only: yes
+    state: present
 
 - name: Enable bluetooth on boot
   register: "bluetooth_autoenable"
