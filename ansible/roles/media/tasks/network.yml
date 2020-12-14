@@ -1,6 +1,7 @@
 - name: Install ethernet tools
   community.general.pacman:
-    name: "ethtool"
+    name:
+      - ethtool
     state: "present"
 
 - name: Copy WOL config

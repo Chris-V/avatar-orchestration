@@ -2,7 +2,8 @@
 #  https://community.home-assistant.io/t/containers-avoiding-privileged-and-host-network-as-much-as-possible/60792/6
 - name: Install Avahi
   community.general.pacman:
-    name: "avahi"
+    name:
+      - avahi
     state: "present"
 
 - name: Disable multicast from systemd-resolved

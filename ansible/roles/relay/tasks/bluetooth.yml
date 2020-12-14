@@ -1,6 +1,7 @@
 - name: Install bluez
   community.general.pacman:
-    name: "bluez"
+    name:
+      - bluez
     state: "present"
 
 - name: Install bluetooth utils (AUR)

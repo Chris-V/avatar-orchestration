@@ -1,6 +1,7 @@
 - name: Install system libraries
   community.general.pacman:
-    name: fake-hwclock
+    name:
+      - fake-hwclock
     state: present
 
 - name: Enable fake HW clock

@@ -1,6 +1,12 @@
 - name: Install mount packages
   community.general.pacman:
-    name: arch-install-scripts btrfs-progs fuse3 hdparm smartmontools xfsprogs
+    name:
+      - arch-install-scripts
+      - btrfs-progs
+      - fuse3
+      - hdparm
+      - smartmontools
+      - xfsprogs
     state: present
 
 - name: Install mount packages (AUR)

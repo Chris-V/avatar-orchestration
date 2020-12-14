@@ -1,6 +1,9 @@
 - name: Install docker packages
   community.general.pacman:
-    name: "docker docker-compose python-docker"
+    name:
+      - docker
+      - docker-compose
+      - python-docker
     state: "present"
 
 - name: Configure docker service

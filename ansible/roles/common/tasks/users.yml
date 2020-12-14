@@ -1,6 +1,7 @@
 - name: Install Fish
   community.general.pacman:
-    name: fish
+    name:
+      - fish
     state: present
 
 - name: Create groups

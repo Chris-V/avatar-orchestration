@@ -1,6 +1,7 @@
 - name: Install ansible requirements
   community.general.pacman:
-    name: "python-requests"
+    name:
+      - python-requests
     state: "present"
 
 - name: Generate home-assistant keys for GitHub
