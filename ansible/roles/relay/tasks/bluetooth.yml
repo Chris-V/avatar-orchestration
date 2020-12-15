@@ -1,16 +1,35 @@
-- name: Install bluez
-  community.general.pacman:
-    name:
-      - bluez
-    state: "present"
-
-- name: Install bluetooth utils (AUR)
+- name: Uninstall legacy bluetooth packages
   become: no
-  aur:
+  community.general.pacman:
     name:
       - pi-bluetooth
       - bluez-utils-compat
-    state: present
+    state: absent
+
+- name: Install bluetooth packages
+  community.general.pacman:
+    name:
+      - bluez
+      - bluez-utils
+    state: "present"
+
+# https://aur.archlinux.org/packages/pi-bluetooth/#comment-765002
+- name: Configure Raspberry Pi's boot options to support bluetooth
+  block:
+    - name: Configure UART
+      ansible.builtin.lineinfile:
+        path: "/boot/config.txt"
+        regexp: "^enable_uart="
+        insertafter: "EOF"
+        line: "enable_uart=0"
+        state: "present"
+    - name: Configure device tree param
+      ansible.builtin.lineinfile:
+        path: "/boot/config.txt"
+        regexp: "^dtparam="
+        insertafter: "EOF"
+        line: "dtparam=krnbt=on"
+        state: "present"
 
 - name: Enable bluetooth on boot
   register: "bluetooth_autoenable"

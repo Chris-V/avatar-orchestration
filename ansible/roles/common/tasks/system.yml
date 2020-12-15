@@ -9,6 +9,7 @@
 - name: Install common libraries
   community.general.pacman:
     name:
+      - base-devel
       - git
       - iptables-nft
       - lm_sensors
