@@ -71,7 +71,6 @@ services:
           - deluge.docker.localhost
           - jackett.docker.localhost
           - jellyfin.docker.localhost
-          - plex.docker.localhost
           - radarr.docker.localhost
           - sonarr.docker.localhost
     ports:
@@ -180,34 +179,6 @@ services:
       - "{{ jellyfin_transcode_dir }}:/transcode"
       - "{{ series_dir }}:/media/series:ro"
       - "{{ movies_dir }}:/media/movies:ro"
-
-  plex:
-    container_name: "plex"
-    image: "ghcr.io/linuxserver/plex:latest"
-    restart: "unless-stopped"
-    devices:
-      - "/dev/dri:/dev/dri"
-    environment:
-      TZ: *timezone
-      PUID: {{ system_appdata_uid }}
-      PGID: {{ system_media_gid }}
-      VERSION: "docker"
-    labels:
-      <<: *proxy-enabled
-      traefik.docker.network: "media"
-      traefik.http.routers.plex.entryPoints: "http"
-      traefik.http.routers.plex.rule: "Host(`plex.docker.localhost`, `plex.{{ internal_hostname }}`)"
-      traefik.http.services.plex.loadbalancer.server.port: 32400
-    networks:
-      media:
-        ipv4_address: "{{ docker_ip_plex }}"
-    ports:
-      - "32400:32400"
-    volumes:
-      - "{{ plex_config_dir }}:/config"
-      - "{{ series_dir }}:/data/series:ro"
-      - "{{ movies_dir }}:/data/movies:ro"
-      - "{{ plex_transcode_dir }}:/transcode"
 
   sonarr:
     container_name: "sonarr"

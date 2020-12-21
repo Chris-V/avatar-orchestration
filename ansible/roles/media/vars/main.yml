@@ -23,7 +23,6 @@ docker_net_public: "172.30.170.0/24"
 docker_ip_proxy: "172.30.170.50"
 docker_net_glances: "172.30.171.0/24"
 docker_net_media: "172.30.172.0/24"
-docker_ip_plex: "172.30.172.50"
 docker_ip_jellyfin: "172.30.172.51"
 docker_net_minecraft: "172.30.173.0/24"
 docker_ip_minecraft: "172.30.173.50"
@@ -46,10 +45,6 @@ minecraft_backups_dir: '{{ backups_dir }}/minecraft'
 minecraft_data_dir: '/srv/minecraft'
 minecraft_map_dir: '/srv/minecraft-map'
 minecraft_overviewer_dir: '{{ docker_appdata_dir }}/minecraft-overviewer'
-
-# Plex
-plex_config_dir: '{{ docker_appdata_dir }}/plex'
-plex_transcode_dir: '{{ data_mount }}/plex/transcode'
 
 # Radarr
 radarr_config_dir: '{{ docker_appdata_dir }}/radarr'

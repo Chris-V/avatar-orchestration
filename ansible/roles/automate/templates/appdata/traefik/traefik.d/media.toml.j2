@@ -32,12 +32,6 @@
     service = "media-jellyfin"
     [http.routers.media-jellyfin.tls]
 
-  [http.routers.media-plex]
-    entryPoints = ["https"]
-    rule = "Host(`plex.{{ domain_name }}`)"
-    service = "media-plex"
-    [http.routers.media-plex.tls]
-
   [http.routers.media-radarr]
     entryPoints = ["https"]
     rule = "Host(`radarr.{{ domain_name }}`)"
@@ -82,11 +76,6 @@
     passHostHeader = false
     [[http.services.media-jellyfin.LoadBalancer.servers]]
       URL = "http://jellyfin.{{ network.servers.media.host }}/"
-
-  [http.services.media-plex.LoadBalancer]
-    passHostHeader = false
-    [[http.services.media-plex.LoadBalancer.servers]]
-      URL = "http://plex.{{ network.servers.media.host }}/"
 
   [http.services.media-radarr.LoadBalancer]
     passHostHeader = false
