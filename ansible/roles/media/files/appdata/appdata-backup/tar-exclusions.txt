@@ -17,6 +17,11 @@ logs.db
 /radarr/Backups
 /radarr/logs
 /radarr/MediaCover
+/jellyfin/.cache
+/jellyfin/cache
+/jellyfin/log
+/jellyfin/data/metadata
+/jellyfin/data/transcodes
 /plex/Library/Application Support/Plex Media Server/Cache
 /plex/Library/Application Support/Plex Media Server/Codecs
 /plex/Library/Application Support/Plex Media Server/Crash Reports

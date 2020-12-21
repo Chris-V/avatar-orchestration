@@ -53,6 +53,8 @@
     - { path: "{{ deluge_completed_dir }}", group: "data", mode: "ug=rwx,o=rx" }
     - { path: "{{ deluge_downloads_dir }}", group: "data", mode: "ug=rwx,o=rx" }
     - { path: "{{ jackett_downloads_dir }}", group: "data", mode: "ug=rwx,o=rx" }
+    - { path: "{{ jellyfin_config_dir }}", mode: "u=rwx,g=rx,o=" }
+    - { path: "{{ jellyfin_transcode_dir }}" }
     - { path: "{{ minecraft_data_dir }}" }
     - { path: "{{ minecraft_map_dir }}", group: "data", mode: "ug=rwx,o=rx" }
     - { path: "{{ plex_transcode_dir }}" }
@@ -109,3 +111,11 @@
     owner: "docker-appdata"
     group: "docker-appdata"
     mode: "u=rw,g=r,o="
+
+#- name: Cleanup old files
+#  loop:
+#    - { path: "{{ docker_appdata_dir }}/plex" }
+#    - { path: "{{ data_mount }}/plex" }
+#  ansible.builtin.file:
+#    state: "absent"
+#    path: "{{ item.path }}"

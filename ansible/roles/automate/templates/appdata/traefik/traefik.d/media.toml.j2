@@ -26,6 +26,12 @@
     service = "media-jackett"
     [http.routers.media-jackett.tls]
 
+  [http.routers.media-jellyfin]
+    entryPoints = ["https"]
+    rule = "Host(`jellyfin.{{ domain_name }}`)"
+    service = "media-jellyfin"
+    [http.routers.media-jellyfin.tls]
+
   [http.routers.media-plex]
     entryPoints = ["https"]
     rule = "Host(`plex.{{ domain_name }}`)"
@@ -71,6 +77,11 @@
     passHostHeader = false
     [[http.services.media-jackett.LoadBalancer.servers]]
       URL = "http://jackett.{{ network.servers.media.host }}/"
+
+  [http.services.media-jellyfin.LoadBalancer]
+    passHostHeader = false
+    [[http.services.media-jellyfin.LoadBalancer.servers]]
+      URL = "http://jellyfin.{{ network.servers.media.host }}/"
 
   [http.services.media-plex.LoadBalancer]
     passHostHeader = false

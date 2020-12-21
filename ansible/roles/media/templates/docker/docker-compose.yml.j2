@@ -70,9 +70,10 @@ services:
         aliases:
           - deluge.docker.localhost
           - jackett.docker.localhost
+          - jellyfin.docker.localhost
+          - plex.docker.localhost
           - radarr.docker.localhost
           - sonarr.docker.localhost
-          - plex.docker.localhost
     ports:
       - "80:80"
     volumes:
@@ -153,6 +154,32 @@ services:
     volumes:
       - "{{ jackett_config_dir }}:/config"
       - "{{ jackett_downloads_dir }}:/downloads"
+
+  jellyfin:
+    container_name: "jellyfin"
+    image: "ghcr.io/linuxserver/jellyfin:latest"
+    restart: "unless-stopped"
+    devices:
+      - "/dev/dri:/dev/dri"
+    environment:
+      TZ: *timezone
+      PUID: {{ system_appdata_uid }}
+      PGID: {{ system_appdata_gid }}
+      UMASK_SET: '027'
+    labels:
+      <<: *proxy-enabled
+      traefik.docker.network: "media"
+      traefik.http.routers.jellyfin.entryPoints: "http"
+      traefik.http.routers.jellyfin.rule: "Host(`jellyfin.docker.localhost`, `jellyfin.{{ internal_hostname }}`)"
+      traefik.http.services.jellyfin.loadbalancer.server.port: 8096
+    networks:
+      media:
+        ipv4_address: "{{ docker_ip_jellyfin }}"
+    volumes:
+      - "{{ jellyfin_config_dir }}:/config"
+      - "{{ jellyfin_transcode_dir }}:/transcode"
+      - "{{ series_dir }}:/media/series:ro"
+      - "{{ movies_dir }}:/media/movies:ro"
 
   plex:
     container_name: "plex"
@@ -316,7 +343,7 @@ services:
       PUID: {{ system_appdata_uid }}
       PGID: {{ system_appdata_gid }}
       CRONTAB_CONFIG: "30 3 * * *"
-      PAUSE_CONTAINERS: "deluge jackett plex radarr sonarr"
+      PAUSE_CONTAINERS: "deluge jackett jellyfin radarr sonarr"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "{{ docker_appdata_dir }}/appdata-backup:/config:ro"

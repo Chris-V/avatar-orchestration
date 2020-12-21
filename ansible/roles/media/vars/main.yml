@@ -24,6 +24,7 @@ docker_ip_proxy: "172.30.170.50"
 docker_net_glances: "172.30.171.0/24"
 docker_net_media: "172.30.172.0/24"
 docker_ip_plex: "172.30.172.50"
+docker_ip_jellyfin: "172.30.172.51"
 docker_net_minecraft: "172.30.173.0/24"
 docker_ip_minecraft: "172.30.173.50"
 
@@ -35,6 +36,10 @@ deluge_completed_dir: '{{ downloads_dir }}/completed'
 # Jackett
 jackett_config_dir: '{{ docker_appdata_dir }}/jackett'
 jackett_downloads_dir: '{{ downloads_dir }}/jackett'
+
+# Jellyfin
+jellyfin_config_dir: '{{ docker_appdata_dir }}/jellyfin'
+jellyfin_transcode_dir: '{{ data_mount }}/jellyfin/transcode'
 
 # Minecraft
 minecraft_backups_dir: '{{ backups_dir }}/minecraft'
