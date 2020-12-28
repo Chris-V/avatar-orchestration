@@ -88,19 +88,6 @@
         path: *hacs_tmp_path
         state: "absent"
 
-- name: Pull Open-Zwave configuration
-  become: yes
-  become_user: homeassistant
-  ansible.builtin.git:
-    dest: "{{ docker_appdata_dir }}/home-assistant/openzwave"
-    repo: "{{ homeassistant_ozw_config_repo }}"
-    version: "1.4/configs"
-    key_file: "{{ homeassistant_config_key_path }}"
-    accept_hostkey: yes
-    depth: 1
-    umask: "0027"
-    force: yes
-
 - name: Create additional Home-Assistant directories # Must be done after initial clone
   loop:
     - { path: "config/.secrets", mode: "u=rwx,go=" }
@@ -138,6 +125,7 @@
 
 - name: Cleanup old files
   loop:
+    - { path: "{{ docker_appdata_dir }}/home-assistant/openzwave" }
     - { path: "{{ docker_appdata_dir }}/home-assistant/s6/setup-and-run" }
     - { path: "{{ docker_appdata_dir }}/home-assistant/s6" }
   ansible.builtin.file:

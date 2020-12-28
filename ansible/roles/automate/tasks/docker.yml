@@ -106,12 +106,12 @@
       loop:
         - { path: "", mode: "u=rwx,g=rx,o=" }
         - { path: "config/", mode: "u=rwx,g=rx,o=" }
-        - { path: "data/", mode: "u=rwx,go=" }
+        - { path: "data/", mode: "u=rwx,g=rx,o=" }
       ansible.builtin.file:
         path: "{{ docker_appdata_dir }}/mosquitto/{{ item.path }}"
         state: "directory"
-        owner: "docker-appdata"
-        group: "docker-appdata"
+        owner: "mosquitto"
+        group: "mosquitto"
         mode: "{{ item.mode }}"
     - name: Copy Mosquitto files
       loop:
@@ -121,8 +121,20 @@
       ansible.builtin.copy:
         src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/mosquitto/{{ item.path }}"
         dest: "{{ docker_appdata_dir }}/mosquitto/{{ item.path }}"
-        owner: "docker-appdata"
-        group: "docker-appdata"
+        owner: "mosquitto"
+        group: "mosquitto"
+        mode: "{{ item.mode }}"
+
+- name: Configure OpenZWave
+  block:
+    - name: Create OpenZWave directories
+      loop:
+        - { path: "", mode: "u=rwx,g=rx,o=" }
+      ansible.builtin.file:
+        path: "{{ docker_appdata_dir }}/openzwave/{{ item.path }}"
+        state: "directory"
+        owner: "root"
+        group: "docker"
         mode: "{{ item.mode }}"
 
 - name: Configure Traefik

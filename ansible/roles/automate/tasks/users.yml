@@ -1,16 +1,20 @@
 - name: Create system groups
   loop:
     - { name: &appdata 'docker-appdata', gid: '{{ system_appdata_gid }}' }
+    - { name: &mosquitto 'mosquitto', gid: '{{ mosquitto_gid }}' }
   ansible.builtin.group:
     name: '{{ item.name }}'
     gid: '{{ item.gid }}'
     state: present
 
-- name: Create appdata user
+- name: Create system users
+  loop:
+    - { name: *appdata, uid: '{{ system_appdata_uid }}' }
+    - { name: *mosquitto, uid: '{{ mosquitto_uid }}' }
   ansible.builtin.user:
-    name: *appdata
-    group: *appdata
-    uid: '{{ system_appdata_uid }}'
+    name: '{{ item.name }}'
+    group: '{{ item.name }}'
+    uid: '{{ item.uid }}'
     create_home: no
     shell: '/usr/bin/nologin'
     state: present

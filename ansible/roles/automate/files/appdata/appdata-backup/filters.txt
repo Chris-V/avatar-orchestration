@@ -3,16 +3,18 @@
 + /home-assistant/config/.HA_VERSION
 + /home-assistant/config/html5_push_registrations.conf
 + /home-assistant/config/known_devices.yaml
-+ /home-assistant/config/options.xml
 + /home-assistant/config/pyozw.sqlite
 + /home-assistant/config/.storage/**
 + /home-assistant/config/.uuid
 + /home-assistant/config/zigbee.db
-+ /home-assistant/config/zwcfg_*.xml
-+ /home-assistant/config/zwscene.xml
 
 # Mosquitto
 + /mosquitto/data/**
+
+# OpenZWave
++ /openzwave/options.xml
++ /openzwave/ozwcache_*.xml
++ /openzwave/zwscene.xml
 
 # Treafik
 + /traefik/acme/**

@@ -101,11 +101,7 @@ services:
     container_name: home-assistant
     image: "homeassistant/home-assistant:2020.12.1"
     restart: "unless-stopped"
-    depends_on:
-      - "apcupsd"
-      - "mosquitto"
     devices:
-      - "/dev/zwave:/dev/zwave"
       - "/dev/zigbee:/dev/zigbee"
     environment:
       TZ: *timezone
@@ -137,13 +133,13 @@ services:
       - "1400:1400"
     volumes:
       - "{{ docker_appdata_dir }}/home-assistant/config:{{ homeassistant_container_config_path }}"
-      - "{{ docker_appdata_dir }}/home-assistant/openzwave/config:/openzwave/config"
       - "{{ docker_appdata_dir }}/home-assistant/docker/run:/etc/services.d/home-assistant/run"
 
   mosquitto:
     container_name: mosquitto
-    image: "eclipse-mosquitto:latest"
+    image: "eclipse-mosquitto:2"
     restart: "unless-stopped"
+    user: '{{ mosquitto_uid }}:{{ mosquitto_gid }}'
     environment:
       TZ: *timezone
     labels:
@@ -162,8 +158,43 @@ services:
     expose:
       - 1883
     volumes:
-      - "{{ docker_appdata_dir }}/mosquitto/config:/mosquitto/config:ro"
+      - "{{ docker_appdata_dir }}/mosquitto/config:/mosquitto/config"
       - "{{ docker_appdata_dir }}/mosquitto/data:/mosquitto/data"
+
+  openzwave:
+    container_name: openzwave
+    image: "openzwave/ozwdaemon:allinone-latest"
+    restart: "unless-stopped"
+    depends_on:
+      - "mosquitto"
+    devices:
+      - "{{ openzwave_usb_path }}:{{ openzwave_usb_path }}"
+    environment:
+      TZ: *timezone
+      MQTT_SERVER: "{{ openzwave_mqtt_server }}"
+      MQTT_PORT: {{ openzwave_mqtt_port }}
+      MQTT_TLS: "{{ openzwave_mqtt_tls }}"
+      MQTT_USERNAME: "{{ openzwave_mqtt_username }}"
+      MQTT_PASSWORD: "{{ openzwave_mqtt_password }}"
+      USB_PATH: "{{ openzwave_usb_path }}"
+      OZW_AUTH_KEY: "{{ openzwave_auth_key }}"
+      OZW_NETWORK_KEY: "{{ openzwave_network_key }}"
+      QT_LOGGING_RULES: "*.debug=false"
+    labels:
+      <<: *proxy-enabled
+      traefik.http.services.openzwave.loadbalancer.server.port: 7800
+      traefik.http.routers.openzwave.entryPoints: "https"
+      traefik.http.routers.openzwave.rule: "Host(`openzwave.{{ domain_name }}`)"
+      traefik.http.routers.openzwave.service: "openzwave"
+      traefik.http.routers.openzwave.tls: "true"
+    networks:
+      public:
+    ports:
+      - "127.0.0.1:1983:1983"
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - "/srv/docker-apps/appdata/openzwave:/opt/ozw/config"
 
   apcupsd:
     container_name: apcupsd

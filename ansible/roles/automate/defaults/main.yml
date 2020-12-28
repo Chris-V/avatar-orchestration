@@ -2,6 +2,15 @@ homeassistant_recreate_config_key: False
 homeassistant_hacs_repo: "git@github.com:hacs/integrations.git"
 homeassistant_ozw_config_repo: "git@github.com:Chris-V/open-zwave.git"
 
+openzwave_mqtt_server: ""
+openzwave_mqtt_port: ""
+openzwave_mqtt_tls: ""
+openzwave_mqtt_username: ""
+openzwave_mqtt_password: ""
+openzwave_usb_path: ""
+openzwave_auth_key: ""
+openzwave_network_key: ""
+
 router_ssh_user: "user"
 
 wan_if: "eth0"

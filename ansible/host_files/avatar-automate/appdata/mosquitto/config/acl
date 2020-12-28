@@ -1,7 +1,12 @@
 user home-assistant
 topic readwrite home-assistant/#
+topic readwrite OpenZWave/#
 topic read owntracks/#
 topic read plants/#
+topic read $SYS/#
+
+user openzwave
+topic readwrite OpenZWave/#
 topic read $SYS/#
 
 user gardener
