@@ -1,20 +1,28 @@
-- hosts: media
-  become: yes
-  become_user: root
+- hosts: "avatar"
+  become: true
+  become_user: "root"
   tasks:
     - import_role:
-        name: media
+        name: "common"
+      tags: [ "common" ]
 
-- hosts: automate
-  become: yes
-  become_user: root
+- hosts: "automate"
+  become: true
+  become_user: "root"
   tasks:
     - import_role:
-        name: automate
+        name: "automate"
 
-- hosts: relays
-  become: yes
-  become_user: root
+- hosts: "media"
+  become: true
+  become_user: "root"
   tasks:
     - import_role:
-        name: relay
+        name: "media"
+
+- hosts: "relays"
+  become: true
+  become_user: "root"
+  tasks:
+    - import_role:
+        name: "relay"

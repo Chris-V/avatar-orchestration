@@ -28,7 +28,8 @@ ansible:
 ansible-check:
 	ansible-playbook \
 		-i ./ansible/inventories/$(inventory)/inventory.yml \
-		--check
+		--check \
+		$(args) \
 		ansible/$(playbook).yml
 
 .PHONY: ansible-encrypt

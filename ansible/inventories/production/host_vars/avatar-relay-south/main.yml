@@ -7,8 +7,6 @@ ssh_port: "{{ network.servers.relay_south.ports.ssh }}"
 internal_ip: "{{ network.servers.relay_south.ip }}"
 internal_hostname: "{{ network.servers.relay_south.host }}"
 
-wan_if: "eth0"
-
 traefik:
   entrypoints:
     trusted_ips:

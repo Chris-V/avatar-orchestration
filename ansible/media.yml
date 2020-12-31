@@ -1,6 +1,10 @@
-- hosts: media
-  become: yes
-  become_user: root
+- hosts: "media"
+  become: true
+  become_user: "root"
   tasks:
     - import_role:
-        name: media
+        name: "common"
+      tags: [ "common" ]
+
+    - import_role:
+        name: "media"

@@ -24,6 +24,4 @@ ansible/host_files/avatar-relay-south/plantgw.yaml.j2
 ansible/inventories/production/group_vars/avatar/vault.yml
 ansible/inventories/production/host_vars/avatar-automate/vault.yml
 ansible/inventories/production/host_vars/avatar-media/vault.yml
-ansible/roles/automate/templates/etc/nftables.conf.j2
-ansible/roles/media/templates/etc/nftables.conf.j2
-ansible/roles/relay/templates/etc/nftables.conf.j2
+ansible/roles/common.nftables/templates/etc/nftables.conf.j2

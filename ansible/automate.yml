@@ -1,6 +1,10 @@
-- hosts: automate
-  become: yes
-  become_user: root
+- hosts: "automate"
+  become: true
+  become_user: "root"
   tasks:
     - import_role:
-        name: automate
+        name: "common"
+      tags: [ "common" ]
+
+    - import_role:
+        name: "automate"

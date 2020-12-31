@@ -130,7 +130,8 @@ services:
       public:
       ups:
     ports:
-      - "1400:1400"
+      - "1400:1400" # Sonos
+      - "1443:1443" # Sonos SSL
     volumes:
       - "{{ docker_appdata_dir }}/home-assistant/config:{{ homeassistant_container_config_path }}"
       - "{{ docker_appdata_dir }}/home-assistant/docker/run:/etc/services.d/home-assistant/run"
@@ -155,8 +156,8 @@ services:
       co.elastic.logs/enabled: "true"
     networks:
       public:
-    expose:
-      - 1883
+    ports:
+      - "127.0.0.1:1883:1883"
     volumes:
       - "{{ docker_appdata_dir }}/mosquitto/config:/mosquitto/config"
       - "{{ docker_appdata_dir }}/mosquitto/data:/mosquitto/data"

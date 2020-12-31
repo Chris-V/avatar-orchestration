@@ -9,7 +9,7 @@ internal_hostname: "{{ network.servers.media.host }}"
 
 minecraft_version: "1.16.4"
 
-wan_if: "enp6s0"
+tcp_ports: [ 80 ]
 
 traefik:
   entrypoints:

@@ -1,0 +1,23 @@
+- name: Copy NFTables configuration
+  register: "nftables_config"
+  ansible.builtin.template:
+    src: "etc/nftables.conf.j2"
+    dest: "/etc/nftables.conf"
+    force: yes
+    owner: "root"
+    group: "root"
+    mode: 0600
+    validate: "nft -c -f %s"
+
+- name: Enable NFTables
+  register: "nftables_service"
+  ansible.builtin.systemd:
+    name: "nftables.service"
+    state: "started"
+    enabled: yes
+
+- name: Reload NFTables
+  when: "nftables_config.changed and not nftables_service.changed"
+  ansible.builtin.systemd:
+    name: "nftables.service"
+    state: "reloaded"
