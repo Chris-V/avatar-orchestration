@@ -38,6 +38,3 @@
   ansible.builtin.file:
     state: "absent"
     path: "{{ item.path }}"
-
-# TODO: Docker doesn't want chain to exist first, so the deamon fails to start after nftables.
-#  https://wiki.archlinux.org/index.php/Nftables#Working_with_Docker doesn't work.

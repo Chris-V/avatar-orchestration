@@ -7,6 +7,13 @@ ssh_port: "{{ network.servers.automate.ports.ssh }}"
 internal_ip: "{{ network.servers.automate.ip }}"
 internal_hostname: "{{ network.servers.automate.host }}"
 
+tcp_ports:
+  - 80  # http
+  - 443  # https
+  - 1400  # sonos
+  - 1443  # sonos ssl
+  - 8333  # mqtts
+
 wan_if: "enp0s25"
 
 homeassistant_config_owner: "Chris-V"

@@ -1,11 +1,3 @@
-- name: Uninstall legacy bluetooth packages
-  become: no
-  community.general.pacman:
-    name:
-      - pi-bluetooth
-      - bluez-utils-compat
-    state: absent
-
 - name: Install bluetooth packages
   community.general.pacman:
     name:
@@ -50,7 +42,7 @@
         group: "root"
         mode: 0755
     - name: Copy bluetooth service unit overrides
-      register: "bluetooth_experimental"
+      register: "bluetooth_service_override"
       ansible.builtin.copy:
         src: "etc/systemd/system/bluetooth.service.d/override.conf"
         dest: "/etc/systemd/system/bluetooth.service.d/override.conf"
@@ -66,7 +58,7 @@
     state: "started"
     enabled: yes
 - name: Restart bluetooth
-  when: "(bluetooth_autoenable.changed or bluetooth_service.changed) and not bluetooth_service.changed"
+  when: "(bluetooth_autoenable.changed or bluetooth_service_override.changed) and not bluetooth_service.changed"
   ansible.builtin.systemd:
     name: "bluetooth.service"
     daemon_reload: yes

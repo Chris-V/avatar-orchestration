@@ -2,3 +2,8 @@
 - import_tasks: network.yml
 - import_tasks: users.yml
 - import_tasks: ssh.yml
+
+- name: "Setup NFTables"
+  import_role:
+    name: "common.nftables"
+  tags: [ "security", "system" ]

@@ -1,6 +1,10 @@
-- hosts: relays
-  become: yes
-  become_user: root
+- hosts: "relays"
+  become: true
+  become_user: "root"
   tasks:
     - import_role:
-        name: relay
+        name: "common"
+      tags: [ "common" ]
+
+    - import_role:
+        name: "relay"
