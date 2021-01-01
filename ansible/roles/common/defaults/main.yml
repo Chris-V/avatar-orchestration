@@ -1,1 +1,2 @@
 ssh_port: 22
+wan_mac_address: "ansible_facts['default_ipv4']['macaddress']"
