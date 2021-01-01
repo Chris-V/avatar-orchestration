@@ -20,14 +20,6 @@
     group: "root"
     mode: 0644
 
-- name: "Configure DNS"
-  ansible.builtin.file:
-    state: "link"
-    src: "/run/systemd/resolve/resolv.conf"
-    path: "/etc/resolv.conf"
-    owner: "root"
-    group: "root"
-
 - name: "Disable IPV6"
   notify: "reload kernel"
   ansible.builtin.copy:
@@ -37,20 +29,66 @@
     mode: 0644
     content: "net.ipv6.conf.all.disable_ipv6=1"
 
+- name: "Configure DNS"
+  register: "resolv_conf"
+  ansible.builtin.file:
+    state: "link"
+    src: "/run/systemd/resolve/resolv.conf"
+    path: "/etc/resolv.conf"
+    owner: "root"
+    group: "root"
+
+- name: "Enable systemd-resolved"
+  register: "enable_resolved"
+  ansible.builtin.systemd:
+    name: "systemd-resolved.service"
+    state: "started"
+    enabled: true
+- name: "Restart systemd-resolved"
+  when: "resolv_conf.changed and not enable_resolved.changed"
+  ansible.builtin.systemd:
+    name: "systemd-resolved.service"
+    state: "restarted"
+
 - name: "Copy WOL config"
+  notify: "activate wol"
   ansible.builtin.template:
-    src: "etc/systemd/network/15-wired.link.j2"
-    dest: "/etc/systemd/network/15-wired.link"
+    src: "etc/systemd/network/15-wol.link.j2"
+    dest: "/etc/systemd/network/15-wol.link"
     force: true
     owner: "root"
     group: "root"
     mode: 0644
-  notify: "activate wol"
+- name: "Copy network configurations"
+  register: "network_configs"
+  loop:
+    - { filename: "15-wired.network" }
+    - { filename: "15-wireless.network" }
+  ansible.builtin.copy:
+    src: "etc/systemd/network/{{ item.filename }}"
+    dest: "/etc/systemd/network/{{ item.filename }}"
+    owner: "root"
+    group: "root"
+    mode: "u=rw,go=r"
+
+- name: "Enable systemd-networkd"
+  register: "networkd_service"
+  ansible.builtin.systemd:
+    name: "systemd-networkd.service"
+    state: "started"
+    enabled: true
+- name: "Restart systemd-networkd"
+  when: "network_configs.changed and not networkd_service.changed"
+  ansible.builtin.systemd:
+    name: "systemd-networkd.service"
+    state: "restarted"
 
 - name: "Cleanup old files"
   loop:
     - { path: "/etc/modprobe.d/noiptables.conf" }
     - { path: "/usr/local/sbin/iptables" }
+    - { path: "/etc/systemd/network/15-wired.link" }
+    - { path: "/etc/systemd/network/20-all.network" }
   ansible.builtin.file:
     state: "absent"
     path: "{{ item.path }}"

@@ -3,7 +3,7 @@
 - import_tasks: bluetooth.yml
   tags: [ "system" ]
 - import_tasks: network.yml
-  tags: [ "system" ]
+  tags: [ "system", "network" ]
 
 - import_tasks: docker.yml
   tags: [ "docker" ]

@@ -1,5 +1,5 @@
-- name: Disable wireless power saving mode
-  notify: reload udev
+- name: "Disable wireless power saving mode"
+  notify: "reload udev"
   ansible.builtin.copy:
     dest: "/etc/udev/rules.d/81-wifi-powersave.rules"
     owner: "root"
@@ -8,26 +8,10 @@
     content: |
       ACTION=="add", SUBSYSTEM=="net", KERNEL=="wl*", RUN+="/usr/bin/iw dev $name set power_save off"
 
-- name: Copy network configurations
-  register: "network_configs"
+- name: "Cleanup old files"
   loop:
-    - { filename: "wired.network" }
-    - { filename: "wireless.network" }
-  ansible.builtin.copy:
-    src: "etc/systemd/network/{{ item.filename }}"
-    dest: "/etc/systemd/network/{{ item.filename }}"
-    owner: "root"
-    group: "root"
-    mode: "u=rw,go=r"
-
-- name: Enable systemd-networkd
-  register: "networkd_service"
-  ansible.builtin.systemd:
-    name: "systemd-networkd.service"
-    state: "started"
-    enabled: yes
-- name: Restart systemd-networkd
-  when: "network_configs.changed and not networkd_service.changed"
-  ansible.builtin.systemd:
-    name: "systemd-networkd.service"
-    state: "restarted"
+    - { path: "/etc/systemd/network/wired.network" }
+    - { path: "/etc/systemd/network/wireless.network" }
+  ansible.builtin.file:
+    state: "absent"
+    path: "{{ item.path }}"
