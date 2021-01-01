@@ -3,15 +3,11 @@
 - import_tasks: devices.yml
   tags: [ "system" ]
 
-- name: "Setup multicast"
-  import_role:
-    name: "common.multicast"
-  tags: [ "network", "system" ]
-
 - import_tasks: docker.yml
   tags: [ "docker", "elastic", "homeassistant" ]
 - import_tasks: homeassistant.yml
   tags: [ "docker", "homeassistant" ]
+
 - import_tasks: elastic.yml
   tags: [ "docker", "elastic" ]
 

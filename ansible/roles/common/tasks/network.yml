@@ -4,14 +4,6 @@
       - "ethtool"
     state: "present"
 
-- name: "Set hostname"
-  ansible.builtin.template:
-    src: "etc/hostname.j2"
-    dest: "/etc/hostname"
-    owner: "root"
-    group: "root"
-    mode: 0644
-
 - name: "Update hosts file"
   ansible.builtin.template:
     src: "etc/hosts.j2"

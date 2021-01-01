@@ -1,0 +1,19 @@
+- name: "Configure journald limits"
+  block:
+    - name: "Create journald conf directory"
+      ansible.builtin.file:
+        state: "directory"
+        path: "/etc/systemd/journald.conf.d"
+        owner: "root"
+        group: "root"
+        mode: 0755
+    - name: "Copy journald configs"
+      notify: "reload journald"
+      ansible.builtin.copy:
+        dest: "/etc/systemd/journald.conf.d/10-max_size.conf"
+        owner: "root"
+        group: "root"
+        mode: 0644
+        content: |
+          [Journal]
+          SystemMaxUse=2G
