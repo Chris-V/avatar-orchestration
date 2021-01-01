@@ -1,23 +1,22 @@
-- name: Install docker packages
+- name: "Install docker packages"
   community.general.pacman:
     name:
-      - docker
-      - docker-compose
+      - "docker"
+      - "docker-compose"
     state: "present"
 
-- name: Configure docker service
+- name: "Configure docker service"
   block:
-    - name: Create systemd docker config directory
+    - name: "Create systemd docker config directory"
       ansible.builtin.file:
         state: "directory"
         path: "/etc/systemd/system/docker.service.d"
         owner: "root"
         group: "root"
         mode: 0755
-    - name: Copy docker service unit overrides
-      notify:
-        - reload systemd
-        - restart docker
+
+    - name: "Copy docker service unit overrides"
+      notify: "restart docker"
       ansible.builtin.template:
         src: "etc/systemd/system/docker.service.d/10-args.conf.j2"
         dest: "/etc/systemd/system/docker.service.d/10-args.conf"
@@ -25,56 +24,43 @@
         group: "docker"
         mode: 0644
 
-- name: Enable Docker
-  ansible.builtin.systemd:
-    name: "docker.service"
-    state: "started"
-    enabled: yes
+  - name: "Enable Docker"
+    ansible.builtin.systemd:
+      name: "docker.service"
+      state: "started"
+      enabled: true
 
-- name: Create docker directories
-  loop:
-    - { path: '{{ docker_apps_dir }}' }
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: "directory"
-    owner: "root"
-    group: "docker"
-    mode: 0770
+- name: "Configure docker-apps structure"
+  block:
+    - name: "Create docker apps root"
+      ansible.builtin.file:
+        path: "{{ docker_apps_dir }}"
+        state: "directory"
+        owner: "root"
+        group: "docker"
+        mode: 0770
+    - name: "Create docker appdata root"
+      ansible.builtin.file:
+        path: "{{ docker_appdata_dir }}"
+        state: "directory"
+        owner: "docker-appdata"
+        group: "docker-appdata"
+        mode: 0770
 
-- name: Copy docker compose
+- name: "Configure Traefik"
+  import_tasks: "docker-apps/traefik.yml"
+
+- name: "Configure Plant-Gateway"
+  import_tasks: "docker-apps/plant-gateway.yml"
+
+- name: "Copy docker compose"
   ansible.builtin.template:
     src: "docker-compose.yml.j2"
-    dest: '{{ docker_apps_dir }}/docker-compose.yml'
+    dest: "{{ docker_apps_dir }}/docker-compose.yml"
     owner: "root"
     group: "docker"
     mode: 0660
-    validate: 'docker-compose -f %s config'
-
-- name: Copy app data
-  ansible.builtin.copy:
-    src: 'appdata/'
-    dest: '{{ docker_appdata_dir }}'
-    owner: "root"
-    group: "docker"
-    directory_mode: 0750
-    mode: 0640
-- name: Copy app data templates
-  loop:
-    - { filename: "traefik.toml" }
-  ansible.builtin.template:
-    src: 'appdata/{{ item.filename }}.j2'
-    dest: '{{ docker_appdata_dir }}/{{ item.filename }}'
-    owner: 'root'
-    group: 'docker'
-    mode: 0640
-
-- name: Copy host-specific plant gateway config
-  ansible.builtin.template:
-    src: "{{ host_files }}plantgw.yaml.j2"
-    dest: "{{ docker_appdata_dir }}/plantgw/plantgw.yaml"
-    owner: "root"
-    group: "docker"
-    mode: 0640
+    validate: "docker-compose -f %s config"
 
 - name: "Cleanup old files"
   loop:
