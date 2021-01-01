@@ -1,22 +1,29 @@
-- name: Copy NFTables configuration
+- name: "Install packages"
+  community.general.pacman:
+    name:
+      - "iptables-nft"
+      - "nftables"
+    state: "present"
+
+- name: "Copy NFTables configuration"
   register: "nftables_config"
   ansible.builtin.template:
     src: "etc/nftables.conf.j2"
     dest: "/etc/nftables.conf"
-    force: yes
+    force: true
     owner: "root"
     group: "root"
     mode: 0600
     validate: "nft -c -f %s"
 
-- name: Enable NFTables
+- name: "Enable NFTables"
   register: "nftables_service"
   ansible.builtin.systemd:
     name: "nftables.service"
     state: "started"
-    enabled: yes
+    enabled: true
 
-- name: Reload NFTables
+- name: "Reload NFTables"
   when: "nftables_config.changed and not nftables_service.changed"
   ansible.builtin.systemd:
     name: "nftables.service"

@@ -6,17 +6,13 @@
   community.general.pacman:
     update_cache: yes
 
-- name: Install common libraries
+- name: Install packages
   community.general.pacman:
     name:
       - base-devel
       - git
-      - iptables-nft
       - lm_sensors
-      - nftables
-      - openssh
       - python
-      - sudo
       - tmux
       - vim
     state: present

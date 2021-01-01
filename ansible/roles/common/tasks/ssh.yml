@@ -1,3 +1,9 @@
+- name: Install packages
+  community.general.pacman:
+    name:
+      - openssh
+    state: present
+
 - name: Copy SSH daemon configs
   ansible.builtin.template:
     src: etc/ssh/sshd_config.j2
