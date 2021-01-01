@@ -11,6 +11,7 @@
   listen: "restart docker"
   ansible.builtin.systemd:
     name: "docker.service"
+    daemon_reload: true
     state: "restarted"
 - name: "Reload Journald"
   listen: "reload journald"
