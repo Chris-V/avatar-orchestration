@@ -1,6 +1,5 @@
 docker_apps_dir: '/opt/docker-apps'
 docker_appdata_dir: '{{ docker_apps_dir }}/appdata'
 
-docker_net_host: "172.17.0.1/16"
 docker_net_public: "172.30.170.0/24"
 docker_ip_proxy: "172.30.170.50"

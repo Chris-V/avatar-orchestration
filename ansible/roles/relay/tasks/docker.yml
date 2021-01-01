@@ -1,35 +1,3 @@
-- name: "Install docker packages"
-  community.general.pacman:
-    name:
-      - "docker"
-      - "docker-compose"
-    state: "present"
-
-- name: "Configure docker service"
-  block:
-    - name: "Create systemd docker config directory"
-      ansible.builtin.file:
-        state: "directory"
-        path: "/etc/systemd/system/docker.service.d"
-        owner: "root"
-        group: "root"
-        mode: 0755
-
-    - name: "Copy docker service unit overrides"
-      notify: "restart docker"
-      ansible.builtin.template:
-        src: "etc/systemd/system/docker.service.d/10-args.conf.j2"
-        dest: "/etc/systemd/system/docker.service.d/10-args.conf"
-        owner: "root"
-        group: "docker"
-        mode: 0644
-
-  - name: "Enable Docker"
-    ansible.builtin.systemd:
-      name: "docker.service"
-      state: "started"
-      enabled: true
-
 - name: "Configure docker-apps structure"
   block:
     - name: "Create docker apps root"
@@ -43,8 +11,8 @@
       ansible.builtin.file:
         path: "{{ docker_appdata_dir }}"
         state: "directory"
-        owner: "docker-appdata"
-        group: "docker-appdata"
+        owner: "root"
+        group: "docker"
         mode: 0770
 
 - name: "Configure Traefik"

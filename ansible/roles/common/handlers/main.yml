@@ -2,17 +2,6 @@
   listen: "activate wol"
   command: "ethtool -s {{ ansible_facts['default_ipv4']['interface'] }} wol g"
 
-- name: "Reload systemd"
-  listen: "reload systemd"
-  ansible.builtin.systemd:
-    daemon_reload: true
-
-- name: "Restart Docker"
-  listen: "restart docker"
-  ansible.builtin.systemd:
-    name: "docker.service"
-    daemon_reload: true
-    state: "restarted"
 - name: "Reload Journald"
   listen: "reload journald"
   ansible.builtin.systemd:

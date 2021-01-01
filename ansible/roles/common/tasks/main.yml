@@ -13,3 +13,8 @@
   import_role:
     name: "common.nftables"
   tags: [ "security", "system" ]
+
+- name: "Setup Docker"
+  import_role:
+    name: "common.docker"
+  tags: [ "docker", "system" ]

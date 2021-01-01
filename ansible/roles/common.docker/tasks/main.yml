@@ -1,0 +1,38 @@
+- name: "Install docker packages"
+  community.general.pacman:
+    name:
+      - "docker"
+      - "docker-compose"
+      - "python-docker"
+    state: "present"
+
+- name: "Create systemd docker config directory"
+  ansible.builtin.file:
+    state: "directory"
+    path: "/etc/systemd/system/docker.service.d"
+    owner: "root"
+    group: "root"
+    mode: 0755
+
+- name: "Copy docker service unit overrides"
+  register: "docker_config"
+  ansible.builtin.template:
+    src: "etc/systemd/system/docker.service.d/10-args.conf.j2"
+    dest: "/etc/systemd/system/docker.service.d/10-args.conf"
+    owner: "root"
+    group: "root"
+    mode: 0644
+
+- name: "Enable Docker"
+  register: "enable_docker"
+  ansible.builtin.systemd:
+    name: "docker.service"
+    state: "started"
+    daemon_reload: true
+    enabled: true
+- name: "Restart Docker"
+  when: "docker_config.changed and not enable_docker.changed"
+  ansible.builtin.systemd:
+    name: "docker.service"
+    daemon_reload: true
+    state: "restarted"

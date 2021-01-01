@@ -1,51 +1,19 @@
-- name: Install docker packages
-  community.general.pacman:
-    name:
-      - docker
-      - docker-compose
-      - python-docker
-    state: "present"
-
-- name: Configure docker service
+- name: "Configure docker-apps structure"
   block:
-    - name: Create systemd docker config directory
+    - name: "Create docker apps root"
       ansible.builtin.file:
+        path: "{{ docker_apps_dir }}"
         state: "directory"
-        path: "/etc/systemd/system/docker.service.d"
-        owner: "root"
-        group: "root"
-        mode: 0755
-    - name: Copy docker service unit overrides
-      notify:
-        - reload systemd
-        - restart docker
-      ansible.builtin.template:
-        src: "etc/systemd/system/docker.service.d/10-args.conf.j2"
-        dest: "/etc/systemd/system/docker.service.d/10-args.conf"
         owner: "root"
         group: "docker"
-        mode: 0644
-
-- name: Enable Docker
-  ansible.builtin.systemd:
-    name: "docker.service"
-    state: "started"
-    enabled: yes
-
-- name: Create docker apps root
-  ansible.builtin.file:
-    path: "{{ docker_apps_dir }}"
-    state: "directory"
-    owner: "root"
-    group: "docker"
-    mode: 0755
-- name: Create docker appdata root
-  ansible.builtin.file:
-    path: "{{ docker_appdata_dir }}"
-    state: "directory"
-    owner: "docker-appdata"
-    group: "docker-appdata"
-    mode: 0755
+        mode: 0755
+    - name: "Create docker appdata root"
+      ansible.builtin.file:
+        path: "{{ docker_appdata_dir }}"
+        state: "directory"
+        owner: "docker-appdata"
+        group: "docker-appdata"
+        mode: 0755
 
 - name: Configure APC
   block:

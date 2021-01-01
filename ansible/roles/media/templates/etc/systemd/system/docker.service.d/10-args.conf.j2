@@ -1,9 +1,0 @@
-[Service]
-ExecStart=
-ExecStart=/usr/bin/dockerd \
-    -H fd:// \
-    --bip {{ docker_net_host }} \
-    --fixed-cidr {{ docker_net_host }} \
-    --log-driver json-file \
-    --log-opt max-file=1 \
-    --log-opt max-size=200k

@@ -1,10 +1,8 @@
 version: "3.7"
 
-x-timezone: &timezone "{{ timezone }}"
-x-proxy-enabled: &proxy-enabled
-  traefik.enable: "true"
-
 networks:
+## NETWORKS: START
+## NETWORKS: END
   public:
     driver: "bridge"
     name: "public"
@@ -16,14 +14,16 @@ networks:
         - subnet: "{{ docker_net_public }}"
 
 services:
+## SEVICES: START
+## SEVICES: END
   proxy:
     container_name: proxy
     image: "traefik:2.3"
     restart: "unless-stopped"
     environment:
-      TZ: *timezone
+      TZ: "{{ timezone }}"
     labels:
-      <<: *proxy-enabled
+      traefik.enable: "true"
       traefik.http.routers.api.rule: "Host(`traefik.{{ internal_hostname }}`)"
       traefik.http.routers.api.service: "api@internal"
     networks:
@@ -43,10 +43,10 @@ services:
     pid: "host"
     restart: "unless-stopped"
     environment:
-      TZ: *timezone
+      TZ: "{{ timezone }}"
       GLANCES_OPT: -w --enable-plugin sensors
     labels:
-      <<: *proxy-enabled
+      traefik.enable: "true"
       traefik.http.routers.glances.entryPoints: "http"
       traefik.http.routers.glances.rule: "Host(`glances.{{ internal_hostname }}`)"
       traefik.http.services.glances.loadbalancer.server.port: 61208
@@ -61,6 +61,6 @@ services:
     network_mode: "host"
     restart: "unless-stopped"
     environment:
-      TZ: *timezone
+      TZ: "{{ timezone }}"
     volumes:
       - "{{ docker_appdata_dir }}/plantgw:/config:ro"
