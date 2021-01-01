@@ -57,9 +57,7 @@ services:
 
   plant-gateway:
     container_name: plant-gateway
-    build:
-      context: "{{ docker_apps_dir }}/docker-images/plant-gateway"
-    image: "avatary/plant-gateway"
+    image: "ghcr.io/chris-v/plantgateway:latest"
     network_mode: "host"
     restart: "unless-stopped"
     environment:

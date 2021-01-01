@@ -41,15 +41,6 @@
     group: "docker"
     mode: 0770
 
-- name: Copy docker images
-  ansible.builtin.copy:
-    src: 'docker-images'
-    dest: '{{ docker_apps_dir }}'
-    owner: "root"
-    group: "docker"
-    directory_mode: "ug=rwx,o="
-    mode: "preserve"
-
 - name: Copy docker compose
   ansible.builtin.template:
     src: "docker-compose.yml.j2"
@@ -84,3 +75,10 @@
     owner: "root"
     group: "docker"
     mode: 0640
+
+- name: "Cleanup old files"
+  loop:
+    - { path: "{{ docker_apps_dir }}/docker-images" }
+  ansible.builtin.file:
+    state: "absent"
+    path: "{{ item.path }}"
