@@ -1,4 +1,10 @@
-- name: Set hostname
+- name: "Install packages"
+  community.general.pacman:
+    name:
+      - "ethtool"
+    state: "present"
+
+- name: "Set hostname"
   ansible.builtin.template:
     src: "etc/hostname.j2"
     dest: "/etc/hostname"
@@ -6,15 +12,15 @@
     group: "root"
     mode: 0644
 
-- name: Update hosts file
+- name: "Update hosts file"
   ansible.builtin.template:
     src: "etc/hosts.j2"
-    dest: '/etc/hosts'
-    owner: root
-    group: root
+    dest: "/etc/hosts"
+    owner: "root"
+    group: "root"
     mode: 0644
 
-- name: Configure DNS
+- name: "Configure DNS"
   ansible.builtin.file:
     state: "link"
     src: "/run/systemd/resolve/resolv.conf"
@@ -22,8 +28,8 @@
     owner: "root"
     group: "root"
 
-- name: Disable IPV6
-  notify: reload kernel
+- name: "Disable IPV6"
+  notify: "reload kernel"
   ansible.builtin.copy:
     dest: "/etc/sysctl.d/40-ipv6.conf"
     owner: "root"
@@ -31,7 +37,17 @@
     mode: 0644
     content: "net.ipv6.conf.all.disable_ipv6=1"
 
-- name: Cleanup old files
+- name: "Copy WOL config"
+  ansible.builtin.template:
+    src: "etc/systemd/network/15-wired.link.j2"
+    dest: "/etc/systemd/network/15-wired.link"
+    force: true
+    owner: "root"
+    group: "root"
+    mode: 0644
+  notify: "activate wol"
+
+- name: "Cleanup old files"
   loop:
     - { path: "/etc/modprobe.d/noiptables.conf" }
     - { path: "/usr/local/sbin/iptables" }

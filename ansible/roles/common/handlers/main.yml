@@ -1,37 +1,41 @@
-- name: Reload systemd
+- name: "Activate WOL"
+  listen: "activate wol"
+  command: "ethtool -s {{ ansible_facts['default_ipv4']['interface'] }} wol g"
+
+- name: "Reload systemd"
   listen: "reload systemd"
   ansible.builtin.systemd:
     daemon_reload: yes
 
-- name: Restart Docker
+- name: "Restart Docker"
   listen: "restart docker"
   ansible.builtin.systemd:
     name: "docker.service"
     state: "restarted"
-- name: Reload Journald
+- name: "Reload Journald"
   listen: "reload journald"
   ansible.builtin.systemd:
-    name: systemd-journald.service
-    state: restarted
+    name: "systemd-journald.service"
+    state: "restarted"
 
-- name: Reload SSHd
+- name: "Reload SSHd"
   listen: "reload sshd"
   ansible.builtin.systemd:
     name: "sshd.service"
     state: "reloaded"
 
-- name: Reload kernel attributes
+- name: "Reload kernel attributes"
   listen: "reload kernel"
   command: "sysctl --system"
-- name: Reload kernel modules
+- name: "Reload kernel modules"
   listen: "reload kernel"
   ansible.builtin.systemd:
     name: "systemd-modules-load.service"
     state: "restarted"
 
-- name: Reload udev rules
+- name: "Reload udev rules"
   listen: "reload udev"
   command: "udevadm control --reload-rules"
-- name: Trigger udev rules
+- name: "Trigger udev rules"
   listen: "reload udev"
   command: "udevadm trigger"

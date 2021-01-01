@@ -1,103 +1,124 @@
-- name: Install Fish
+- name: "Install packages"
   community.general.pacman:
     name:
-      - fish
-    state: present
+      - "fish"
+      - "sudo"
+    state: "present"
 
-- name: Create groups
+- name: "Create groups"
   loop:
-    - ssh
-    - poweroff
+    - "ssh"
+    - "poweroff"
   ansible.builtin.group:
-    name: '{{ item }}'
-    state: present
+    name: "{{ item }}"
+    state: "present"
 
-- name: Create sudoer rule for wheel
-  ansible.builtin.lineinfile:
-    path: /etc/sudoers.d/20-wheel
-    line: '%wheel ALL=(ALL) ALL'
-    create: yes
-    owner: root
-    group: root
-    mode: 0440
-    validate: 'visudo -cf %s'
-
-- name: Create sudoer rule for poweroff
-  ansible.builtin.lineinfile:
-    path: /etc/sudoers.d/30-poweroff
-    line: '%poweroff ALL=NOPASSWD: /usr/bin/poweroff, /usr/bin/halt, /usr/bin/reboot'
-    create: yes
-    owner: root
-    group: root
-    mode: 0440
-    validate: 'visudo -cf %s'
-
-- name: Create and configure `ansible`
+- name: "Create and configure `{{ users.ansible.username }}`"
   block:
-    - name: Create user
+    - name: "Create user"
       ansible.builtin.user:
-        name: ansible
-        groups: ssh
-        append: no
-        state: present
+        name: "{{ users.ansible.username }}"
+        groups:
+          - "ssh"
+        append: false
+        shell: "/usr/bin/bash"
+        state: "present"
 
-    - name: Create .ssh/ directory
+    - name: "Create .ssh/ directory"
       ansible.builtin.file:
-        path: "/home/ansible/.ssh"
+        path: "/home/{{ users.ansible.username }}/.ssh"
         state: "directory"
-        owner: "ansible"
-        group: "ansible"
+        owner: "{{ users.ansible.username }}"
+        group: "{{ users.ansible.username }}"
         mode: 0740
 
-- name: Create and configure `avatar`
+- name: "Create and configure `{{ users.avatar.username }}`"
   block:
-    - name: Create user
+    - name: "Create user"
       ansible.builtin.user:
         name: "{{ users.avatar.username }}"
-        groups: wheel,ssh,poweroff
-        append: yes
-        create_home: yes
-        state: present
-        shell: /usr/bin/fish
+        groups:
+          - "wheel"
+          - "ssh"
+          - "poweroff"
+        append: true
+        create_home: true
+        state: "present"
+        shell: "/usr/bin/fish"
         password: "{{ users.avatar.password }}"
 
-    - name: Create .ssh/ directory
+    - name: "Create .ssh/ directory"
       ansible.builtin.file:
-        path: "/home/avatar/.ssh"
+        path: "/home/{{ users.avatar.username }}/.ssh"
         state: "directory"
         owner: "{{ users.avatar.username }}"
         group: "{{ users.avatar.username }}"
         mode: 0740
 
-    - name: Add authorized keys
+    - name: "Add authorized keys"
       ansible.posix.authorized_key:
-        exclusive: yes
-        key: '{{ users.avatar.pub_key }}'
+        exclusive: true
+        key: "{{ users.avatar.pub_key }}"
         user: "{{ users.avatar.username }}"
-        state: present
+        state: "present"
 
-- name: Create and configure `homeassistant`
+- name: "Create and configure `{{ users.homeassistant.username }}`"
   block:
-    - name: Create user
+    - name: "Create user"
       ansible.builtin.user:
         name: "{{ users.homeassistant.username }}"
-        groups: ssh,poweroff
-        create_home: yes
-        state: present
-        password: '{{ users.homeassistant.password }}'
+        groups:
+          - "ssh"
+          - "poweroff"
+        create_home: true
+        state: "present"
+        password: "{{ users.homeassistant.password }}"
 
-    - name: Create .ssh/ directory
+    - name: "Create .ssh/ directory"
       ansible.builtin.file:
-        path: "/home/homeassistant/.ssh"
+        path: "/home/{{ users.homeassistant.username }}/.ssh"
         state: "directory"
         owner: "{{ users.homeassistant.username }}"
         group: "{{ users.homeassistant.username }}"
         mode: 0740
 
-    - name: Add authorized keys
+    - name: "Add authorized keys"
       ansible.posix.authorized_key:
-        exclusive: yes
+        exclusive: true
         key: "{{ users.homeassistant.pub_key }}"
         key_options: 'restrict,from="{{ network.servers.automate.ip }}"'
         user: "{{ users.homeassistant.username }}"
-        state: present
+        state: "present"
+
+    - name: "Gather user facts"
+      tags: [ "always" ]
+      block:
+        - name: "Find home-assistant uid"
+          register: "homeassistant_uid_result"
+          command: "id -u {{ users.homeassistant.username }}"
+          changed_when: false
+        - name: "Find home-assistant gid"
+          register: "homeassistant_gid_result"
+          command: "id -g {{ users.homeassistant.username }}"
+          changed_when: false
+        - name: "Register home-assistant user facts"
+          ansible.builtin.set_fact:
+            homeassistant_uid: "{{ homeassistant_uid_result.stdout }}"
+            homeassistant_gid: "{{ homeassistant_gid_result.stdout }}"
+
+- name: "Create sudoer rules"
+  loop:
+    - path: "/etc/sudoers.d/10-ansible"
+      line: "ansible ALL=(ALL) NOPASSWD: ALL"
+    - path: "/etc/sudoers.d/20-wheel"
+      line: "%wheel ALL=(ALL) ALL"
+    - path: "/etc/sudoers.d/30-poweroff"
+      line: "%poweroff ALL=NOPASSWD: /usr/bin/poweroff, /usr/bin/halt, /usr/bin/reboot"
+  ansible.builtin.lineinfile:
+    path: "{{ item.path }}"
+    line: "{{ item.line }}"
+    create: true
+    owner: "root"
+    group: "root"
+    mode: 0440
+    validate: "visudo -cf %s"

@@ -1,0 +1,3 @@
+reflector_interfaces:
+  - "br-public"
+wan_interface: "{{ ansible_facts['default_ipv4']['interface'] }}"

@@ -12,5 +12,3 @@ openzwave_auth_key: ""
 openzwave_network_key: ""
 
 router_ssh_user: "user"
-
-wan_if: "eth0"

@@ -1,12 +1,13 @@
 # Avahi deamon reflector:
 #  https://community.home-assistant.io/t/containers-avoiding-privileged-and-host-network-as-much-as-possible/60792/6
-- name: Install Avahi
+
+- name: "Install packages"
   community.general.pacman:
     name:
-      - avahi
+      - "avahi"
     state: "present"
 
-- name: Disable multicast from systemd-resolved
+- name: "Disable multicast from systemd-resolved"
   register: "resolved_config"
   ansible.builtin.lineinfile:
     path: "/etc/systemd/resolved.conf"
@@ -15,28 +16,36 @@
     line: "MulticastDNS=no"
     state: "present"
 
-- name: Enable systemd-resolved
+- name: "Enable systemd-resolved"
   register: "resolved_service"
   ansible.builtin.systemd:
     name: "systemd-resolved.service"
     state: "started"
-    enabled: yes
-- name: Restart systemd-resolved
+    enabled: true
+- name: "Restart systemd-resolved"
   when: "resolved_config.changed and not resolved_service.changed"
   ansible.builtin.systemd:
     name: "systemd-resolved.service"
     state: "restarted"
 
-- name: Restrict Avahi interfaces
+- name: "Restrict Avahi interfaces"
   register: "avahi_config_1"
   ansible.builtin.lineinfile:
     path: "/etc/avahi/avahi-daemon.conf"
     regexp: "^allow-interfaces="
     insertafter: '^#allow-interfaces=eth0'
-    line: "allow-interfaces=br-public,{{ wan_if }}"
+    line: "allow-interfaces={{ (reflector_interfaces + [ wan_interface ]) | join(',') }}"
     state: "present"
-- name: Enable Avahi mDNS reflector
+- name: "Enable Avahi IPv6"
   register: "avahi_config_2"
+  ansible.builtin.lineinfile:
+    path: "/etc/avahi/avahi-daemon.conf"
+    insertafter: '^\[server\]$'
+    regexp: "^use-ipv6="
+    line: "use-ipv6=no"
+    state: "present"
+- name: "Enable Avahi mDNS reflector"
+  register: "avahi_config_3"
   ansible.builtin.lineinfile:
     path: "/etc/avahi/avahi-daemon.conf"
     regexp: "^enable-reflector="
@@ -44,14 +53,14 @@
     line: "enable-reflector=yes"
     state: "present"
 
-- name: Enable Avahi Daemon
+- name: "Enable Avahi Daemon"
   register: "avahi_service"
   ansible.builtin.systemd:
     name: "avahi-daemon.service"
     state: "started"
-    enabled: yes
-- name: Restart Avahi Daemon
-  when: "(avahi_config_1.changed or avahi_config_2.changed) and not avahi_service.changed"
+    enabled: true
+- name: "Restart Avahi Daemon"
+  when: "(avahi_config_1.changed or avahi_config_2.changed or avahi_config_3.changed) and not avahi_service.changed"
   ansible.builtin.systemd:
     name: "avahi-daemon.service"
     state: "restarted"

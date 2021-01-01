@@ -1,4 +1,4 @@
-- import_tasks: clock.yml
+- import_tasks: rpi-clock.yml
   tags: [ "system" ]
 - import_tasks: bluetooth.yml
   tags: [ "system" ]
