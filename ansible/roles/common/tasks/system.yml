@@ -1,50 +1,70 @@
-- name: Enable NTP sync
-  command: "timedatectl set-ntp true"
-
-- name: Update pacman cache
-  changed_when: false
-  community.general.pacman:
-    update_cache: yes
-
-- name: Install packages
-  community.general.pacman:
-    name:
-      - base-devel
-      - git
-      - lm_sensors
-      - python
-      - tmux
-      - vim
-    state: present
-
-- name: Install Yay (AUR wrapper)
-  become: no
-  aur:
-    name: yay
-    state: present
-
-- name: Configure journald limits
+- name: "Configure time"
   block:
-    - name: Create journald conf directory
+    - name: "Link localtime"
       ansible.builtin.file:
-        state: "directory"
-        path: "/etc/systemd/journald.conf.d"
+        src: "/usr/share/zoneinfo/{{ timezone }}"
+        dest: "/etc/localtime"
+        state: "link"
         owner: "root"
         group: "root"
-        mode: 0755
-    - name: Copy journald configs
-      notify: reload journald
-      ansible.builtin.copy:
-        dest: "/etc/systemd/journald.conf.d/10-max_size.conf"
+    - name: "Map timezone"
+      ansible.builtin.template:
+        src: "etc/timezone.j2"
+        dest: "/etc/timezone"
         owner: "root"
         group: "root"
         mode: 0644
-        content: |
-          [Journal]
-          SystemMaxUse=2G
+    - name: "Sync hardware clock"
+      ignore_errors: true
+      command: "hwclock --systohc --utc"
+    - name: "Enable NTP sync"
+      command: "timedatectl set-ntp true"
 
-- name: Increase memory maps
-  notify: reload kernel
+- name: "Configure locale"
+  block:
+    - name: "Map locale code"
+      register: "locale_gen"
+      ansible.builtin.lineinfile:
+        path: "/etc/locale.gen"
+        regexp: "^en_US.UTF-8 UTF-8"
+        insertafter: "EOF"
+        line: "en_US.UTF-8 UTF-8"
+        state: "present"
+    - name: "Generate locale configuration"
+      when: "locale_gen.changed"
+      command: "locale-gen"
+    - name: "Activate locale"
+      ansible.builtin.copy:
+        content: "LANG=en_US.UTF-8"
+        dest: "/etc/locale.conf"
+        owner: "root"
+        group: "root"
+        mode: 0644
+
+- name: "Update pacman cache"
+  changed_when: false
+  community.general.pacman:
+    update_cache: true
+
+- name: "Install packages"
+  community.general.pacman:
+    name:
+      - "base-devel"
+      - "git"
+      - "lm_sensors"
+      - "python"
+      - "tmux"
+      - "vim"
+    state: "present"
+
+- name: "Install Yay (AUR wrapper)"
+  become: false
+  aur:
+    name: "yay"
+    state: "present"
+
+- name: "Increase memory maps"
+  notify: "reload kernel"
   ansible.builtin.copy:
     dest: "/etc/sysctl.d/50-memory.conf"
     owner: "root"

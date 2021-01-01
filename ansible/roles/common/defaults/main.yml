@@ -1,2 +1,3 @@
 ssh_port: 22
-wan_mac_address: "ansible_facts['default_ipv4']['macaddress']"
+timezone: "America/Toronto"
+wan_mac_address: "{{ ansible_facts['default_ipv4']['macaddress'] }}"

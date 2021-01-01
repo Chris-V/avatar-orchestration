@@ -1,7 +1,13 @@
 - import_tasks: "system.yml"
-- import_tasks: "network.yml"
+- import_tasks: "journal.yml"
 - import_tasks: "users.yml"
+- import_tasks: "network.yml"
 - import_tasks: "ssh.yml"
+
+- name: "Setup multicast"
+  import_role:
+    name: "common.multicast"
+  tags: [ "network", "system" ]
 
 - name: "Setup NFTables"
   import_role:
