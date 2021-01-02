@@ -1,0 +1,11 @@
+plantgateway:
+  mqtt:
+    server: "mqtt.server.com"
+    port: 8333
+    client_id: "gardener1"
+    user: "gardener"
+    password: "supersecret"
+
+  sensors:
+    - mac: "99:AA:BB:CC:DD:FF"
+      name: "citrus"

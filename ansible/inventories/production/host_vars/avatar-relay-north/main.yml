@@ -6,8 +6,3 @@ ansible_host: "avatar-relay-north-ansible"
 ssh_port: "{{ network.servers.relay_north.ports.ssh }}"
 internal_ip: "{{ network.servers.relay_north.ip }}"
 internal_hostname: "{{ network.servers.relay_north.host }}"
-
-traefik:
-  entrypoints:
-    trusted_ips:
-      - "{{ network.servers.automate.ip }}/32"
