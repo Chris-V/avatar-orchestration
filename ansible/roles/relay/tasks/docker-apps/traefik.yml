@@ -1,9 +1,0 @@
-- name: "Copy Traefik templates"
-  loop:
-    - { filename: "traefik.toml" }
-  ansible.builtin.template:
-    src: "appdata/{{ item.filename }}.j2"
-    dest: "{{ docker_appdata_dir }}/{{ item.filename }}"
-    owner: "root"
-    group: "docker"
-    mode: 0640

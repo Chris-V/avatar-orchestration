@@ -1,0 +1,8 @@
+- name: "Create service fragment: {{ fragment.name }}"
+  ansible.builtin.template:
+    src: "compose-service.yml.j2"
+    dest: "{{ dest }}"
+    owner: "root"
+    group: "docker"
+    mode: "0660"
+    validate: "docker-compose -f %s config"

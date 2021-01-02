@@ -2,6 +2,3 @@ minecraft_username: "me"
 minecraft_version: "latest"
 minecraft_heap_mb: 9216
 rcon_password: "change-me"
-traefik:
-  entrypoints:
-    trusted_ips: []

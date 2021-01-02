@@ -1,0 +1,16 @@
+mqtt:
+  server: "{{ plantgateway.mqtt.server }}"
+  port: {{ plantgateway.mqtt.port | int }}
+  client_id: "{{ plantgateway.mqtt.client_id }}"
+  user: "{{ plantgateway.mqtt.user }}"
+  password: "{{ plantgateway.mqtt.password }}"
+  ca_cert: /config/DST_Root_CA_X3.pem
+  prefix: plants
+  trailing_slash: False
+
+sensors:
+{% for sensor in plantgateway.sensors | default([]) %}
+  - mac: "{{ sensor.mac }}"
+    alias: "{{ sensor.name }}"
+    fail_silent:
+{% endfor %}

@@ -1,3 +1,0 @@
-traefik:
-  entrypoints:
-    trusted_ips: []

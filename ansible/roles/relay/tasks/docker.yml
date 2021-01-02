@@ -1,38 +1,69 @@
-- name: "Configure docker-apps structure"
-  block:
-    - name: "Create docker apps root"
-      ansible.builtin.file:
-        path: "{{ docker_apps_dir }}"
-        state: "directory"
-        owner: "root"
-        group: "docker"
-        mode: 0770
-    - name: "Create docker appdata root"
-      ansible.builtin.file:
-        path: "{{ docker_appdata_dir }}"
-        state: "directory"
-        owner: "root"
-        group: "docker"
-        mode: 0770
-
-- name: "Configure Traefik"
-  import_tasks: "docker-apps/traefik.yml"
-
-- name: "Configure Plant-Gateway"
-  import_tasks: "docker-apps/plant-gateway.yml"
-
-- name: "Copy docker compose"
-  ansible.builtin.template:
-    src: "docker-compose.yml.j2"
-    dest: "{{ docker_apps_dir }}/docker-compose.yml"
+- name: "Create docker-apps structure"
+  loop:
+    - { path: "{{ docker_apps_dir }}" }
+    - { path: "{{ docker_apps_dir }}/fragments" }
+    - { path: "{{ docker_appdata_dir }}" }
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "directory"
     owner: "root"
     group: "docker"
-    mode: 0660
-    validate: "docker-compose -f %s config"
+    mode: 0770
 
-- name: "Cleanup old files"
-  loop:
-    - { path: "{{ docker_apps_dir }}/docker-images" }
-  ansible.builtin.file:
-    state: "absent"
-    path: "{{ item.path }}"
+- name: "Create Public network fragment"
+  include_role:
+    name: "app"
+    tasks_from: "network-fragment"
+  vars:
+    dest: "{{ docker_apps_dir }}/fragments/public.network.yml"
+    fragment:
+      name: "public"
+      definition:
+        driver: "bridge"
+        ipam:
+          driver: "default"
+          config:
+            - subnet: "{{ docker_net_public }}"
+
+- name: "Glances"
+  include_role:
+    name: "app.glances"
+  vars:
+    config_dir: "{{ docker_appdata_dir }}/glances"
+    dest: "{{ docker_apps_dir }}/fragments/glances.service.yml"
+    fragment_definition:
+      labels:
+        avatar.subdomain: "glances"
+      networks:
+        public: {}
+
+- name: "Plant-Gateway"
+  include_role:
+    name: "app.plantgateway"
+  vars:
+    config_dir: "{{ docker_appdata_dir }}/plant-gateway"
+    dest: "{{ docker_apps_dir }}/fragments/plant-gateway.service.yml"
+
+- name: "Traefik"
+  include_role:
+    name: "app.traefik"
+  vars:
+    config_dir: "{{ docker_appdata_dir }}/traefik"
+    dest: "{{ docker_apps_dir }}/fragments/traefik.service.yml"
+    fragment_definition:
+      labels:
+        avatar.subdomain: "traefik"
+      networks:
+        public:
+          ipv4_address: "{{ docker_ip_proxy }}"
+    traefik:
+      domain: "{{ internal_hostname }}"
+      trusted_ips: "{{ network.servers.automate.ip }}/32"
+
+- name: "Create docker-compose.yml"
+  include_role:
+    name: "app"
+    tasks_from: "merge-fragments"
+  vars:
+    src: "{{ docker_apps_dir }}/fragments/"
+    dest: "{{ docker_apps_dir }}/docker-compose.yml"

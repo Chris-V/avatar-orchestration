@@ -17,11 +17,11 @@ ansible/host_files/avatar-media/etc/ssh/ssh_host_ed25519_key
 ansible/host_files/avatar-media/etc/ssh/ssh_host_ed25519_key.pub
 ansible/host_files/avatar-relay-north/etc/ssh/ssh_host_ed25519_key
 ansible/host_files/avatar-relay-north/etc/ssh/ssh_host_ed25519_key.pub
-ansible/host_files/avatar-relay-north/plantgw.yaml.j2
 ansible/host_files/avatar-relay-south/etc/ssh/ssh_host_ed25519_key
 ansible/host_files/avatar-relay-south/etc/ssh/ssh_host_ed25519_key.pub
-ansible/host_files/avatar-relay-south/plantgw.yaml.j2
 ansible/inventories/production/group_vars/avatar/vault.yml
 ansible/inventories/production/host_vars/avatar-automate/vault.yml
 ansible/inventories/production/host_vars/avatar-media/vault.yml
+ansible/inventories/production/host_vars/avatar-relay-north/vault.yml
+ansible/inventories/production/host_vars/avatar-relay-south/vault.yml
 ansible/roles/common.nftables/templates/etc/nftables.conf.j2
