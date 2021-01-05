@@ -1,23 +1,6 @@
 version: "3.7"
 
 services:
-  glances:
-    container_name: "glances"
-    image: "nicolargo/glances:latest"
-    pid: "host"
-    restart: "unless-stopped"
-    environment:
-      TZ: "{{ timezone }}"
-      GLANCES_OPT: -w --enable-plugin sensors
-    labels:
-      avatar.subdomain: "glances"
-      traefik.docker.network: "glances"
-      traefik.http.services.glances.loadbalancer.server.port: 61208
-    networks:
-      glances: {}
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-
   vpn:
     container_name: "vpn"
     image: "microbug/cryptostorm-client:latest"

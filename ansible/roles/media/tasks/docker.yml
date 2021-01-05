@@ -54,6 +54,19 @@
     group: "{{ item.group | default('docker-appdata', true) }}"
     mode: "{{ item.mode | default('ug=rwx,o=', true) }}"
 
+- name: "Glances"
+  include_role:
+    name: "app.glances"
+  vars:
+    config_dir: "{{ docker_appdata_dir }}/glances"
+    dest: "{{ docker_apps_dir }}/fragments/glances.service.yml"
+    fragment_definition:
+      labels:
+        avatar.subdomain: "glances"
+        traefik.docker.network: "glances"
+      networks:
+        glances: {}
+
 - name: "Traefik"
   include_role:
     name: "app.traefik"
