@@ -28,7 +28,7 @@
     name: "systemd-resolved.service"
     state: "restarted"
 
-- name: "Restrict Avahi interfaces"
+- name: "Restrict interfaces"
   register: "avahi_config_1"
   ansible.builtin.lineinfile:
     path: "/etc/avahi/avahi-daemon.conf"
@@ -36,7 +36,7 @@
     insertafter: '^#allow-interfaces=eth0'
     line: "allow-interfaces={{ (reflector_interfaces + [ wan_interface ]) | join(',') }}"
     state: "present"
-- name: "Enable Avahi IPv6"
+- name: "Disable IPv6"
   register: "avahi_config_2"
   ansible.builtin.lineinfile:
     path: "/etc/avahi/avahi-daemon.conf"
@@ -44,7 +44,7 @@
     regexp: "^use-ipv6="
     line: "use-ipv6=no"
     state: "present"
-- name: "Enable Avahi mDNS reflector"
+- name: "Enable mDNS reflector"
   register: "avahi_config_3"
   ansible.builtin.lineinfile:
     path: "/etc/avahi/avahi-daemon.conf"

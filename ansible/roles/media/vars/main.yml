@@ -14,17 +14,15 @@ series_dir: '{{ storage_mount }}/series'
 movies_dir: '{{ storage_mount }}/movies'
 
 # Dockerised setup
-docker_srv_dir: '/srv/docker'
-docker_appdata_dir: '{{ docker_srv_dir }}/appdata'
+docker_apps_dir: '/srv/docker'
+docker_appdata_dir: '{{ docker_apps_dir }}/appdata'
 appdata_backups_dir: '{{ backups_dir }}/appdata'
 
 docker_net_public: "172.30.170.0/24"
 docker_ip_proxy: "172.30.170.50"
 docker_net_glances: "172.30.171.0/24"
 docker_net_media: "172.30.172.0/24"
-docker_ip_jellyfin: "172.30.172.51"
 docker_net_minecraft: "172.30.173.0/24"
-docker_ip_minecraft: "172.30.173.50"
 
 # Deluge
 deluge_config_dir: '{{ docker_appdata_dir }}/deluge'
