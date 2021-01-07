@@ -1,25 +1,6 @@
 version: "3.7"
 
 services:
-  deluge:
-    container_name: "deluge"
-    image: "ghcr.io/linuxserver/deluge:latest"
-    network_mode: "service:vpn"
-    restart: "unless-stopped"
-    depends_on:
-      - vpn
-    environment:
-      TZ: "{{ timezone }}"
-      PUID: {{ system_appdata_uid }}
-      PGID: {{ system_data_gid }}
-      UMASK_SET: '022'
-    labels:
-      avatar.subdomain: "deluge"
-      traefik.http.services.deluge.loadbalancer.server.port: 8112
-    volumes:
-      - "{{ deluge_config_dir }}:/config"
-      - "{{ downloads_dir }}:/downloads"
-
   jellyfin:
     container_name: "jellyfin"
     image: "ghcr.io/linuxserver/jellyfin:latest"

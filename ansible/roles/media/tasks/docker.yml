@@ -54,6 +54,24 @@
     group: "{{ item.group | default('docker-appdata', true) }}"
     mode: "{{ item.mode | default('ug=rwx,o=', true) }}"
 
+- name: "Deluge"
+  include_role:
+    name: "app.deluge"
+  vars:
+    dest: "{{ docker_apps_dir }}/fragments/deluge.service.yml"
+    validate: false
+    fragment_definition:
+      depends_on:
+        - "vpn"
+      labels:
+        avatar.subdomain: "deluge"
+      network_mode: "service:vpn"
+    deluge:
+      config_dir: "{{ deluge_config_dir }}"
+      downloads_dir: "{{ downloads_dir }}"
+      gid: "{{ system_data_gid }}"
+      uid: "{{ system_appdata_uid }}"
+
 - name: "Glances"
   include_role:
     name: "app.glances"

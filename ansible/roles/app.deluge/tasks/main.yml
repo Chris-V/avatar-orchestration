@@ -1,0 +1,38 @@
+- name: "Create Deluge directories"
+  loop:
+    - { path: "" }
+  ansible.builtin.file:
+    path: "{{ deluge.config_dir }}/{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "docker"
+    mode: 0750
+
+- name: "Create Deluge service fragment"
+  include_role:
+    name: "app"
+    tasks_from: "service-fragment"
+  vars:
+    fragment:
+      name: "deluge"
+      definition: |
+        {{
+          {
+            "image": "ghcr.io/linuxserver/deluge:latest",
+            "environment": {
+              "TZ": timezone,
+              "PUID": deluge.uid,
+              "PGID": deluge.gid,
+              "UMASK_SET": "022"
+            },
+            "labels": {
+              "traefik.http.services.deluge.loadbalancer.server.port": 8112
+            },
+            "restart": "unless-stopped",
+            "volumes": [
+              deluge.config_dir ~ ":/config",
+              deluge.downloads_dir ~ ":/downloads"
+            ]
+          } | combine(fragment_definition | default({}), recursive=True, list_merge='append_rp')
+            | to_json
+        }}
