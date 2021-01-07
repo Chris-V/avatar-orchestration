@@ -85,6 +85,20 @@
       domain: "{{ internal_hostname }}"
       trusted_ips: "{{ network.servers.automate.ip }}/32"
 
+- name: "VPN"
+  include_role:
+    name: "app.vpn"
+  vars:
+    dest: "{{ docker_apps_dir }}/fragments/vpn.service.yml"
+    fragment_definition:
+      networks:
+        media: {}
+        public: {}
+    vpn:
+      config_file: "CA-Montreal_UDP.ovpn"
+      forwarding_port: "{{ deluge_incoming_port }}"
+      username: "{{ cryptostorm_username }}"
+
 - name: "LEGACY: Copy docker images"
   ansible.builtin.copy:
     src: "docker-images"

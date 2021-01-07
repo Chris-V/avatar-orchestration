@@ -1,0 +1,25 @@
+- name: "Create VPN service fragment"
+  include_role:
+    name: "app"
+    tasks_from: "service-fragment"
+  vars:
+    fragment:
+      name: "vpn"
+      definition: |
+        {{
+          {
+            "cap_add": ["NET_ADMIN"],
+            "image": "microbug/cryptostorm-client:latest",
+            "environment": {
+              "TZ": timezone,
+              "CRYPTOSTORM_USERNAME": vpn.username,
+              "CRYPTOSTORM_CONFIG_FILE": (vpn.config_file | default('CA-Montreal_UDP.ovpn')),
+              "CONNECTION_PORT": 443
+            },
+            "restart": "unless-stopped"
+          } | combine(fragment_definition | default({}), recursive=True, list_merge='append_rp')
+            | combine(
+                {"environment": {"FORWARDING_PORT": vpn.forwarding_port}} if vpn.forwarding_port is number else {},
+                recursive=True)
+            | to_json
+        }}

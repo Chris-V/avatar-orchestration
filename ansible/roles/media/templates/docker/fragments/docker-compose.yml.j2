@@ -1,22 +1,6 @@
 version: "3.7"
 
 services:
-  vpn:
-    container_name: "vpn"
-    image: "microbug/cryptostorm-client:latest"
-    restart: "unless-stopped"
-    cap_add:
-      - NET_ADMIN
-    environment:
-      TZ: "{{ timezone }}"
-      CRYPTOSTORM_USERNAME: "{{ cryptostorm_username }}"
-      CRYPTOSTORM_CONFIG_FILE: "CA-Montreal_UDP.ovpn"
-      CONNECTION_PORT: 443
-      FORWARDING_PORT: {{ deluge_incoming_port }}
-    networks:
-      media: {}
-      public: {}
-
   deluge:
     container_name: "deluge"
     image: "ghcr.io/linuxserver/deluge:latest"
