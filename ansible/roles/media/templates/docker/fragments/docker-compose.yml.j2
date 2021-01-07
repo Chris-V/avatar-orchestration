@@ -20,24 +20,6 @@ services:
       - "{{ deluge_config_dir }}:/config"
       - "{{ downloads_dir }}:/downloads"
 
-  jackett:
-    container_name: "jackett"
-    image: "ghcr.io/linuxserver/jackett:latest"
-    network_mode: "service:vpn"
-    restart: "unless-stopped"
-    depends_on:
-      - vpn
-    environment:
-      TZ: "{{ timezone }}"
-      PUID: {{ system_appdata_uid }}
-      PGID: {{ system_data_gid }}
-    labels:
-      avatar.subdomain: "jackett"
-      traefik.http.services.jackett.loadbalancer.server.port: 9117
-    volumes:
-      - "{{ jackett_config_dir }}:/config"
-      - "{{ jackett_downloads_dir }}:/downloads"
-
   jellyfin:
     container_name: "jellyfin"
     image: "ghcr.io/linuxserver/jellyfin:latest"

@@ -85,6 +85,24 @@
       domain: "{{ internal_hostname }}"
       trusted_ips: "{{ network.servers.automate.ip }}/32"
 
+- name: "Jackett"
+  include_role:
+    name: "app.jackett"
+  vars:
+    dest: "{{ docker_apps_dir }}/fragments/jackett.service.yml"
+    validate: false
+    fragment_definition:
+      depends_on:
+        - "vpn"
+      labels:
+        avatar.subdomain: "jackett"
+      network_mode: "service:vpn"
+    jackett:
+      config_dir: "{{ jackett_config_dir }}"
+      downloads_dir: "{{ jackett_downloads_dir }}"
+      gid: "{{ system_data_gid }}"
+      uid: "{{ system_appdata_uid }}"
+
 - name: "VPN"
   include_role:
     name: "app.vpn"

@@ -16,4 +16,4 @@
     owner: "root"
     group: "docker"
     mode: 0660
-    validate: "docker-compose -f %s config"
+    validate: "docker-compose -f %s config -q"

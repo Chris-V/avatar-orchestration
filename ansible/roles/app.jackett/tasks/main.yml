@@ -1,0 +1,37 @@
+- name: "Create Jackett directories"
+  loop:
+    - { path: "" }
+  ansible.builtin.file:
+    path: "{{ jackett.config_dir }}/{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "docker"
+    mode: 0750
+
+- name: "Create Jackett service fragment"
+  include_role:
+    name: "app"
+    tasks_from: "service-fragment"
+  vars:
+    fragment:
+      name: "jackett"
+      definition: |
+        {{
+          {
+            "image": "ghcr.io/linuxserver/jackett:latest",
+            "environment": {
+              "TZ": timezone,
+              "PUID": jackett.uid,
+              "PGID": jackett.gid
+            },
+            "labels": {
+              "traefik.http.services.jackett.loadbalancer.server.port": 9117
+            },
+            "restart": "unless-stopped",
+            "volumes": [
+              jackett.config_dir ~ ":/config",
+              jackett.downloads_dir ~ ":/downloads"
+            ]
+          } | combine(fragment_definition | default({}), recursive=True, list_merge='append_rp')
+            | to_json
+        }}
