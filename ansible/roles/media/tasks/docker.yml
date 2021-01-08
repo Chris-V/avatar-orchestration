@@ -42,8 +42,6 @@
     - { path: "{{ deluge_completed_dir }}", group: "data", mode: "ug=rwx,o=rx" }
     - { path: "{{ deluge_downloads_dir }}", group: "data", mode: "ug=rwx,o=rx" }
     - { path: "{{ jackett_downloads_dir }}", group: "data", mode: "ug=rwx,o=rx" }
-    - { path: "{{ jellyfin_config_dir }}", mode: "u=rwx,g=rx,o=" }
-    - { path: "{{ jellyfin_transcode_dir }}" }
     - { path: "{{ minecraft_data_dir }}" }
     - { path: "{{ minecraft_map_dir }}", group: "data", mode: "ug=rwx,o=rx" }
   ansible.builtin.file:
@@ -84,6 +82,25 @@
         traefik.docker.network: "glances"
       networks:
         glances: {}
+
+- name: "Jellyfin"
+  include_role:
+    name: "app.jellyfin"
+  vars:
+    dest: "{{ docker_apps_dir }}/fragments/jellyfin.service.yml"
+    fragment_definition:
+      labels:
+        avatar.subdomain: "jellyfin"
+        traefik.docker.network: "media"
+      networks:
+        media: {}
+    jellyfin:
+      config_dir: "{{ jellyfin_config_dir }}"
+      transcode_dir: "{{ jellyfin_transcode_dir }}"
+      series_dir: "{{ series_dir }}"
+      movies_dir: "{{ movies_dir }}"
+      gid: "{{ system_appdata_gid }}"
+      uid: "{{ system_appdata_uid }}"
 
 - name: "Radarr"
   include_role:

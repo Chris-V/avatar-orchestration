@@ -1,0 +1,7 @@
+jellyfin:
+  config_dir:
+  movies_dir:
+  series_dir:
+  transcode_dir:
+  gid:
+  uid:

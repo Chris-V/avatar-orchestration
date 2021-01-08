@@ -1,0 +1,42 @@
+- name: "Create Jellyfin directories"
+  loop:
+    - { path: "{{ jellyfin.config_dir }}" }
+    - { path: "{{ jellyfin.transcode_dir }}" }
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "directory"
+    owner: "docker-appdata"
+    group: "docker-appdata"
+    mode: 0750
+
+- name: "Create Jellyfin service fragment"
+  include_role:
+    name: "app"
+    tasks_from: "service-fragment"
+  vars:
+    fragment:
+      name: "jellyfin"
+      definition: |
+        {{
+          {
+            "image": "ghcr.io/linuxserver/jellyfin:latest",
+            "devices": ["/dev/dri:/dev/dri"],
+            "environment": {
+              "TZ": timezone,
+              "PUID": jellyfin.uid,
+              "PGID": jellyfin.gid,
+              "UMASK_SET": "027"
+            },
+            "labels": {
+              "traefik.http.services.jellyfin.loadbalancer.server.port": 8096
+            },
+            "restart": "unless-stopped",
+            "volumes": [
+              jellyfin.config_dir ~ ":/config",
+              jellyfin.series_dir ~ ":/media/series:ro",
+              jellyfin.movies_dir ~ ":/media/movies:ro",
+              jellyfin.transcode_dir ~ ":/transcode"
+            ]
+          } | combine(fragment_definition | default({}), recursive=True, list_merge='append_rp')
+            | to_json
+        }}
