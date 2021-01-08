@@ -1,4 +1,4 @@
-- name: "Create Jellyfin directories"
+- name: "Create directories"
   loop:
     - { path: "{{ jellyfin.config_dir }}" }
     - { path: "{{ jellyfin.transcode_dir }}" }
@@ -9,7 +9,16 @@
     group: "docker-appdata"
     mode: 0750
 
-- name: "Create Jellyfin service fragment"
+- name: "Add supplementary group support"
+  ansible.builtin.copy:
+    src: "extra_groups.sh"
+    dest: "{{ jellyfin.config_dir }}/custom-cont-init.d/extra_groups.sh"
+    owner: "root"
+    group: "docker"
+    directory_mode: 0750
+    mode: 0640
+
+- name: "Create service fragment"
   include_role:
     name: "app"
     tasks_from: "service-fragment"

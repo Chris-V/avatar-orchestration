@@ -4,6 +4,35 @@ system_appdata_gid: 876
 system_media_gid: 877
 system_data_gid: 878
 
+download_user:
+  name: "download"
+  uid: 2720
+  gid: 2720
+  suppementary: []
+
+sonarr_user:
+  name: "sonarr"
+  uid: 2730
+  gid: 2730
+  suppementary:
+    - "{{ download_user.gid }}"
+    - "{{ system_media_gid }}"
+
+radarr_user:
+  name: "radarr"
+  uid: 2731
+  gid: 2731
+  suppementary:
+    - "{{ download_user.gid }}"
+    - "{{ system_media_gid }}"
+
+jellyfin_user:
+  name: "jellyfin"
+  uid: 2732
+  gid: 2732
+  suppementary:
+    - "{{ system_media_gid }}"
+
 # General directories and mount points
 data_mount: '/data'
 storage_mount: '/storage'

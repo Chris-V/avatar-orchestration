@@ -1,4 +1,4 @@
-- name: "Create Glances service fragment"
+- name: "Create service fragment"
   include_role:
     name: "app"
     tasks_from: "service-fragment"

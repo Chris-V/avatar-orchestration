@@ -1,4 +1,4 @@
-- name: "Create VPN service fragment"
+- name: "Create service fragment"
   include_role:
     name: "app"
     tasks_from: "service-fragment"

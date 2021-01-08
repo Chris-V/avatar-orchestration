@@ -1,4 +1,4 @@
-- name: "Create Deluge directories"
+- name: "Create directories"
   loop:
     - { path: "" }
   ansible.builtin.file:
@@ -8,7 +8,7 @@
     group: "docker"
     mode: 0750
 
-- name: "Create Deluge service fragment"
+- name: "Create service fragment"
   include_role:
     name: "app"
     tasks_from: "service-fragment"

@@ -1,4 +1,4 @@
-- name: "Create Plant-Gateway directories"
+- name: "Create directories"
   loop:
     - { path: "" }
   ansible.builtin.file:
@@ -8,7 +8,7 @@
     group: "docker"
     mode: 0750
 
-- name: "Copy Plant-Gateway files"
+- name: "Copy files"
   loop:
     - { filename: "DST_Root_CA_X3.pem" }
   ansible.builtin.copy:
@@ -18,7 +18,7 @@
     group: "docker"
     mode: 0640
 
-- name: "Copy Plant-Gateway templates"
+- name: "Copy templates"
   loop:
     - { filename: "plantgw.yaml" }
   ansible.builtin.template:
@@ -28,7 +28,7 @@
     group: "docker"
     mode: 0640
 
-- name: "Create Plant-Gateway service fragment"
+- name: "Create service fragment"
   include_role:
     name: "app"
     tasks_from: "service-fragment"
