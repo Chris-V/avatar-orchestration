@@ -1,0 +1,6 @@
+sonarr:
+  config_dir:
+  downloads_dir:
+  series_dir:
+  gid:
+  uid:

@@ -1,0 +1,38 @@
+- name: "Create Radarr directories"
+  loop:
+    - { path: "" }
+  ansible.builtin.file:
+    path: "{{ radarr.config_dir }}/{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "docker"
+    mode: 0750
+
+- name: "Create Radarr service fragment"
+  include_role:
+    name: "app"
+    tasks_from: "service-fragment"
+  vars:
+    fragment:
+      name: "radarr"
+      definition: |
+        {{
+          {
+            "image": "ghcr.io/linuxserver/radarr:latest",
+            "environment": {
+              "TZ": timezone,
+              "PUID": radarr.uid,
+              "PGID": radarr.gid
+            },
+            "labels": {
+              "traefik.http.services.radarr.loadbalancer.server.port": 7878
+            },
+            "restart": "unless-stopped",
+            "volumes": [
+              radarr.config_dir ~ ":/config",
+              radarr.downloads_dir ~ ":/downloads:ro",
+              radarr.movies_dir ~ ":/movies"
+            ]
+          } | combine(fragment_definition | default({}), recursive=True, list_merge='append_rp')
+            | to_json
+        }}

@@ -85,6 +85,42 @@
       networks:
         glances: {}
 
+- name: "Radarr"
+  include_role:
+    name: "app.radarr"
+  vars:
+    dest: "{{ docker_apps_dir }}/fragments/radarr.service.yml"
+    fragment_definition:
+      labels:
+        avatar.subdomain: "radarr"
+        traefik.docker.network: "media"
+      networks:
+        media: {}
+    radarr:
+      config_dir: "{{ radarr_config_dir }}"
+      downloads_dir: "{{ downloads_dir }}"
+      movies_dir: "{{ movies_dir }}"
+      gid: "{{ system_media_gid }}"
+      uid: "{{ system_appdata_uid }}"
+
+- name: "Sonarr"
+  include_role:
+    name: "app.sonarr"
+  vars:
+    dest: "{{ docker_apps_dir }}/fragments/sonarr.service.yml"
+    fragment_definition:
+      labels:
+        avatar.subdomain: "sonarr"
+        traefik.docker.network: "media"
+      networks:
+        media: {}
+    sonarr:
+      config_dir: "{{ sonarr_config_dir }}"
+      downloads_dir: "{{ downloads_dir }}"
+      series_dir: "{{ series_dir }}"
+      gid: "{{ system_media_gid }}"
+      uid: "{{ system_appdata_uid }}"
+
 - name: "Traefik"
   include_role:
     name: "app.traefik"

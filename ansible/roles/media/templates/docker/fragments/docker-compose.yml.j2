@@ -24,44 +24,6 @@ services:
       - "{{ series_dir }}:/media/series:ro"
       - "{{ movies_dir }}:/media/movies:ro"
 
-  sonarr:
-    container_name: "sonarr"
-    image: "ghcr.io/linuxserver/sonarr:preview"
-    restart: "unless-stopped"
-    environment:
-      TZ: "{{ timezone }}"
-      PUID: {{ system_appdata_uid }}
-      PGID: {{ system_media_gid }}
-    labels:
-      avatar.subdomain: "sonarr"
-      traefik.docker.network: "media"
-      traefik.http.services.sonarr.loadbalancer.server.port: 8989
-    networks:
-      media: {}
-    volumes:
-      - "{{ sonarr_config_dir }}:/config"
-      - "{{ series_dir }}:/tv"
-      - "{{ downloads_dir }}:/downloads:ro"
-
-  radarr:
-    container_name: "radarr"
-    image: "ghcr.io/linuxserver/radarr:latest"
-    restart: "unless-stopped"
-    environment:
-      TZ: "{{ timezone }}"
-      PUID: {{ system_appdata_uid }}
-      PGID: {{ system_media_gid }}
-    labels:
-      avatar.subdomain: "radarr"
-      traefik.docker.network: "media"
-      traefik.http.services.radarr.loadbalancer.server.port: 7878
-    networks:
-      media: {}
-    volumes:
-      - "{{ radarr_config_dir }}:/config"
-      - "{{ movies_dir }}:/movies"
-      - "{{ downloads_dir }}:/downloads:ro"
-
   minecraft:
     container_name: "minecraft"
     image: "itzg/minecraft-server:openj9"
