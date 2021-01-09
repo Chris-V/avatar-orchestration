@@ -1,4 +1,0 @@
-vpn:
-  config_file: "Balancer_UDP.ovpn"
-  forwarding_port:
-  username:

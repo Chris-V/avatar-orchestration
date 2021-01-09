@@ -1,4 +1,0 @@
-traefik:
-  default_network: "public"
-  domain: "localhost"
-  trusted_ips: []

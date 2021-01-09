@@ -29,36 +29,37 @@
   include_role:
     name: "app.glances"
   vars:
-    config_dir: "{{ docker_appdata_dir }}/glances"
     dest: "{{ docker_apps_dir }}/fragments/glances.service.yml"
-    fragment_definition:
-      labels:
-        avatar.subdomain: "glances"
-      networks:
-        public: {}
+    glances:
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "glances"
+          networks:
+            public: {}
 
 - name: "Plant-Gateway"
   include_role:
     name: "app.plantgateway"
   vars:
-    config_dir: "{{ docker_appdata_dir }}/plant-gateway"
     dest: "{{ docker_apps_dir }}/fragments/plant-gateway.service.yml"
 
 - name: "Traefik"
   include_role:
     name: "app.traefik"
   vars:
-    config_dir: "{{ docker_appdata_dir }}/traefik"
     dest: "{{ docker_apps_dir }}/fragments/traefik.service.yml"
-    fragment_definition:
-      labels:
-        avatar.subdomain: "traefik"
-      networks:
-        public:
-          ipv4_address: "{{ docker_ip_proxy }}"
     traefik:
+      config_dir: "{{ docker_appdata_dir }}/traefik"
       domain: "{{ internal_hostname }}"
       trusted_ips: "{{ network.servers.automate.ip }}/32"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "traefik"
+          networks:
+            public:
+              ipv4_address: "{{ docker_ip_proxy }}"
 
 - name: "Create docker-compose.yml"
   include_role:

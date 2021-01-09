@@ -64,103 +64,31 @@
   vars:
     dest: "{{ docker_apps_dir }}/fragments/deluge.service.yml"
     validate: false
-    fragment_definition:
-      depends_on:
-        - "vpn"
-      labels:
-        avatar.subdomain: "deluge"
-      network_mode: "service:vpn"
     deluge:
       config_dir: "{{ deluge_config_dir }}"
       downloads_dir: "{{ downloads_dir }}"
       gid: "{{ system_data_gid }}"
       uid: "{{ system_appdata_uid }}"
+      fragment:
+        definition:
+          depends_on: ["vpn"]
+          network_mode: "service:vpn"
+          labels:
+            avatar.subdomain: "deluge"
 
 - name: "Glances"
   include_role:
     name: "app.glances"
   vars:
-    config_dir: "{{ docker_appdata_dir }}/glances"
     dest: "{{ docker_apps_dir }}/fragments/glances.service.yml"
-    fragment_definition:
-      labels:
-        avatar.subdomain: "glances"
-        traefik.docker.network: "glances"
-      networks:
-        glances: {}
-
-- name: "Jellyfin"
-  include_role:
-    name: "app.jellyfin"
-  vars:
-    dest: "{{ docker_apps_dir }}/fragments/jellyfin.service.yml"
-    fragment_definition:
-      labels:
-        avatar.subdomain: "jellyfin"
-        traefik.docker.network: "media"
-      networks:
-        media: {}
-    jellyfin:
-      config_dir: "{{ jellyfin_config_dir }}"
-      transcode_dir: "{{ jellyfin_transcode_dir }}"
-      series_dir: "{{ series_dir }}"
-      movies_dir: "{{ movies_dir }}"
-      gid: "{{ system_appdata_gid }}"
-      uid: "{{ system_appdata_uid }}"
-
-- name: "Radarr"
-  include_role:
-    name: "app.radarr"
-  vars:
-    dest: "{{ docker_apps_dir }}/fragments/radarr.service.yml"
-    fragment_definition:
-      labels:
-        avatar.subdomain: "radarr"
-        traefik.docker.network: "media"
-      networks:
-        media: {}
-    radarr:
-      config_dir: "{{ radarr_config_dir }}"
-      downloads_dir: "{{ downloads_dir }}"
-      movies_dir: "{{ movies_dir }}"
-      gid: "{{ media_group.gid }}"
-      uid: "{{ system_appdata_uid }}"
-
-- name: "Sonarr"
-  include_role:
-    name: "app.sonarr"
-  vars:
-    dest: "{{ docker_apps_dir }}/fragments/sonarr.service.yml"
-    fragment_definition:
-      labels:
-        avatar.subdomain: "sonarr"
-        traefik.docker.network: "media"
-      networks:
-        media: {}
-    sonarr:
-      config_dir: "{{ sonarr_config_dir }}"
-      downloads_dir: "{{ downloads_dir }}"
-      series_dir: "{{ series_dir }}"
-      gid: "{{ media_group.gid }}"
-      uid: "{{ system_appdata_uid }}"
-
-- name: "Traefik"
-  include_role:
-    name: "app.traefik"
-  vars:
-    config_dir: "{{ docker_appdata_dir }}/traefik"
-    dest: "{{ docker_apps_dir }}/fragments/traefik.service.yml"
-    fragment_definition:
-      labels:
-        avatar.subdomain: "traefik"
-      networks:
-        public:
-          ipv4_address: "{{ docker_ip_proxy }}"
-        glances: {}
-        media: {}
-    traefik:
-      domain: "{{ internal_hostname }}"
-      trusted_ips: "{{ network.servers.automate.ip }}/32"
+    glances:
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "glances"
+            traefik.docker.network: "glances"
+          networks:
+            glances: {}
 
 - name: "Jackett"
   include_role:
@@ -168,31 +96,109 @@
   vars:
     dest: "{{ docker_apps_dir }}/fragments/jackett.service.yml"
     validate: false
-    fragment_definition:
-      depends_on:
-        - "vpn"
-      labels:
-        avatar.subdomain: "jackett"
-      network_mode: "service:vpn"
     jackett:
       config_dir: "{{ jackett_config_dir }}"
       downloads_dir: "{{ jackett_downloads_dir }}"
       gid: "{{ system_data_gid }}"
       uid: "{{ system_appdata_uid }}"
+      fragment:
+        definition:
+          depends_on: ["vpn"]
+          labels:
+            avatar.subdomain: "jackett"
+          network_mode: "service:vpn"
+
+- name: "Jellyfin"
+  include_role:
+    name: "app.jellyfin"
+  vars:
+    dest: "{{ docker_apps_dir }}/fragments/jellyfin.service.yml"
+    jellyfin:
+      config_dir: "{{ jellyfin_config_dir }}"
+      transcode_dir: "{{ jellyfin_transcode_dir }}"
+      series_dir: "{{ series_dir }}"
+      movies_dir: "{{ movies_dir }}"
+      gid: "{{ system_appdata_gid }}"
+      uid: "{{ system_appdata_uid }}"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "jellyfin"
+            traefik.docker.network: "media"
+          networks:
+            media: {}
+
+- name: "Radarr"
+  include_role:
+    name: "app.radarr"
+  vars:
+    dest: "{{ docker_apps_dir }}/fragments/radarr.service.yml"
+    radarr:
+      config_dir: "{{ radarr_config_dir }}"
+      downloads_dir: "{{ downloads_dir }}"
+      movies_dir: "{{ movies_dir }}"
+      gid: "{{ media_group.gid }}"
+      uid: "{{ system_appdata_uid }}"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "radarr"
+            traefik.docker.network: "media"
+          networks:
+            media: {}
+
+- name: "Sonarr"
+  include_role:
+    name: "app.sonarr"
+  vars:
+    dest: "{{ docker_apps_dir }}/fragments/sonarr.service.yml"
+    sonarr:
+      config_dir: "{{ sonarr_config_dir }}"
+      downloads_dir: "{{ downloads_dir }}"
+      series_dir: "{{ series_dir }}"
+      gid: "{{ media_group.gid }}"
+      uid: "{{ system_appdata_uid }}"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "sonarr"
+            traefik.docker.network: "media"
+          networks:
+            media: {}
+
+- name: "Traefik"
+  include_role:
+    name: "app.traefik"
+  vars:
+    dest: "{{ docker_apps_dir }}/fragments/traefik.service.yml"
+    traefik:
+      config_dir: "{{ docker_appdata_dir }}/traefik"
+      domain: "{{ internal_hostname }}"
+      trusted_ips: "{{ network.servers.automate.ip }}/32"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "traefik"
+          networks:
+            public:
+              ipv4_address: "{{ docker_ip_proxy }}"
+            glances: { }
+            media: { }
 
 - name: "VPN"
   include_role:
     name: "app.vpn"
   vars:
     dest: "{{ docker_apps_dir }}/fragments/vpn.service.yml"
-    fragment_definition:
-      networks:
-        media: {}
-        public: {}
     vpn:
       config_file: "CA-Montreal_UDP.ovpn"
       forwarding_port: "{{ deluge_incoming_port }}"
       username: "{{ cryptostorm_username }}"
+      fragment:
+        definition:
+          networks:
+            media: {}
+            public: {}
 
 - name: "LEGACY: Copy docker images"
   ansible.builtin.copy:

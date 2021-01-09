@@ -13,25 +13,24 @@
     name: "app"
     tasks_from: "service-fragment"
   vars:
-    fragment:
+    default_fragment:
       name: "jackett"
-      definition: |
-        {{
-          {
-            "image": "ghcr.io/linuxserver/jackett:latest",
-            "environment": {
-              "TZ": timezone,
-              "PUID": jackett.uid,
-              "PGID": jackett.gid
-            },
-            "labels": {
-              "traefik.http.services.jackett.loadbalancer.server.port": 9117
-            },
-            "restart": "unless-stopped",
-            "volumes": [
-              jackett.config_dir ~ ":/config",
-              jackett.downloads_dir ~ ":/downloads"
-            ]
-          } | combine(fragment_definition | default({}), recursive=True, list_merge='append_rp')
-            | to_json
-        }}
+      definition:
+        image: "ghcr.io/linuxserver/jackett:latest"
+        environment:
+          TZ: "{{ timezone }}"
+          PUID: "{{ jackett.uid }}"
+          PGID: "{{ jackett.gid }}"
+          UMASK_SET: "022"
+        labels:
+          traefik.http.services.jackett.loadbalancer.server.port: 9117
+        restart: "unless-stopped"
+        volumes:
+          - "{{ jackett.config_dir }}:/config"
+          - "{{ jackett.downloads_dir }}:/downloads"
+    fragment: |
+      {{
+        default_fragment
+          | combine(fragment_definition | default({}), recursive=True, list_merge='append_rp')
+          | to_json
+      }}

@@ -22,26 +22,25 @@
     name: "app"
     tasks_from: "service-fragment"
   vars:
-    fragment:
+    default_fragment:
       name: "sonarr"
-      definition: |
-        {{
-          {
-            "image": "ghcr.io/linuxserver/sonarr:preview",
-            "environment": {
-              "TZ": timezone,
-              "PUID": sonarr.uid,
-              "PGID": sonarr.gid
-            },
-            "labels": {
-              "traefik.http.services.sonarr.loadbalancer.server.port": 8989
-            },
-            "restart": "unless-stopped",
-            "volumes": [
-              sonarr.config_dir ~ ":/config",
-              sonarr.downloads_dir ~ ":/downloads:ro",
-              sonarr.series_dir ~ ":/tv"
-            ]
-          } | combine(fragment_definition | default({}), recursive=True, list_merge='append_rp')
-            | to_json
-        }}
+      definition:
+        image: "ghcr.io/linuxserver/sonarr:preview"
+        environment:
+          TZ: "{{ timezone }}"
+          PUID: "{{ sonarr.uid }}"
+          PGID: "{{ sonarr.gid }}"
+          UMASK_SET: "022"
+        labels:
+          traefik.http.services.sonarr.loadbalancer.server.port: 8989
+        restart: "unless-stopped"
+        volumes:
+          - "{{ sonarr.config_dir }}:/config"
+          - "{{ sonarr.downloads_dir }}:/downloads:ro"
+          - "{{ sonarr.series_dir }}:/tv"
+    fragment: |
+      {{
+        default_fragment
+          | combine(sonarr.fragment | default({}), recursive=True, list_merge='append_rp')
+          | to_json
+      }}
