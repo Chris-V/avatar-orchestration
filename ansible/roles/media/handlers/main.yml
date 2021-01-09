@@ -1,0 +1,8 @@
+- name: "Cleanup"
+  listen: "cleanup"
+  loop:
+    - { path: "/srv/docker" }
+    - { path: "{{ data_mount }}/plex" }
+  ansible.builtin.file:
+    state: "absent"
+    path: "{{ item.path }}"

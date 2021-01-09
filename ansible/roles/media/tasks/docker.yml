@@ -1,3 +1,9 @@
+- name: "Migrate docker-apps directory"
+  ansible.builtin.command: 'mv "/srv/docker" "{{ docker_apps_dir }}"'
+  notify: "cleanup"
+  args:
+    creates: "{{ docker_apps_dir }}"
+
 - name: "Create docker directories"
   loop:
     - { path: "{{ docker_apps_dir }}" }
@@ -117,7 +123,7 @@
       config_dir: "{{ radarr_config_dir }}"
       downloads_dir: "{{ downloads_dir }}"
       movies_dir: "{{ movies_dir }}"
-      gid: "{{ system_media_gid }}"
+      gid: "{{ media_group.gid }}"
       uid: "{{ system_appdata_uid }}"
 
 - name: "Sonarr"
@@ -135,7 +141,7 @@
       config_dir: "{{ sonarr_config_dir }}"
       downloads_dir: "{{ downloads_dir }}"
       series_dir: "{{ series_dir }}"
-      gid: "{{ system_media_gid }}"
+      gid: "{{ media_group.gid }}"
       uid: "{{ system_appdata_uid }}"
 
 - name: "Traefik"
@@ -230,12 +236,3 @@
     group: "docker-appdata"
     directory_mode: "u=rwx,g=rx,o="
     mode: "u+rw,g+r-w,o=" # Preserve exec. bit where applicable
-
-- name: "Cleanup old files"
-  loop:
-    - { path: "{{ docker_appdata_dir }}/traefik.toml" }
-    - { path: "{{ docker_appdata_dir }}/plex" }
-    - { path: "{{ data_mount }}/plex" }
-  ansible.builtin.file:
-    state: "absent"
-    path: "{{ item.path }}"

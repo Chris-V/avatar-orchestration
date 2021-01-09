@@ -1,8 +1,11 @@
 # Users
 system_appdata_uid: 876
 system_appdata_gid: 876
-system_media_gid: 877
 system_data_gid: 878
+
+media_group:
+  name: "media"
+  gid: 877
 
 download_user:
   name: "download"
@@ -15,23 +18,23 @@ sonarr_user:
   uid: 2730
   gid: 2730
   suppementary:
-    - "{{ download_user.gid }}"
-    - "{{ system_media_gid }}"
+    - "{{ download_user.name }}"
+    - "{{ media_group.name }}"
 
 radarr_user:
   name: "radarr"
   uid: 2731
   gid: 2731
   suppementary:
-    - "{{ download_user.gid }}"
-    - "{{ system_media_gid }}"
+    - "{{ download_user.name }}"
+    - "{{ media_group.name }}"
 
 jellyfin_user:
   name: "jellyfin"
   uid: 2732
   gid: 2732
   suppementary:
-    - "{{ system_media_gid }}"
+    - "{{ media_group.name }}"
 
 # General directories and mount points
 data_mount: '/data'
@@ -43,7 +46,7 @@ series_dir: '{{ storage_mount }}/series'
 movies_dir: '{{ storage_mount }}/movies'
 
 # Dockerised setup
-docker_apps_dir: '/srv/docker'
+docker_apps_dir: '/opt/docker-apps'
 docker_appdata_dir: '{{ docker_apps_dir }}/appdata'
 appdata_backups_dir: '{{ backups_dir }}/appdata'
 

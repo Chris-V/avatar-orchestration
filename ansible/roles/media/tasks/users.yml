@@ -1,11 +1,11 @@
 - name: Create system groups
   loop:
-    - { name: &data_group 'data', gid: '{{ system_data_gid }}' }
-    - { name: &media_group 'media', gid: '{{ system_media_gid }}' }
-    - { name: &appdata 'docker-appdata', gid: '{{ system_appdata_gid }}' }
+    - { name: "{{ media_group.name }}", gid: "{{ media_group.gid }}" }
+    - { name: &data_group "data", gid: "{{ system_data_gid }}" }
+    - { name: &appdata "docker-appdata", gid: "{{ system_appdata_gid }}" }
   ansible.builtin.group:
-    name: '{{ item.name }}'
-    gid: '{{ item.gid }}'
+    name: "{{ item.name }}"
+    gid: "{{ item.gid }}"
     state: present
 
 - name: Create system users
@@ -14,8 +14,8 @@
     group: *appdata
     groups:
       - *data_group
-      - *media_group
-    uid: '{{ system_appdata_uid }}'
+      - "{{ media_group.name }}"
+    uid: "{{ system_appdata_uid }}"
     create_home: no
-    shell: '/usr/bin/nologin'
+    shell: "/usr/bin/nologin"
     state: present
