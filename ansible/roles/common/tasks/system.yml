@@ -16,6 +16,7 @@
         mode: 0644
     - name: "Sync hardware clock"
       ignore_errors: true
+      changed_when: false
       command: "hwclock --systohc --utc"
     - name: "Enable NTP sync"
       command: "timedatectl set-ntp true"

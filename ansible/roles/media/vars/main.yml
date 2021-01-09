@@ -3,52 +3,27 @@ system_appdata_uid: 876
 system_appdata_gid: 876
 system_data_gid: 878
 
+download_group:
+  name: "download"
+  gid: 879
+
 media_group:
   name: "media"
   gid: 877
 
-download_user:
-  name: "download"
-  uid: 2720
-  gid: 2720
-  suppementary: []
-
-sonarr_user:
-  name: "sonarr"
-  uid: 2730
-  gid: 2730
-  suppementary:
-    - "{{ download_user.name }}"
-    - "{{ media_group.name }}"
-
-radarr_user:
-  name: "radarr"
-  uid: 2731
-  gid: 2731
-  suppementary:
-    - "{{ download_user.name }}"
-    - "{{ media_group.name }}"
-
-jellyfin_user:
-  name: "jellyfin"
-  uid: 2732
-  gid: 2732
-  suppementary:
-    - "{{ media_group.name }}"
-
 # General directories and mount points
-data_mount: '/data'
-storage_mount: '/storage'
+data_mount: "/data"
+storage_mount: "/storage"
 
-downloads_dir: '{{ data_mount }}/downloads'
-backups_dir: '{{ storage_mount }}/backups'
-series_dir: '{{ storage_mount }}/series'
-movies_dir: '{{ storage_mount }}/movies'
+downloads_dir: "{{ data_mount }}/downloads"
+backups_dir: "{{ storage_mount }}/backups"
+series_dir: "{{ storage_mount }}/series"
+movies_dir: "{{ storage_mount }}/movies"
 
 # Dockerised setup
-docker_apps_dir: '/opt/docker-apps'
-docker_appdata_dir: '{{ docker_apps_dir }}/appdata'
-appdata_backups_dir: '{{ backups_dir }}/appdata'
+docker_apps_dir: "/opt/docker-apps"
+docker_appdata_dir: "{{ docker_apps_dir }}/appdata"
+appdata_backups_dir: "{{ backups_dir }}/appdata"
 
 docker_net_public: "172.30.170.0/24"
 docker_ip_proxy: "172.30.170.50"
@@ -56,27 +31,8 @@ docker_net_glances: "172.30.171.0/24"
 docker_net_media: "172.30.172.0/24"
 docker_net_minecraft: "172.30.173.0/24"
 
-# Deluge
-deluge_config_dir: '{{ docker_appdata_dir }}/deluge'
-deluge_downloads_dir: '{{ downloads_dir }}/deluge'
-deluge_completed_dir: '{{ downloads_dir }}/completed'
-
-# Jackett
-jackett_config_dir: '{{ docker_appdata_dir }}/jackett'
-jackett_downloads_dir: '{{ downloads_dir }}/jackett'
-
-# Jellyfin
-jellyfin_config_dir: '{{ docker_appdata_dir }}/jellyfin'
-jellyfin_transcode_dir: '{{ data_mount }}/jellyfin/transcode'
-
 # Minecraft
-minecraft_backups_dir: '{{ backups_dir }}/minecraft'
-minecraft_data_dir: '/srv/minecraft'
-minecraft_map_dir: '/srv/minecraft-map'
-minecraft_overviewer_dir: '{{ docker_appdata_dir }}/minecraft-overviewer'
-
-# Radarr
-radarr_config_dir: '{{ docker_appdata_dir }}/radarr'
-
-# Sonarr
-sonarr_config_dir: '{{ docker_appdata_dir }}/sonarr'
+minecraft_backups_dir: "{{ backups_dir }}/minecraft"
+minecraft_data_dir: "/srv/minecraft"
+minecraft_map_dir: "/srv/minecraft-map"
+minecraft_overviewer_dir: "{{ docker_appdata_dir }}/minecraft-overviewer"

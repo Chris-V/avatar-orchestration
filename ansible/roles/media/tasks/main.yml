@@ -4,4 +4,4 @@
   tags: [ "system" ]
 
 - import_tasks: docker.yml
-  tags: [ "docker" ]
+  tags: [ "docker", "dockerapps" ]

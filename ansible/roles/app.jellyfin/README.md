@@ -11,8 +11,10 @@ jellyfin:
   movies_dir: <string>
   series_dir: <string>
   transcode_dir: <string>
-  gid: <number>
-  uid: <number>
+  extra_groups: <optional>
+    - gid: <number>
+    - name: <string>
+  group: <optional; string>
   fragment: <optional; object>
       name: <string>
       definition: <object>

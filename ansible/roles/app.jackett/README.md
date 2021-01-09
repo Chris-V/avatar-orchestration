@@ -9,8 +9,10 @@ validate: <optional; bool>
 deluge:
   config_dir: <string>
   downloads_dir: <string>
-  gid: <number>
-  uid: <number>
+  extra_groups: <optional>
+    - gid: <number>
+    - name: <string>
+  group: <optional; string>
   fragment: <optional; object>
       name: <string>
       definition: <object>

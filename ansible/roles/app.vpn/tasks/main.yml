@@ -15,12 +15,10 @@
           CONNECTION_PORT: 443
         restart: "unless-stopped"
     fragment: |
+      {% set forwarding_port = {"environment": {"FORWARDING_PORT": vpn.forwarding_port}} if vpn.forwarding_port is defined else {} -%}
       {{
         default_fragment
-          | combine(
-              {"environment": {"FORWARDING_PORT": vpn.forwarding_port}} if vpn.forwarding_port is number else {},
-              recursive=True,
-            )
+          | combine({ "definition": forwarding_port }, recursive=True)
           | combine(vpn.fragment | default({}), recursive=True, list_merge='append_rp')
           | to_json
       }}

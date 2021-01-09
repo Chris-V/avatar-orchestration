@@ -79,8 +79,8 @@ services:
     restart: "always"
     environment:
       TZ: "{{ timezone }}"
-      PUID: {{ system_appdata_uid }}
-      PGID: {{ system_appdata_gid }}
+      PUID: 0
+      PGID: 0
       CRONTAB_CONFIG: "30 3 * * *"
       PAUSE_CONTAINERS: "deluge jackett jellyfin radarr sonarr"
     volumes:

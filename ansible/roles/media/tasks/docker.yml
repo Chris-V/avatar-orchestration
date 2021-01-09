@@ -1,7 +1,7 @@
 - name: "Migrate docker-apps directory"
-  ansible.builtin.command: 'mv "/srv/docker" "{{ docker_apps_dir }}"'
   notify: "cleanup"
-  args:
+  ansible.builtin.command:
+    cmd: "mv /srv/docker {{ docker_apps_dir | quote }}"
     creates: "{{ docker_apps_dir }}"
 
 - name: "Create docker directories"
@@ -16,6 +16,22 @@
     owner: "root"
     group: "docker"
     mode: 0770
+
+- name: "LEGACY: Create data directories"
+  loop:
+    - { path: "{{ downloads_dir }}", owner: "root", group: "{{ download_group.name }}", mode: "750" }
+    - { path: "{{ backups_dir }}" }
+    - { path: "{{ appdata_backups_dir }}" }
+    - { path: "{{ minecraft_backups_dir }}" }
+    - { path: "{{ minecraft_data_dir }}" }
+    - { path: "{{ minecraft_map_dir }}", group: "data", mode: "ug=rwx,o=rx" }
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "directory"
+    recurse: no
+    owner: "{{ item.owner | default('docker-appdata', true) }}"
+    group: "{{ item.group | default('docker-appdata', true) }}"
+    mode: "{{ item.mode | default('ug=rwx,o=', true) }}"
 
 - name: "Create network fragments"
   loop:
@@ -37,27 +53,6 @@
           config:
             - subnet: "{{ item.subnet }}"
 
-- name: "LEGACY: Create data directories"
-  loop:
-    - { path: "{{ backups_dir }}" }
-    - { path: "{{ appdata_backups_dir }}" }
-    - { path: "{{ minecraft_backups_dir }}" }
-    - { path: "{{ series_dir }}", group: "media", mode: "ug=rwx,o=rx" }
-    - { path: "{{ movies_dir }}", group: "media", mode: "ug=rwx,o=rx" }
-    - { path: "{{ downloads_dir }}", group: "data", mode: "ug=rwx,o=rx" }
-    - { path: "{{ deluge_completed_dir }}", group: "data", mode: "ug=rwx,o=rx" }
-    - { path: "{{ deluge_downloads_dir }}", group: "data", mode: "ug=rwx,o=rx" }
-    - { path: "{{ jackett_downloads_dir }}", group: "data", mode: "ug=rwx,o=rx" }
-    - { path: "{{ minecraft_data_dir }}" }
-    - { path: "{{ minecraft_map_dir }}", group: "data", mode: "ug=rwx,o=rx" }
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: "directory"
-    recurse: no
-    owner: "docker-appdata"
-    group: "{{ item.group | default('docker-appdata', true) }}"
-    mode: "{{ item.mode | default('ug=rwx,o=', true) }}"
-
 - name: "Deluge"
   include_role:
     name: "app.deluge"
@@ -65,10 +60,10 @@
     dest: "{{ docker_apps_dir }}/fragments/deluge.service.yml"
     validate: false
     deluge:
-      config_dir: "{{ deluge_config_dir }}"
-      downloads_dir: "{{ downloads_dir }}"
-      gid: "{{ system_data_gid }}"
-      uid: "{{ system_appdata_uid }}"
+      config_dir: "{{ docker_appdata_dir }}/deluge"
+      blackhole_dir: "{{ downloads_dir }}/jackett"
+      downloads_dir: "{{ downloads_dir }}/deluge"
+      group: "{{ download_group.name }}"
       fragment:
         definition:
           depends_on: ["vpn"]
@@ -97,10 +92,9 @@
     dest: "{{ docker_apps_dir }}/fragments/jackett.service.yml"
     validate: false
     jackett:
-      config_dir: "{{ jackett_config_dir }}"
-      downloads_dir: "{{ jackett_downloads_dir }}"
-      gid: "{{ system_data_gid }}"
-      uid: "{{ system_appdata_uid }}"
+      config_dir: "{{ docker_appdata_dir }}/jackett"
+      downloads_dir: "{{ downloads_dir }}/jackett"
+      group: "{{ download_group.name }}"
       fragment:
         definition:
           depends_on: ["vpn"]
@@ -114,12 +108,12 @@
   vars:
     dest: "{{ docker_apps_dir }}/fragments/jellyfin.service.yml"
     jellyfin:
-      config_dir: "{{ jellyfin_config_dir }}"
-      transcode_dir: "{{ jellyfin_transcode_dir }}"
+      config_dir: "{{ docker_appdata_dir }}/jellyfin"
+      transcode_dir: "{{ data_mount }}/jellyfin"
       series_dir: "{{ series_dir }}"
       movies_dir: "{{ movies_dir }}"
-      gid: "{{ system_appdata_gid }}"
-      uid: "{{ system_appdata_uid }}"
+      extra_groups:
+        - "{{ media_group }}"
       fragment:
         definition:
           labels:
@@ -134,11 +128,13 @@
   vars:
     dest: "{{ docker_apps_dir }}/fragments/radarr.service.yml"
     radarr:
-      config_dir: "{{ radarr_config_dir }}"
-      downloads_dir: "{{ downloads_dir }}"
+      config_dir: "{{ docker_appdata_dir }}/radarr"
+      downloads_dir: "{{ downloads_dir }}/deluge"
       movies_dir: "{{ movies_dir }}"
-      gid: "{{ media_group.gid }}"
-      uid: "{{ system_appdata_uid }}"
+      movies_group: "{{ media_group.name }}"
+      extra_groups:
+        - "{{ download_group }}"
+        - "{{ media_group }}"
       fragment:
         definition:
           labels:
@@ -153,11 +149,13 @@
   vars:
     dest: "{{ docker_apps_dir }}/fragments/sonarr.service.yml"
     sonarr:
-      config_dir: "{{ sonarr_config_dir }}"
-      downloads_dir: "{{ downloads_dir }}"
+      config_dir: "{{ docker_appdata_dir }}/sonarr"
+      downloads_dir: "{{ downloads_dir }}/deluge"
       series_dir: "{{ series_dir }}"
-      gid: "{{ media_group.gid }}"
-      uid: "{{ system_appdata_uid }}"
+      series_group: "{{ media_group.name }}"
+      extra_groups:
+        - "{{ download_group }}"
+        - "{{ media_group }}"
       fragment:
         definition:
           labels:
