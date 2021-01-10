@@ -1,0 +1,9 @@
+minecraft_apps_dir: "/opt/minecraft"
+minecraft_appdata_dir: "{{ minecraft_apps_dir }}/appdata"
+minecraft_fragments_dir: "{{ minecraft_apps_dir }}/fragments"
+minecraft_world_backup_dir: "{{ minecraft_apps_dir }}/backups"
+
+docker_net_minecraft: "172.30.173.0/24"
+
+minecraft_version: "latest"
+minecraft_rcon_password: "minecraft"

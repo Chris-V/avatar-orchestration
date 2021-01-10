@@ -44,7 +44,7 @@
 
 - name: "Copy overviewer config"
   ansible.builtin.copy:
-    src: "minecraft/appdata/overviewer/config.py"
+    src: "overviewer/config.py"
     dest: "{{ minecraft_appdata_dir }}/overviewer/config.py"
     owner: "{{ minecraft_user.name }}"
     group: "{{ minecraft_user.name }}"

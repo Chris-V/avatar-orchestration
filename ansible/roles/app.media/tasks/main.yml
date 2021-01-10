@@ -189,11 +189,12 @@
             media: {}
             public: {}
 
-- block:
+- name: "Appdata Backup"
+  block:
     - name: "List appdata backup exclusions"
       # This is a workaround until https://github.com/ansible/ansible/issues/10374 is fixed
       ansible.builtin.set_fact:
-        media_appdata_exclusions: "{{ lookup('file', 'media/appdata_backup/exclusions.txt').split() }}"
+        media_appdata_exclusions: "{{ lookup('file', 'appdata_backup/exclusions.txt').split() }}"
     - name: "Appdata Backup"
       include_role:
         name: "app.tar-backup"

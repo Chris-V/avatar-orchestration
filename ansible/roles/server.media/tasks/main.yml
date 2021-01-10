@@ -8,4 +8,5 @@
 
 - name: "Minecraft"
   tags: [ "docker", "minecraft" ]
-  import_tasks: "minecraft.yml"
+  import_role:
+    name: "app.minecraft"
