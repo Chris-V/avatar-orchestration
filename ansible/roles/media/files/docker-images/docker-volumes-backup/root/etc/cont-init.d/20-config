@@ -1,9 +1,0 @@
-#!/usr/bin/with-contenv bash
-
-# init config
-[[ ! -f /config/rotate-backup.ini ]] && \
-    touch /config/rotate-backup.ini
-
-# permissions
-chown abc:abc \
-    /config/rotate-backup.ini

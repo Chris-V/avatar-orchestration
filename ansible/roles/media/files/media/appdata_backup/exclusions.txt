@@ -3,14 +3,13 @@
 *.db-shm
 *.db-wal
 *.log
+log.*
+logs.*
 *.pid
-log.txt
-logs.db
 /deluge/*.state
 /deluge/icons
 /deluge/state
 /deluge/plugins/.python-eggs
-/jackett/Jackett/log.*
 /sonarr/Backups
 /sonarr/logs
 /sonarr/MediaCover

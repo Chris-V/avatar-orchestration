@@ -13,9 +13,6 @@
 
 - name: "LEGACY: Create data directories"
   loop:
-    - { path: "{{ backups_dir }}" }
-    - { path: "{{ downloads_dir }}", group: "{{ download_group.name }}", mode: "750" }
-    - { path: "{{ media_appdata_backup_dir }}" }
     - { path: "{{ minecraft_backups_dir }}", owner: "docker-appdata", group: "docker-appdata" }
     - { path: "{{ minecraft_data_dir }}", owner: "docker-appdata", group: "docker-appdata" }
     - { path: "{{ minecraft_map_dir }}", owner: "docker-appdata", group: "data", mode: "775" }
@@ -191,6 +188,26 @@
           networks:
             media: {}
             public: {}
+
+- block:
+    - name: "List appdata backup exclusions"
+      # This is a workaround until https://github.com/ansible/ansible/issues/10374 is fixed
+      ansible.builtin.set_fact:
+        media_appdata_exclusions: "{{ lookup('file', 'media/appdata_backup/exclusions.txt').split() }}"
+    - name: "Appdata Backup"
+      include_role:
+        name: "app.tar-backup"
+      vars:
+        dest: "{{ media_fragments_dir }}/appdata-backup.service.yml"
+        tar_backup:
+          backup_dir: "{{ media_appdata_backup_dir }}"
+          config_dir: "{{ media_appdata_dir }}/appdata-backup"
+          data_dir: "{{ media_appdata_dir }}"
+          crontab: "30 3 * * *"
+          exclusions: "{{ media_appdata_exclusions }}"
+          pause_containers: ["deluge", "jackett", "jellyfin", "radarr", "sonarr"]
+          fragment:
+            name: "media_appdata_backup"
 
 - name: "LEGACY: Copy docker images"
   ansible.builtin.copy:
