@@ -1,8 +1,7 @@
-- import_tasks: "users.yml"
-  tags: [ "system" ]
-
 - import_tasks: "mounts.yml"
   tags: [ "system" ]
 
 - import_tasks: "media.yml"
   tags: [ "docker", "media" ]
+- import_tasks: "minecraft.yml"
+  tags: [ "docker", "minecraft" ]

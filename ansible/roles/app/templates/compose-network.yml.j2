@@ -2,8 +2,8 @@
   "driver_opts": {
     "com.docker.network.bridge.name": "br-" ~ fragment.name
   }
-} if fragment.definition.driver == "bridge" else {} %}
-version: "3.8"
+} if fragment.definition.driver | default() == "bridge" else {} %}
+version: "{{ compose_version }}"
 networks:
   {{ fragment.name }}:
     {{

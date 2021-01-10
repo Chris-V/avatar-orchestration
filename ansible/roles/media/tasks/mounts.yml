@@ -59,14 +59,13 @@
     dump: "0"
     passno: "0"
 
-- name: "Create server directories"
+- name: "Create shared directories"
   loop:
     - { path: "{{ backups_dir }}" }
-    - { path: "{{ downloads_dir }}", group: "{{ download_group.name }}" }
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: "directory"
     recurse: false
-    owner: "{{ item.owner | default('root', true) }}"
-    group: "{{ item.group | default('root', true) }}"
-    mode: "{{ item.mode | default('750', true) }}"
+    owner: "root"
+    group: "root"
+    mode: 0750

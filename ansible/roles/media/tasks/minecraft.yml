@@ -1,0 +1,200 @@
+- name: "Create user"
+  register: "minecraft_user"
+  ansible.builtin.user:
+    append: false
+    create_home: false
+    name: "minecraft"
+    shell: "/usr/bin/nologin"
+    state: "present"
+    system: true
+
+- name: "Create app directories"
+  loop:
+    - { path: "{{ minecraft_apps_dir }}" }
+    - { path: "{{ minecraft_appdata_dir }}" }
+    - { path: "{{ minecraft_fragments_dir }}" }
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "docker"
+    mode: 0750
+
+- name: "Create config directories"
+  loop:
+    - { path: "map" }
+    - { path: "minecraft" }
+    - { path: "overviewer" }
+  ansible.builtin.file:
+    path: "{{ minecraft_appdata_dir }}/{{ item.path }}"
+    state: "directory"
+    recurse: false
+    owner: "{{ minecraft_user.name }}"
+    group: "{{ minecraft_user.name }}"
+    mode: 0750
+
+- name: "Create backup directory"
+  ansible.builtin.file:
+    path: "{{ minecraft_world_backup_dir }}"
+    state: "directory"
+    recurse: false
+    owner: "{{ minecraft_user.name }}"
+    group: "{{ minecraft_user.name }}"
+    mode: 0750
+
+- name: "Copy overviewer config"
+  ansible.builtin.copy:
+    src: "minecraft/appdata/overviewer/config.py"
+    dest: "{{ minecraft_appdata_dir }}/overviewer/config.py"
+    owner: "{{ minecraft_user.name }}"
+    group: "{{ minecraft_user.name }}"
+    mode: 0650
+
+- name: "Create public network"
+  include_role:
+    name: "app"
+    tasks_from: "network-fragment"
+  vars:
+    dest: "{{ minecraft_fragments_dir }}/public.network.yml"
+    fragment:
+      name: "public"
+      definition:
+        external: true
+
+- name: "Create minecraft network"
+  include_role:
+    name: "app"
+    tasks_from: "network-fragment"
+  vars:
+    dest: "{{ minecraft_fragments_dir }}/minecraft.network.yml"
+    fragment:
+      name: "minecraft"
+      definition:
+        driver: "bridge"
+        ipam:
+          driver: "default"
+          config:
+            - subnet: "{{ docker_net_minecraft }}"
+
+- name: "Create Minecraft service"
+  include_role:
+    name: "app"
+    tasks_from: "service-fragment"
+  vars:
+    dest: "{{ minecraft_fragments_dir }}/minecraft.service.yml"
+    fragment:
+      name: "minecraft"
+      definition:
+        image: "itzg/minecraft-server:openj9"
+        restart: "unless-stopped"
+        stdin_open: true
+        tty: true
+        environment:
+          ENABLE_RCON: "true"
+          EULA: "TRUE"
+          GID: "{{ minecraft_user.group }}"
+          GUI: "false"
+          ICON: "https://i.imgur.com/6VOFSL3.jpg"
+          JVM_XX_OPTS: "-Xmns{{ (minecraft_heap_mb / 2) | int }}M -Xmnx{{ (minecraft_heap_mb * 4 / 5) | int }}M -Xgc:concurrentScavenge -Xgc:dnssExpectedTimeRatioMaximum=3 -Xgc:scvNoAdaptiveTenure -Xdisableexplicitgc -Xtune:virtualized"
+          LEVEL: "Ultimate"
+          MAX_PLAYERS: 6
+          MEMORY: "{{ minecraft_heap_mb }}M"
+          MOTD: "The ultimate Minecraft server"
+          OPS: "{{ minecraft_username }}"
+          RCON_PASSWORD: "{{ rcon_password }}"
+          RCON_PORT: 25575
+          SERVER_NAME: "Ultimate"
+          SNOOPER_ENABLED: "false"
+          TYPE: "fabric"
+          TZ: "{{ timezone }}"
+          UID: "{{ minecraft_user.uid }}"
+          VERSION: "{{ minecraft_version }}"
+          VIEW_DISTANCE: 12
+          WHITELIST: "{{ minecraft_username }}"
+        networks:
+          minecraft: {}
+        ports:
+          - "25565:25565"
+        volumes:
+          - "{{ minecraft_appdata_dir }}/minecraft:/data"
+
+- name: "Create map service"
+  include_role:
+    name: "app"
+    tasks_from: "service-fragment"
+  vars:
+    dest: "{{ minecraft_fragments_dir }}/map.service.yml"
+    fragment:
+      name: "minecraft-map"
+      definition:
+        image: "nginxinc/nginx-unprivileged:alpine"
+        restart: "unless-stopped"
+        user: "{{ minecraft_user.uid }}:{{ minecraft_user.group }}"
+        environment:
+          TZ: "{{ timezone }}"
+        labels:
+          avatar.subdomain: "minecraft-map"
+          traefik.http.services.minecraft-map.loadbalancer.server.port: 8080
+        networks:
+          public: {}
+        volumes:
+          - "{{ minecraft_appdata_dir }}/map:/usr/share/nginx/html:ro"
+
+- name: "Create overviewer service"
+  include_role:
+    name: "app"
+    tasks_from: "service-fragment"
+  vars:
+    dest: "{{ minecraft_apps_dir }}/docker-compose.overviewer.yml"
+    fragment:
+      name: "minecraft-overviewer"
+      definition:
+        image: "mide/minecraft-overviewer"
+        restart: "no"
+        user: "{{ minecraft_user.uid }}:{{ minecraft_user.group }}"
+        environment:
+          MINECRAFT_VERSION: "{{ minecraft_version }}"
+          RENDER_MAP: "true"
+          RENDER_POI: "true"
+          TZ: "{{ timezone }}"
+        networks:
+          minecraft: {}
+        volumes:
+          - "{{ minecraft_appdata_dir }}/overviewer/config.py:/home/minecraft/config.py:ro"
+          - "{{ minecraft_appdata_dir }}/minecraft/Ultimate:/home/minecraft/server/world:ro"
+          - "{{ minecraft_appdata_dir }}/map:/home/minecraft/render"
+
+- name: "Create backup service"
+  include_role:
+    name: "app"
+    tasks_from: "service-fragment"
+  vars:
+    dest: "{{ minecraft_fragments_dir }}/backup.service.yml"
+    validate: false
+    fragment:
+      name: "minecraft-backup"
+      definition:
+        image: "itzg/mc-backup:latest"
+        restart: "always"
+        network_mode: "service:minecraft"
+        environment:
+          BACKUP_INTERVAL: 1d
+          BACKUP_NAME: "Ultimate"
+          GID: "{{ minecraft_user.group }}"
+          INITIAL_DELAY: 12h
+          LEVEL: "Ultimate"
+          PRUNE_BACKUPS_DAYS: 21
+          RCON_PASSWORD: "{{ rcon_password }}"
+          TZ: "{{ timezone }}"
+          UID: "{{ minecraft_user.uid }}"
+        volumes:
+          - "{{ minecraft_appdata_dir }}/minecraft:/data:ro"
+          - "{{ minecraft_world_backup_dir }}:/backups"
+
+- name: "Create docker-compose.yml"
+  include_role:
+    name: "app"
+    tasks_from: "merge-fragments"
+  vars:
+    src: "{{ minecraft_fragments_dir }}/"
+    dest: "{{ minecraft_apps_dir }}/docker-compose.yml"

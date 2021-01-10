@@ -1,35 +1,31 @@
+- name: "Create groups"
+  loop:
+    - { name: "{{ download_group.name }}", gid: "{{ download_group.gid }}" }
+    - { name: "{{ media_group.name }}", gid: "{{ media_group.gid }}" }
+  ansible.builtin.group:
+    gid: "{{ item.gid }}"
+    name: "{{ item.name }}"
+    state: "present"
+    system: true
+
 - name: "Create app directories"
   loop:
     - { path: "{{ media_apps_dir }}" }
-    - { path: "{{ media_fragments_dir }}" }
     - { path: "{{ media_appdata_dir }}" }
-    - { path: "{{ media_apps_dir }}/jobs" }
+    - { path: "{{ media_fragments_dir }}" }
+    - { path: "{{ downloads_dir }}", group: "{{ download_group.name }}" }
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: "directory"
     owner: "root"
-    group: "docker"
+    group: "{{ item.group | default('docker', True) }}"
     mode: 0750
-
-- name: "LEGACY: Create data directories"
-  loop:
-    - { path: "{{ minecraft_backups_dir }}", owner: "docker-appdata", group: "docker-appdata" }
-    - { path: "{{ minecraft_data_dir }}", owner: "docker-appdata", group: "docker-appdata" }
-    - { path: "{{ minecraft_map_dir }}", owner: "docker-appdata", group: "data", mode: "775" }
-  ansible.builtin.file:
-    path: "{{ item.path }}"
-    state: "directory"
-    recurse: false
-    owner: "{{ item.owner | default('root', true) }}"
-    group: "{{ item.group | default('root', true) }}"
-    mode: "{{ item.mode | default('770', true) }}"
 
 - name: "Create network fragments"
   loop:
     - { name: "public", subnet: "{{ docker_net_public }}" }
     - { name: "glances", subnet: "{{ docker_net_glances }}" }
     - { name: "media", subnet: "{{ docker_net_media }}" }
-    - { name: "minecraft", subnet: "{{ docker_net_minecraft }}" }
   include_role:
     name: "app"
     tasks_from: "network-fragment"
@@ -209,26 +205,6 @@
           fragment:
             name: "media_appdata_backup"
 
-- name: "LEGACY: Copy docker images"
-  ansible.builtin.copy:
-    src: "docker-images"
-    dest: "{{ media_apps_dir }}"
-    owner: "root"
-    group: "docker"
-    directory_mode: 0770
-    mode: "ug+rw,o="
-
-- name: "LEGACY: Copy god docker compose fragment"
-  loop:
-    - { path: "fragments/docker-compose.yml" }
-    - { path: "jobs/docker-compose.yml" }
-  ansible.builtin.template:
-    src: "docker/{{ item.path }}.j2"
-    dest: "{{ media_apps_dir }}/{{ item.path }}"
-    owner: "root"
-    group: "docker"
-    mode: 0640
-
 - name: "Create docker-compose.yml"
   include_role:
     name: "app"
@@ -242,12 +218,3 @@
     creates: "{{ media_appdata_dir }}"
     src: "{{ appdata_archive }}"
     dest: "{{ media_apps_dir }}"
-
-- name: "LEGACY: Copy managed app configs"
-  ansible.builtin.copy:
-    src: "appdata/"
-    dest: "{{ media_appdata_dir }}"
-    owner: "root"
-    group: "docker"
-    directory_mode: 0750
-    mode: "u+rw,g+r-w,o="

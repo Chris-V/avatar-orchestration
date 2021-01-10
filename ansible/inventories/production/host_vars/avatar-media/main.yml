@@ -8,5 +8,6 @@ internal_ip: "{{ network.servers.media.ip }}"
 internal_hostname: "{{ network.servers.media.host }}"
 
 minecraft_version: "1.16.4"
+minecraft_heap_mb: 9216
 
 tcp_ports: [ 80 ]

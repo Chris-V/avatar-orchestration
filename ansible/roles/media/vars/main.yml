@@ -1,8 +1,4 @@
 # Users
-system_appdata_uid: 876
-system_appdata_gid: 876
-system_data_gid: 878
-
 download_group:
   name: "download"
   gid: 879
@@ -14,26 +10,27 @@ media_group:
 # General directories and mount points
 data_mount: "/data"
 storage_mount: "/storage"
-
-downloads_dir: "{{ data_mount }}/downloads"
 backups_dir: "{{ storage_mount }}/backups"
-series_dir: "{{ storage_mount }}/series"
-movies_dir: "{{ storage_mount }}/movies"
 
 # Media
-media_apps_dir: "/opt/media"
+media_apps_dir: "/srv/media"
 media_appdata_dir: "{{ media_apps_dir }}/appdata"
 media_fragments_dir: "{{ media_apps_dir }}/fragments"
 media_appdata_backup_dir: "{{ backups_dir }}/appdata"
+
+downloads_dir: "{{ data_mount }}/downloads"
+series_dir: "{{ storage_mount }}/series"
+movies_dir: "{{ storage_mount }}/movies"
 
 docker_net_public: "172.30.170.0/24"
 docker_ip_proxy: "172.30.170.50"
 docker_net_glances: "172.30.171.0/24"
 docker_net_media: "172.30.172.0/24"
-docker_net_minecraft: "172.30.173.0/24"
 
 # Minecraft
-minecraft_backups_dir: "{{ backups_dir }}/minecraft"
-minecraft_data_dir: "/srv/minecraft"
-minecraft_map_dir: "/srv/minecraft-map"
-minecraft_overviewer_dir: "{{ media_appdata_dir }}/minecraft-overviewer"
+minecraft_apps_dir: "/srv/minecraft"
+minecraft_appdata_dir: "{{ minecraft_apps_dir }}/appdata"
+minecraft_fragments_dir: "{{ minecraft_apps_dir }}/fragments"
+minecraft_world_backup_dir: "{{ backups_dir }}/minecraft"
+
+docker_net_minecraft: "172.30.173.0/24"

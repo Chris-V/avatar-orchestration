@@ -1,4 +1,7 @@
-{%- set ns = namespace(combined = {}) %}
+{%- set ns = namespace(combined = {
+  "version": compose_version,
+  "services": {}
+}) %}
 
 {%- for file in fragment_files.results %}
 {%- set fragment = file.content | b64decode | from_yaml %}
