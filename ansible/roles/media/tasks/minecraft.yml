@@ -52,7 +52,7 @@
 
 - name: "Create public network"
   include_role:
-    name: "app"
+    name: "container"
     tasks_from: "network-fragment"
   vars:
     dest: "{{ minecraft_fragments_dir }}/public.network.yml"
@@ -63,7 +63,7 @@
 
 - name: "Create minecraft network"
   include_role:
-    name: "app"
+    name: "container"
     tasks_from: "network-fragment"
   vars:
     dest: "{{ minecraft_fragments_dir }}/minecraft.network.yml"
@@ -78,7 +78,7 @@
 
 - name: "Create Minecraft service"
   include_role:
-    name: "app"
+    name: "container"
     tasks_from: "service-fragment"
   vars:
     dest: "{{ minecraft_fragments_dir }}/minecraft.service.yml"
@@ -120,7 +120,7 @@
 
 - name: "Create map service"
   include_role:
-    name: "app"
+    name: "container"
     tasks_from: "service-fragment"
   vars:
     dest: "{{ minecraft_fragments_dir }}/map.service.yml"
@@ -142,7 +142,7 @@
 
 - name: "Create overviewer service"
   include_role:
-    name: "app"
+    name: "container"
     tasks_from: "service-fragment"
   vars:
     dest: "{{ minecraft_apps_dir }}/docker-compose.overviewer.yml"
@@ -166,7 +166,7 @@
 
 - name: "Create backup service"
   include_role:
-    name: "app"
+    name: "container"
     tasks_from: "service-fragment"
   vars:
     dest: "{{ minecraft_fragments_dir }}/backup.service.yml"
@@ -193,7 +193,7 @@
 
 - name: "Create docker-compose.yml"
   include_role:
-    name: "app"
+    name: "container"
     tasks_from: "merge-fragments"
   vars:
     src: "{{ minecraft_fragments_dir }}/"

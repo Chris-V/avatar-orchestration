@@ -12,7 +12,7 @@
 
 - name: "Create Public network fragment"
   include_role:
-    name: "app"
+    name: "container"
     tasks_from: "network-fragment"
   vars:
     dest: "{{ docker_apps_dir }}/fragments/public.network.yml"
@@ -27,7 +27,7 @@
 
 - name: "Glances"
   include_role:
-    name: "app.glances"
+    name: "container.glances"
   vars:
     dest: "{{ docker_apps_dir }}/fragments/glances.service.yml"
     glances:
@@ -40,13 +40,13 @@
 
 - name: "Plant-Gateway"
   include_role:
-    name: "app.plantgateway"
+    name: "container.plantgateway"
   vars:
     dest: "{{ docker_apps_dir }}/fragments/plant-gateway.service.yml"
 
 - name: "Traefik"
   include_role:
-    name: "app.traefik"
+    name: "container.traefik"
   vars:
     dest: "{{ docker_apps_dir }}/fragments/traefik.service.yml"
     traefik:
@@ -63,7 +63,7 @@
 
 - name: "Create docker-compose.yml"
   include_role:
-    name: "app"
+    name: "container"
     tasks_from: "merge-fragments"
   vars:
     src: "{{ docker_apps_dir }}/fragments/"

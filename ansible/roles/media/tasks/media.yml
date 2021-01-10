@@ -27,7 +27,7 @@
     - { name: "glances", subnet: "{{ docker_net_glances }}" }
     - { name: "media", subnet: "{{ docker_net_media }}" }
   include_role:
-    name: "app"
+    name: "container"
     tasks_from: "network-fragment"
   vars:
     dest: "{{ media_fragments_dir }}/{{ item.name }}.network.yml"
@@ -42,7 +42,7 @@
 
 - name: "Deluge"
   include_role:
-    name: "app.deluge"
+    name: "container.deluge"
   vars:
     dest: "{{ media_fragments_dir }}/deluge.service.yml"
     validate: false
@@ -60,7 +60,7 @@
 
 - name: "Glances"
   include_role:
-    name: "app.glances"
+    name: "container.glances"
   vars:
     dest: "{{ media_fragments_dir }}/glances.service.yml"
     glances:
@@ -74,7 +74,7 @@
 
 - name: "Jackett"
   include_role:
-    name: "app.jackett"
+    name: "container.jackett"
   vars:
     dest: "{{ media_fragments_dir }}/jackett.service.yml"
     validate: false
@@ -91,7 +91,7 @@
 
 - name: "Jellyfin"
   include_role:
-    name: "app.jellyfin"
+    name: "container.jellyfin"
   vars:
     dest: "{{ media_fragments_dir }}/jellyfin.service.yml"
     jellyfin:
@@ -111,7 +111,7 @@
 
 - name: "Radarr"
   include_role:
-    name: "app.radarr"
+    name: "container.radarr"
   vars:
     dest: "{{ media_fragments_dir }}/radarr.service.yml"
     radarr:
@@ -132,7 +132,7 @@
 
 - name: "Sonarr"
   include_role:
-    name: "app.sonarr"
+    name: "container.sonarr"
   vars:
     dest: "{{ media_fragments_dir }}/sonarr.service.yml"
     sonarr:
@@ -153,7 +153,7 @@
 
 - name: "Traefik"
   include_role:
-    name: "app.traefik"
+    name: "container.traefik"
   vars:
     dest: "{{ media_fragments_dir }}/traefik.service.yml"
     traefik:
@@ -172,7 +172,7 @@
 
 - name: "VPN"
   include_role:
-    name: "app.vpn"
+    name: "container.vpn"
   vars:
     dest: "{{ media_fragments_dir }}/vpn.service.yml"
     vpn:
@@ -207,7 +207,7 @@
 
 - name: "Create docker-compose.yml"
   include_role:
-    name: "app"
+    name: "container"
     tasks_from: "merge-fragments"
   vars:
     src: "{{ media_fragments_dir }}/"

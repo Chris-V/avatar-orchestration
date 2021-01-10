@@ -1,0 +1,51 @@
+- name: "Create directories"
+  loop:
+    - { path: "" }
+  ansible.builtin.file:
+    path: "{{ plantgateway.config_dir }}/{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "docker"
+    mode: 0750
+
+- name: "Copy files"
+  loop:
+    - { filename: "DST_Root_CA_X3.pem" }
+  ansible.builtin.copy:
+    src: "{{ item.filename }}"
+    dest: "{{ plantgateway.config_dir }}/{{ item.filename }}"
+    owner: "root"
+    group: "docker"
+    mode: 0640
+
+- name: "Copy templates"
+  loop:
+    - { filename: "plantgw.yaml" }
+  ansible.builtin.template:
+    src: "{{ item.filename }}.j2"
+    dest: "{{ plantgateway.config_dir }}/{{ item.filename }}"
+    owner: "root"
+    group: "docker"
+    mode: 0640
+
+- name: "Create service fragment"
+  include_role:
+    name: "container"
+    tasks_from: "service-fragment"
+  vars:
+    default_fragment:
+      name: "plant-gateway"
+      definition:
+        image: "ghcr.io/chris-v/plantgateway:latest"
+        environment:
+          TZ: "{{ timezone }}"
+        network_mode: "host"
+        restart: "unless-stopped"
+        volumes:
+          - "{{ plantgateway.config_dir }}:/config:ro"
+    fragment: |
+      {{
+        default_fragment
+          | combine(plantgateway.fragment | default({}), recursive=True, list_merge='append_rp')
+          | to_json
+      }}
