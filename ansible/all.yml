@@ -3,7 +3,7 @@
   become_user: "root"
   tasks:
     - import_role:
-        name: "common"
+        name: "server.common"
       tags: [ "common" ]
 
 - hosts: "automate"
@@ -11,18 +11,18 @@
   become_user: "root"
   tasks:
     - import_role:
-        name: "automate"
+        name: "server.automate"
 
 - hosts: "media"
   become: true
   become_user: "root"
   tasks:
     - import_role:
-        name: "media"
+        name: "server.media"
 
 - hosts: "relays"
   become: true
   become_user: "root"
   tasks:
     - import_role:
-        name: "relay"
+        name: "server.relay"

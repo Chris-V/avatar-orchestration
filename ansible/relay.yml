@@ -3,8 +3,8 @@
   become_user: "root"
   tasks:
     - import_role:
-        name: "common"
+        name: "server.common"
       tags: [ "common" ]
 
     - import_role:
-        name: "relay"
+        name: "server.relay"
