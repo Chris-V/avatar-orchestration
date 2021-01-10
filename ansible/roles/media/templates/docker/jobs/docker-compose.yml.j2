@@ -6,7 +6,7 @@ services:
   minecraft-overviewer:
     container_name: "minecraft-overviewer"
     build:
-      context: "{{ docker_apps_dir }}/docker-images/minecraft-overviewer"
+      context: "{{ media_apps_dir }}/docker-images/minecraft-overviewer"
       args:
         PUID: {{ system_appdata_uid }}
         PGID: {{ system_data_gid }}

@@ -1,7 +1,8 @@
-- import_tasks: users.yml
-  tags: [ "system" ]
-- import_tasks: mounts.yml
+- import_tasks: "users.yml"
   tags: [ "system" ]
 
-- import_tasks: docker.yml
-  tags: [ "docker", "dockerapps" ]
+- import_tasks: "mounts.yml"
+  tags: [ "system" ]
+
+- import_tasks: "media.yml"
+  tags: [ "docker", "media" ]

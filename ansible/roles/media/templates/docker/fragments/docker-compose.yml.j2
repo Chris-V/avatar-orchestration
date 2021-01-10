@@ -5,9 +5,9 @@ services:
     container_name: "minecraft"
     image: "itzg/minecraft-server:openj9"
     restart: "unless-stopped"
-    user: "{{ system_appdata_uid }}:{{ system_appdata_gid }}"
     stdin_open: true
     tty: true
+    user: "{{ system_appdata_uid }}:{{ system_appdata_gid }}"
     # Tuning under Open'J9: https://steinborn.me/posts/tuning-minecraft-openj9/
     environment:
       TZ: "{{ timezone }}"
@@ -55,6 +55,7 @@ services:
     image: "itzg/mc-backup:latest"
     restart: "always"
     network_mode: "service:minecraft"
+    user: "{{ system_appdata_uid }}:{{ system_appdata_gid }}"
     environment:
       TZ: "{{ timezone }}"
       BACKUP_NAME: "Ultimate"
@@ -72,7 +73,7 @@ services:
   appdata-backup:
     container_name: "appdata-backup"
     build:
-      context: "{{ docker_apps_dir }}/docker-images/docker-volumes-backup"
+      context: "{{ media_apps_dir }}/docker-images/docker-volumes-backup"
       network: "host"
     image: "avatary/docker-volumes-backup"
     network_mode: "none"
@@ -85,6 +86,6 @@ services:
       PAUSE_CONTAINERS: "deluge jackett jellyfin radarr sonarr"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "{{ docker_appdata_dir }}/appdata-backup:/config:ro"
-      - "{{ docker_appdata_dir }}:/data:ro"
-      - "{{ appdata_backups_dir }}:/backups"
+      - "{{ media_appdata_dir }}/appdata-backup:/config:ro"
+      - "{{ media_appdata_dir }}:/data:ro"
+      - "{{ media_appdata_backup_dir }}:/backups"

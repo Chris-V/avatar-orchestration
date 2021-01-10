@@ -4,5 +4,5 @@
     dest: "{{ dest }}"
     owner: "root"
     group: "docker"
-    mode: "0660"
+    mode: 0640
     validate: "{% if validate | default(true) %}docker-compose -f %s config -q{% endif %}"

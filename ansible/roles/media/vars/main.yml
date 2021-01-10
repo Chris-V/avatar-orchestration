@@ -20,10 +20,11 @@ backups_dir: "{{ storage_mount }}/backups"
 series_dir: "{{ storage_mount }}/series"
 movies_dir: "{{ storage_mount }}/movies"
 
-# Dockerised setup
-docker_apps_dir: "/opt/docker-apps"
-docker_appdata_dir: "{{ docker_apps_dir }}/appdata"
-appdata_backups_dir: "{{ backups_dir }}/appdata"
+# Media
+media_apps_dir: "/opt/media"
+media_appdata_dir: "{{ media_apps_dir }}/appdata"
+media_fragments_dir: "{{ media_apps_dir }}/fragments"
+media_appdata_backup_dir: "{{ backups_dir }}/appdata"
 
 docker_net_public: "172.30.170.0/24"
 docker_ip_proxy: "172.30.170.50"
@@ -35,4 +36,4 @@ docker_net_minecraft: "172.30.173.0/24"
 minecraft_backups_dir: "{{ backups_dir }}/minecraft"
 minecraft_data_dir: "/srv/minecraft"
 minecraft_map_dir: "/srv/minecraft-map"
-minecraft_overviewer_dir: "{{ docker_appdata_dir }}/minecraft-overviewer"
+minecraft_overviewer_dir: "{{ media_appdata_dir }}/minecraft-overviewer"
