@@ -1,4 +1,7 @@
-minecraft_username: "me"
+data_mount: "/data"
+storage_mount: "/storage"
+backups_dir: "/backups"
+
 minecraft_version: "latest"
 minecraft_heap_mb: 9216
-rcon_password: "change-me"
+

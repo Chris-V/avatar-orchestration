@@ -1,10 +1,14 @@
-- name: "Create groups"
-  loop:
-    - { name: "{{ download_group.name }}", gid: "{{ download_group.gid }}" }
-    - { name: "{{ media_group.name }}", gid: "{{ media_group.gid }}" }
+- name: "Create download group"
+  register: "download_group"
   ansible.builtin.group:
-    gid: "{{ item.gid }}"
-    name: "{{ item.name }}"
+    name: "download"
+    state: "present"
+    system: true
+
+- name: "Create media group"
+  register: "media_group"
+  ansible.builtin.group:
+    name: "media"
     state: "present"
     system: true
 
@@ -178,7 +182,7 @@
     vpn:
       config_file: "CA-Montreal_UDP.ovpn"
       forwarding_port: "{{ deluge_incoming_port }}"
-      username: "{{ cryptostorm_username }}"
+      username: "{{ media_vpn_username }}"
       fragment:
         definition:
           networks:
@@ -216,5 +220,5 @@
 - name: "Copy last appdata backup"
   ansible.builtin.unarchive:
     creates: "{{ media_appdata_dir }}"
-    src: "{{ appdata_archive }}"
+    src: "{{ media_appdata_backup }}"
     dest: "{{ media_apps_dir }}"

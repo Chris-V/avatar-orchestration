@@ -100,8 +100,8 @@
           MAX_PLAYERS: 6
           MEMORY: "{{ minecraft_heap_mb }}M"
           MOTD: "The ultimate Minecraft server"
-          OPS: "{{ minecraft_username }}"
-          RCON_PASSWORD: "{{ rcon_password }}"
+          OPS: "{{ minecraft_admin }}"
+          RCON_PASSWORD: "{{ minecraft_rcon_password }}"
           RCON_PORT: 25575
           SERVER_NAME: "Ultimate"
           SNOOPER_ENABLED: "false"
@@ -110,7 +110,7 @@
           UID: "{{ minecraft_user.uid }}"
           VERSION: "{{ minecraft_version }}"
           VIEW_DISTANCE: 12
-          WHITELIST: "{{ minecraft_username }}"
+          WHITELIST: "{{ minecraft_admin }}"
         networks:
           minecraft: {}
         ports:
@@ -184,7 +184,7 @@
           INITIAL_DELAY: 12h
           LEVEL: "Ultimate"
           PRUNE_BACKUPS_DAYS: 21
-          RCON_PASSWORD: "{{ rcon_password }}"
+          RCON_PASSWORD: "{{ minecraft_rcon_password }}"
           TZ: "{{ timezone }}"
           UID: "{{ minecraft_user.uid }}"
         volumes:

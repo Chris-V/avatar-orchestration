@@ -1,7 +1,11 @@
 - import_tasks: "mounts.yml"
   tags: [ "system" ]
 
-- import_tasks: "media.yml"
+- name: "Media"
   tags: [ "docker", "media" ]
-- import_tasks: "minecraft.yml"
+  import_role:
+    name: "app.media"
+
+- name: "Minecraft"
   tags: [ "docker", "minecraft" ]
+  import_tasks: "minecraft.yml"
