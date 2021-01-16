@@ -7,7 +7,4 @@ downloads_dir: "{{ media_apps_dir }}/downloads"
 series_dir: "{{ media_apps_dir }}/series"
 movies_dir: "{{ media_apps_dir }}/movies"
 
-docker_net_public: "172.30.170.0/24"
-docker_ip_proxy: "172.30.170.50"
-docker_net_glances: "172.30.171.0/24"
 docker_net_media: "172.30.172.0/24"

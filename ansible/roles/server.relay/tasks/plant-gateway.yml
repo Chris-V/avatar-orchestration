@@ -1,0 +1,16 @@
+- name: "Create docker-apps structure"
+  loop:
+    - { path: "{{ docker_apps_dir }}" }
+    - { path: "{{ docker_appdata_dir }}" }
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "docker"
+    mode: 0770
+
+- name: "Plant-Gateway"
+  include_role:
+    name: "container.plantgateway"
+  vars:
+    dest: "{{ docker_apps_dir }}/docker-compose.yml"

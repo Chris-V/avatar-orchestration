@@ -50,31 +50,17 @@
     group: "{{ minecraft_user.name }}"
     mode: 0650
 
-- name: "Create public network"
+- name: "Create networks"
+  loop:
+    - { name: "minecraft", subnet: "{{ docker_net_minecraft }}" }
+    - { name: "minecraft-public" }
   include_role:
     name: "container"
     tasks_from: "network-fragment"
   vars:
-    dest: "{{ minecraft_fragments_dir }}/public.network.yml"
-    fragment:
-      name: "public"
-      definition:
-        external: true
-
-- name: "Create minecraft network"
-  include_role:
-    name: "container"
-    tasks_from: "network-fragment"
-  vars:
-    dest: "{{ minecraft_fragments_dir }}/minecraft.network.yml"
-    fragment:
-      name: "minecraft"
-      definition:
-        driver: "bridge"
-        ipam:
-          driver: "default"
-          config:
-            - subnet: "{{ docker_net_minecraft }}"
+    dest: "{{ minecraft_fragments_dir }}/{{ item.name }}.network.yml"
+    interface_name: "{{ item.name }}"
+    subnet: "{{ item.subnet | default }}"
 
 - name: "Create Minecraft service"
   include_role:
@@ -134,9 +120,10 @@
           TZ: "{{ timezone }}"
         labels:
           avatar.subdomain: "minecraft-map"
+          traefik.docker.network: "minecraft-public"
           traefik.http.services.minecraft-map.loadbalancer.server.port: 8080
         networks:
-          public: {}
+          minecraft-public: {}
         volumes:
           - "{{ minecraft_appdata_dir }}/map:/usr/share/nginx/html:ro"
 

@@ -1,4 +1,15 @@
-- name: "Create network fragment: {{ fragment.name }}"
+- name: "Create network: {{ interface_name }}"
+  when: "not external"
+  community.docker.docker_network:
+    name: "{{ interface_name }}"
+    state: "present"
+    driver: "bridge"
+    ipam_driver: "default"
+    ipam_config: "{% if subnet | default %}{{ [ { 'subnet': subnet } ] }}{% else %}{{ omit }}{% endif %}"
+    ipam_driver_options:
+      com.docker.network.bridge.name: "br-{{ interface_name }}"
+
+- name: "Create container network fragment: {{ interface_name }}"
   ansible.builtin.template:
     src: "compose-network.yml.j2"
     dest: "{{ dest }}"

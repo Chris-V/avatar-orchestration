@@ -25,24 +25,16 @@
     group: "{{ item.group | default('docker', True) }}"
     mode: 0750
 
-- name: "Create network fragments"
+- name: "Create networks"
   loop:
-    - { name: "public", subnet: "{{ docker_net_public }}" }
-    - { name: "glances", subnet: "{{ docker_net_glances }}" }
     - { name: "media", subnet: "{{ docker_net_media }}" }
   include_role:
     name: "container"
     tasks_from: "network-fragment"
   vars:
     dest: "{{ media_fragments_dir }}/{{ item.name }}.network.yml"
-    fragment:
-      name: "{{ item.name }}"
-      definition:
-        driver: "bridge"
-        ipam:
-          driver: "default"
-          config:
-            - subnet: "{{ item.subnet }}"
+    interface_name: "{{ item.name }}"
+    subnet: "{{ item.subnet }}"
 
 - name: "Deluge"
   include_role:
@@ -61,20 +53,7 @@
           network_mode: "service:vpn"
           labels:
             avatar.subdomain: "deluge"
-
-- name: "Glances"
-  include_role:
-    name: "container.glances"
-  vars:
-    dest: "{{ media_fragments_dir }}/glances.service.yml"
-    glances:
-      fragment:
-        definition:
-          labels:
-            avatar.subdomain: "glances"
-            traefik.docker.network: "glances"
-          networks:
-            glances: {}
+            traefik.docker.network: "media"
 
 - name: "Jackett"
   include_role:
@@ -89,9 +68,10 @@
       fragment:
         definition:
           depends_on: ["vpn"]
+          network_mode: "service:vpn"
           labels:
             avatar.subdomain: "jackett"
-          network_mode: "service:vpn"
+            traefik.docker.network: "media"
 
 - name: "Jellyfin"
   include_role:
@@ -155,25 +135,6 @@
           networks:
             media: {}
 
-- name: "Traefik"
-  include_role:
-    name: "container.traefik"
-  vars:
-    dest: "{{ media_fragments_dir }}/traefik.service.yml"
-    traefik:
-      config_dir: "{{ media_appdata_dir }}/traefik"
-      domain: "{{ internal_hostname }}"
-      trusted_ips: "{{ network.servers.automate.ip }}/32"
-      fragment:
-        definition:
-          labels:
-            avatar.subdomain: "traefik"
-          networks:
-            public:
-              ipv4_address: "{{ docker_ip_proxy }}"
-            glances: {}
-            media: {}
-
 - name: "VPN"
   include_role:
     name: "container.vpn"
@@ -187,7 +148,6 @@
         definition:
           networks:
             media: {}
-            public: {}
 
 - name: "Appdata Backup"
   block:
@@ -197,7 +157,7 @@
         media_appdata_exclusions: "{{ lookup('file', 'appdata_backup/exclusions.txt').split() }}"
     - name: "Appdata Backup"
       include_role:
-        name: "app.tar-backup"
+        name: "container.tar-backup"
       vars:
         dest: "{{ media_fragments_dir }}/appdata-backup.service.yml"
         tar_backup:

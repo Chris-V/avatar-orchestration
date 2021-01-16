@@ -1,4 +1,4 @@
-- name: "Create service fragment: {{ fragment.name }}"
+- name: "Create container service fragment: {{ fragment.name }}"
   ansible.builtin.template:
     src: "compose-service.yml.j2"
     dest: "{{ dest }}"

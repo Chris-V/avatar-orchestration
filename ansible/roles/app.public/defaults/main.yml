@@ -1,0 +1,7 @@
+public_apps_dir: "/opt/public"
+public_appdata_dir: "{{ public_apps_dir }}/appdata"
+public_fragments_dir: "{{ public_apps_dir }}/fragments"
+
+public_external_networks: []
+
+docker_net_glances: "172.30.171.0/24"
