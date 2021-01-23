@@ -6,7 +6,7 @@
     default_fragment:
       name: "glances"
       definition:
-        image: "nicolargo/glances:dev"
+        image: "nicolargo/glances:3.1.6"
         environment:
           TZ: "{{ timezone }}"
           GLANCES_OPT: "-w --enable-plugin sensors"
