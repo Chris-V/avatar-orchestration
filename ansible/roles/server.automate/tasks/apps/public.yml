@@ -1,0 +1,93 @@
+- name: "Create app directories"
+  loop:
+    - { path: "{{ public_apps_dir }}" }
+    - { path: "{{ public_appdata_dir }}" }
+    - { path: "{{ public_fragments_dir }}" }
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "docker"
+    mode: 0750
+
+- name: "Create networks"
+  loop:
+    - { name: "glances", subnet: "{{ docker_net_glances }}" }
+    - { name: "public", subnet: "{{ docker_net_public }}" }
+  include_role:
+    name: "container"
+    tasks_from: "network-fragment"
+  vars:
+    dest: "{{ public_fragments_dir }}/{{ item.name }}.network.yml"
+    interface_name: "{{ item.name }}"
+    subnet: "{{ item.subnet }}"
+
+- name: "Create external network fragments"
+  loop: "{{ public_external_networks }}"
+  include_role:
+    name: "container"
+    tasks_from: "network-fragment"
+  vars:
+    dest: "{{ public_fragments_dir }}/{{ item }}.network.yml"
+    interface_name: "{{ item }}"
+    external: true
+
+- name: "Error Pages"
+  include_tasks: "containers/error-pages.yml"
+  vars:
+    dest: "{{ public_fragments_dir }}/error-pages.service.yml"
+    error_pages:
+      config_dir: "{{ public_appdata_dir }}/error-pages"
+      fragment:
+        definition:
+          labels:
+            traefik.http.routers.error-pages.entryPoints: "https"
+            traefik.http.routers.error-pages.rule: "HostRegexp(`{catchall:.+}`)"
+            traefik.http.routers.error-pages.priority: 1
+          networks:
+            public: {}
+
+- name: "Glances"
+  include_role:
+    name: "container.glances"
+  vars:
+    dest: "{{ public_fragments_dir }}/glances.service.yml"
+    glances:
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "glances-automate"
+            traefik.docker.network: "glances"
+            traefik.http.routers.glances.entryPoints: "https"
+            traefik.http.routers.glances.middlewares: "monitoring-auth@file"
+          networks:
+            glances: {}
+
+- name: "Traefik"
+  include_tasks: "containers/traefik.yml"
+  vars:
+    dest: "{{ public_fragments_dir }}/traefik.service.yml"
+    traefik:
+      config_dir: "{{ public_appdata_dir }}/traefik"
+      acme_email: "{{ acme_email }}"
+      domain: "{{ domain_name }}"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "traefik-automate"
+            traefik.http.routers.traefik.entryPoints: "https"
+            traefik.http.routers.traefik.middlewares: "monitoring-auth@file"
+            traefik.http.routers.traefik.service: "api@internal"
+
+          networks: >-
+            {% set ns = namespace(networks = {"glances": {}, "public": {}}) -%}
+            {% for name in public_external_networks %}{% set ns.networks = ns.networks | combine({ name: {} }) %}{% endfor -%}
+            {{ ns.networks }}
+
+- name: "Create docker-compose.yml"
+  include_role:
+    name: "container"
+    tasks_from: "merge-fragments"
+  vars:
+    src: "{{ public_fragments_dir }}/"
+    dest: "{{ public_apps_dir }}/docker-compose.yml"

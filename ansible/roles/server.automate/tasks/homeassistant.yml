@@ -36,7 +36,6 @@
   loop:
     - { path: "", mode: "u=rwx,g=rx,o=" }
     - { path: "config/", mode: "u=rwx,g=rx,o=" }
-    - { path: "openzwave/", mode: "u=rwx,g=rx,o=" }
     - { path: "ssh/", mode: "u=rwx,go=" }
     - { path: "docker/", mode: "u=rwx,g=rx,o=", owner: "root" }
   ansible.builtin.file: &create_appdata_dir
@@ -122,12 +121,3 @@
     owner: "homeassistant"
     group: "homeassistant"
     mode: "{{ item.mode }}"
-
-- name: Cleanup old files
-  loop:
-    - { path: "{{ docker_appdata_dir }}/home-assistant/openzwave" }
-    - { path: "{{ docker_appdata_dir }}/home-assistant/s6/setup-and-run" }
-    - { path: "{{ docker_appdata_dir }}/home-assistant/s6" }
-  ansible.builtin.file:
-    state: "absent"
-    path: "{{ item.path }}"

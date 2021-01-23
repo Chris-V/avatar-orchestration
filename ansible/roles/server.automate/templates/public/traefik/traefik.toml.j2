@@ -1,3 +1,4 @@
+#jinja2:variable_start_string:'<<', variable_end_string:'>>'
 [Global]
   CheckNewVersion = false
   SendAnonymousUsage = false
@@ -7,13 +8,18 @@
 
 [AccessLog]
 
+[API]
+  Dashboard = true
+
 [Providers]
   [Providers.File]
     Directory = "/traefik.d"
   [Providers.Docker]
-    DefaultRule = "Host(`{{ '{{ .Name }}' }}.docker.localhost`, `{{ '{{ .Name }}' }}.{{ domain_name }}`)"
-    ExposedByDefault = false
+    Constraints = "LabelRegex(`avatar.subdomain`, `[a-z0-9_-]+`)"
+    DefaultRule = "Host(`{{ index .Labels \"avatar.subdomain\"}}.<< traefik.domain >>`)"
+    ExposedByDefault = true
     Network = "public"
+    Watch = true
 
 [ServersTransport]
   MaxIdleConnsPerHost = 50
@@ -22,7 +28,7 @@
     ResponseHeaderTimeout = 5
 
 [CertificatesResolvers.default.acme]
-  Email = "{{ acme_email }}"
+  Email = "<< traefik.acme_email >>"
   Storage = "/etc/traefik/acme/acme.json"
   KeyType = "RSA4096"
   [CertificatesResolvers.default.acme.dnsChallenge]
@@ -53,11 +59,8 @@
       [EntryPoints.https.http.tls]
         certResolver = "default"
         [[EntryPoints.https.http.tls.domains]]
-          main = "{{ domain_name }}"
-          sans = ["*.{{ domain_name }}"]
+          main = "<< traefik.domain >>"
+          sans = ["*.<< traefik.domain >>"]
 
   [EntryPoints.mqtts]
     address = ":8883"
-
-[api]
-  Dashboard = true

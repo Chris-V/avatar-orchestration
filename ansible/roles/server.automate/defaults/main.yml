@@ -1,6 +1,5 @@
-homeassistant_recreate_config_key: False
+homeassistant_recreate_config_key: false
 homeassistant_hacs_repo: "git@github.com:hacs/integrations.git"
-homeassistant_ozw_config_repo: "git@github.com:Chris-V/open-zwave.git"
 
 openzwave_mqtt_server: ""
 openzwave_mqtt_port: ""

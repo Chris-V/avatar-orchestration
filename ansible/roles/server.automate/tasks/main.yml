@@ -1,26 +1,33 @@
-- import_tasks: users.yml
+- import_tasks: "users.yml"
   tags: [ "system" ]
-- import_tasks: devices.yml
+- import_tasks: "devices.yml"
   tags: [ "system" ]
 
-- import_tasks: docker.yml
-  tags: [ "docker", "homeassistant" ]
-- import_tasks: homeassistant.yml
-  tags: [ "docker", "homeassistant" ]
+- import_tasks: "docker.yml"
+  tags: [ "docker", "home-assistant" ]
+- import_tasks: "homeassistant.yml"
+  tags: [ "docker", "home-assistant" ]
+- import_tasks: "apps/public.yml"
+  tags: [ "docker", "public" ]
 
-- import_tasks: restore_backup.yml
+- import_tasks: "restore_backup.yml"
   tags: [ "never", "runtime" ]
-- import_tasks: runtime.yml
+- import_tasks: "runtime.yml"
   tags: [ "never", "runtime" ]
 
 - name: "Cleanup old files"
   loop:
-    - { path: "/srv/docker-apps/monitoring/" }
-    - { path: "/srv/docker-apps/appdata/elasticsearch/" }
-    - { path: "/srv/docker-apps/appdata/filebeat/" }
-    - { path: "/srv/docker-apps/appdata/journalbeat/" }
-    - { path: "/srv/docker-apps/appdata/kibana/" }
-    - { path: "/srv/docker-apps/appdata/metricbeat/" }
+    - { path: "/srv/docker-apps/monitoring" }
+    - { path: "/srv/docker-apps/appdata/elasticsearch" }
+    - { path: "/srv/docker-apps/appdata/filebeat" }
+    - { path: "/srv/docker-apps/appdata/journalbeat" }
+    - { path: "/srv/docker-apps/appdata/kibana" }
+    - { path: "/srv/docker-apps/appdata/metricbeat" }
+    - { path: "/srv/www" }
+    - { path: "/srv/docker-apps/appdata/home-assistant/openzwave" }
+    - { path: "/srv/docker-apps/appdata/home-assistant/s6/setup-and-run" }
+    - { path: "/srv/docker-apps/appdata/home-assistant/s6" }
+    - { path: "/srv/docker-apps/appdata/traefik" }
   ansible.builtin.file:
     state: "absent"
     path: "{{ item.path }}"

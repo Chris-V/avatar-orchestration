@@ -27,7 +27,7 @@
     default_fragment:
       name: "traefik"
       definition:
-        image: "traefik:2.3"
+        image: "traefik:2.4"
         environment:
           TZ: "{{ timezone }}"
         labels:
@@ -37,6 +37,7 @@
         volumes:
           - "/var/run/docker.sock:/var/run/docker.sock:ro"
           - "{{ traefik.config_dir }}/traefik.toml:/traefik.toml:ro"
+          - "{{ traefik.config_dir }}/traefik.d:/traefik.d:ro"
     fragment: |
       {{
         default_fragment

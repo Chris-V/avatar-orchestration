@@ -5,50 +5,42 @@
     rule = "Host(`glances-media.{{ domain_name }}`)"
     middlewares = ["monitoring-auth"]
     service = "media-glances"
-    [http.routers.media-glances.tls]
 
   [http.routers.media-traefik]
     entryPoints = ["https"]
     rule = "Host(`traefik-media.{{ domain_name }}`)"
     middlewares = ["monitoring-auth"]
     service = "media-traefik"
-    [http.routers.media-traefik.tls]
 
   [http.routers.media-deluge]
     entryPoints = ["https"]
     rule = "Host(`deluge.{{ domain_name }}`)"
     service = "media-deluge"
-    [http.routers.media-deluge.tls]
 
   [http.routers.media-jackett]
     entryPoints = ["https"]
     rule = "Host(`jackett.{{ domain_name }}`)"
     service = "media-jackett"
-    [http.routers.media-jackett.tls]
 
   [http.routers.media-jellyfin]
     entryPoints = ["https"]
     rule = "Host(`jellyfin.{{ domain_name }}`)"
     service = "media-jellyfin"
-    [http.routers.media-jellyfin.tls]
 
   [http.routers.media-radarr]
     entryPoints = ["https"]
     rule = "Host(`radarr.{{ domain_name }}`)"
     service = "media-radarr"
-    [http.routers.media-radarr.tls]
 
   [http.routers.media-sonarr]
     entryPoints = ["https"]
     rule = "Host(`sonarr.{{ domain_name }}`)"
     service = "media-sonarr"
-    [http.routers.media-sonarr.tls]
 
   [http.routers.media-minecraft-map]
     entryPoints = ["https"]
     rule = "Host(`minecraft-map.{{ domain_name }}`)"
     service = "media-minecraft-map"
-    [http.routers.media-minecraft-map.tls]
 
 [http.services]
 

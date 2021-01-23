@@ -1,19 +1,27 @@
-- name: "Configure docker-apps structure"
-  block:
-    - name: "Create docker apps root"
-      ansible.builtin.file:
-        path: "{{ docker_apps_dir }}"
-        state: "directory"
-        owner: "root"
-        group: "docker"
-        mode: 0755
-    - name: "Create docker appdata root"
-      ansible.builtin.file:
-        path: "{{ docker_appdata_dir }}"
-        state: "directory"
-        owner: "docker-appdata"
-        group: "docker-appdata"
-        mode: 0755
+- name: "Create app directories"
+  loop:
+    - { path: "{{ docker_apps_dir }}" }
+    - { path: "{{ docker_appdata_dir }}" }
+    - { path: "{{ docker_appdata_dir }}/fragments" }
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "docker"
+    mode: 0755
+
+- name: "Create networks"
+  loop:
+    - { name: "automate", subnet: "{{ docker_net_automate }}" }
+    - { name: "backups" }
+    - { name: "ups" }
+  include_role:
+    name: "container"
+    tasks_from: "network-fragment"
+  vars:
+    dest: "{{ docker_appdata_dir }}/fragments/{{ item.name }}.network.yml"
+    interface_name: "{{ item.name }}"
+    subnet: "{{ item.subnet | default }}"
 
 - name: Configure APC
   block:
@@ -104,48 +112,6 @@
         owner: "root"
         group: "docker"
         mode: "{{ item.mode }}"
-
-- name: Configure Traefik
-  block:
-    - name: Create Traefik directories
-      loop:
-        - { path: "", mode: "u=rwx,g=rx,o=" }
-        - { path: "traefik.d/", mode: "u=rwx,g=rx,o=" }
-        - { path: "acme/", mode: "u=rwx,go=" }
-      ansible.builtin.file:
-        path: "{{ docker_appdata_dir }}/traefik/{{ item.path }}"
-        state: "directory"
-        owner: "docker-appdata"
-        group: "docker-appdata"
-        mode: "{{ item.mode }}"
-    - name: Copy Traefik files
-      loop:
-        - { host_file: yes, path: "acme/gce_service_account.json", mode: "u=r,go=" }
-        - { host_file: yes, path: "traefik.d/monitoring.htpasswd", mode: "u=r,go=" }
-      ansible.builtin.copy:
-        src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/traefik/{{ item.path }}"
-        dest: "{{ docker_appdata_dir }}/traefik/{{ item.path }}"
-        owner: "docker-appdata"
-        group: "docker-appdata"
-        mode: "{{ item.mode }}"
-    - name: Copy Traefik templates
-      with_filetree: "{{ '../templates/appdata/traefik/' }}"
-      when: "item.state == 'file' "
-      ansible.builtin.template:
-        src: "{{ item.src }}"
-        dest: "{{ docker_appdata_dir }}/traefik/{{ item.path | replace('.j2', '') }}"
-        owner: "docker-appdata"
-        group: "docker-appdata"
-        mode: "u=rw,g=r,o="
-
-- name: Copy www files
-  ansible.builtin.copy:
-    src: "www"
-    dest: "/srv"
-    owner: "docker-appdata"
-    group: "docker-appdata"
-    directory_mode: 0755
-    mode: 0644
 
 - name: Copy docker compose
   ansible.builtin.template:

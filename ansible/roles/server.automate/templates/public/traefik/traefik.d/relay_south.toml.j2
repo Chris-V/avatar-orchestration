@@ -5,14 +5,12 @@
     rule = "Host(`glances-relay-south.{{ domain_name }}`)"
     middlewares = ["monitoring-auth"]
     service = "relay-south-glances"
-    [http.routers.relay-south-glances.tls]
 
   [http.routers.relay-south-traefik]
     entryPoints = ["https"]
     rule = "Host(`traefik-relay-south.{{ domain_name }}`)"
     middlewares = ["monitoring-auth"]
     service = "relay-south-traefik"
-    [http.routers.relay-south-traefik.tls]
 
 [http.services]
 

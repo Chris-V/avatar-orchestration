@@ -1,0 +1,41 @@
+- name: "Create directories"
+  loop:
+    - { path: "" }
+  ansible.builtin.file:
+    path: "{{ error_pages.config_dir }}/{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "docker"
+    mode: 0750
+
+- name: "Copy www files"
+  ansible.builtin.copy:
+    src: "public/error-pages/www"
+    dest: "{{ error_pages.config_dir }}/www"
+    owner: "root"
+    group: "root"
+    directory_mode: 0755
+    mode: 0644
+
+- name: "Create service"
+  include_role:
+    name: "container"
+    tasks_from: "service-fragment"
+  vars:
+    default_fragment:
+      name: "error-pages"
+      definition:
+        image: "nginxinc/nginx-unprivileged:alpine"
+        restart: "unless-stopped"
+        environment:
+          TZ: "{{ timezone }}"
+        labels:
+          traefik.http.services.error-pages.loadbalancer.server.port: 8080
+        volumes:
+          - "{{ error_pages.config_dir }}/www/error_pages:/usr/share/nginx/html:ro"
+    fragment: |
+      {{
+        default_fragment
+          | combine(error_pages.fragment | default({}), recursive=True, list_merge='append_rp')
+          | to_json
+      }}

@@ -16,7 +16,7 @@
 + /openzwave/ozwcache_*.xml
 + /openzwave/zwscene.xml
 
-# Treafik
+# Traefik
 + /traefik/acme/**
 
 # Metadata
