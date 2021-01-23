@@ -76,30 +76,29 @@
         group: "docker-appdata"
         mode: "{{ item.mode }}"
 
-- name: Configure Mosquitto
-  block:
-    - name: Create Mosquitto directories
-      loop:
-        - { path: "", mode: "u=rwx,g=rx,o=" }
-        - { path: "config/", mode: "u=rwx,g=rx,o=" }
-        - { path: "data/", mode: "u=rwx,g=rx,o=" }
-      ansible.builtin.file:
-        path: "{{ automate_appdata_dir }}/mosquitto/{{ item.path }}"
-        state: "directory"
-        owner: "mosquitto"
-        group: "mosquitto"
-        mode: "{{ item.mode }}"
-    - name: Copy Mosquitto files
-      loop:
-        - { path: "config/mosquitto.conf", mode: "u=rw,g=r,o=" }
-        - { host_file: yes, path: "config/acl", mode: "u=r,go=" }
-        - { host_file: yes, path: "config/passwords", mode: "u=r,go=" }
-      ansible.builtin.copy:
-        src: "{{ item.host_file | default(False) | ternary(host_files, '') }}automate/mosquitto/{{ item.path }}"
-        dest: "{{ automate_appdata_dir }}/mosquitto/{{ item.path }}"
-        owner: "mosquitto"
-        group: "mosquitto"
-        mode: "{{ item.mode }}"
+- name: "Mosquitto"
+  include_role:
+    name: "container.mosquitto"
+  vars:
+    dest: "{{ automate_fragments_dir }}/mosquitto.service.yml"
+    mosquitto:
+      config_dir: "{{ automate_appdata_dir }}/mosquitto"
+      users: "{{ mosquitto_users }}"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "mqtt"
+            traefik.docker.network: "automate"
+            traefik.tcp.routers.mosquitto.entryPoints: "mqtts"
+            traefik.tcp.routers.mosquitto.rule: "HostSNI(`mqtt.{{ domain_name }}`)"
+            traefik.tcp.routers.mosquitto.tls: "true"
+            traefik.tcp.routers.mosquitto.tls.certresolver: "default"
+            traefik.tcp.routers.mosquitto.tls.domains[0].main: "{{ domain_name }}"
+            traefik.tcp.routers.mosquitto.tls.domains[0].sans: "*.{{ domain_name }}"
+          networks:
+            automate: {}
+          ports:
+            - "127.0.0.1:1883:1883"
 
 - name: Configure OpenZWave
   block:

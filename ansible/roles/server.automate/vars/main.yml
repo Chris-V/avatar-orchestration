@@ -1,9 +1,6 @@
 system_appdata_uid: 875
 system_appdata_gid: 875
 
-mosquitto_uid: 1883
-mosquitto_gid: 1883
-
 # Automate
 
 automate_apps_dir: "/opt/automate"

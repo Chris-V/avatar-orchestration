@@ -25,40 +25,13 @@ services:
       - "1400:1400" # Sonos
       - "1443:1443" # Sonos SSL
     volumes:
-      - "{{ docker_appdata_dir }}/home-assistant/config:{{ homeassistant_container_config_path }}"
-      - "{{ docker_appdata_dir }}/home-assistant/docker/run:/etc/services.d/home-assistant/run"
-
-  mosquitto:
-    container_name: mosquitto
-    image: "eclipse-mosquitto:2"
-    restart: "unless-stopped"
-    user: '{{ mosquitto_uid }}:{{ mosquitto_gid }}'
-    environment:
-      TZ: "{{ timezone }}"
-    labels:
-      avatar.subdomain: "mqtt"
-      traefik.docker.network: "automate"
-      traefik.tcp.services.mosquitto.loadbalancer.server.port: 1883
-      traefik.tcp.routers.mosquitto.entryPoints: "mqtts"
-      traefik.tcp.routers.mosquitto.rule: "HostSNI(`mqtt.{{ domain_name }}`)"
-      traefik.tcp.routers.mosquitto.tls: "true"
-      traefik.tcp.routers.mosquitto.tls.certresolver: "default"
-      traefik.tcp.routers.mosquitto.tls.domains[0].main: "{{ domain_name }}"
-      traefik.tcp.routers.mosquitto.tls.domains[0].sans: "*.{{ domain_name }}"
-    networks:
-      automate:
-    ports:
-      - "127.0.0.1:1883:1883"
-    volumes:
-      - "{{ docker_appdata_dir }}/mosquitto/config:/mosquitto/config"
-      - "{{ docker_appdata_dir }}/mosquitto/data:/mosquitto/data"
+      - "{{ automate_appdata_dir }}/home-assistant/config:{{ homeassistant_container_config_path }}"
+      - "{{ automate_appdata_dir }}/home-assistant/docker/run:/etc/services.d/home-assistant/run"
 
   openzwave:
     container_name: openzwave
     image: "openzwave/ozwdaemon:allinone-latest"
     restart: "unless-stopped"
-    depends_on:
-      - "mosquitto"
     devices:
       - "{{ openzwave_usb_path }}:{{ openzwave_usb_path }}"
     environment:
@@ -104,7 +77,7 @@ services:
     networks:
       ups:
     volumes:
-      - "{{ docker_appdata_dir }}/apcupsd/apcupsd.conf:/etc/apcupsd/apcupsd.conf:ro"
+      - "{{ automate_appdata_dir }}/apcupsd/apcupsd.conf:/etc/apcupsd/apcupsd.conf:ro"
 
   appdata-backup:
     container_name: appdata-backup
@@ -120,5 +93,5 @@ services:
     networks:
       backups:
     volumes:
-      - "{{ docker_appdata_dir }}:/appdata"
-      - "{{ docker_appdata_dir }}/appdata-backup:/config"
+      - "{{ automate_appdata_dir }}:/appdata"
+      - "{{ automate_appdata_dir }}/appdata-backup:/config"

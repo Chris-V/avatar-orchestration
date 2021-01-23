@@ -1,4 +1,4 @@
-# Plant-Gateway
+# Mosquitto
 
 ## Variables
 
@@ -6,17 +6,15 @@
 dest: <string>
 timezone: <optional; string>
 validate: <optional; bool>
-plantgateway:
+mosquitto:
   config_dir: <string>
-  mqtt:
-    server: <string>
-    port: <number>
-    client_id: <string>
-    user: <string>
-    password: <string>
-  sensors:
-    - mac: <string>
-      name: <string>
+  group: <optional; string>
+  users:
+    - name: <string>
+      hashed_password: <string>
+      acl:
+        - topic: <string>
+          permission: <read|write|readwrite>
   fragment: <optional; object>
     name: <string>
     definition: <object>
