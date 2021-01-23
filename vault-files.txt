@@ -1,5 +1,4 @@
 ansible/host_files/avatar-automate/appdata/appdata-backup/gcs_auth.json
-ansible/host_files/avatar-automate/appdata/elasticsearch/elasticsearch.keystore
 ansible/host_files/avatar-automate/appdata/home-assistant/config/.secrets/gcp.json
 ansible/host_files/avatar-automate/appdata/home-assistant/config/.secrets/id_homeassistant
 ansible/host_files/avatar-automate/appdata/home-assistant/config/.secrets/id_homeassistant.pub.j2

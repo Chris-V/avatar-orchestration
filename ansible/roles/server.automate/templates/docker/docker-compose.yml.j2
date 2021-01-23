@@ -62,9 +62,6 @@ services:
       traefik.http.routers.api.middlewares: "monitoring-auth@file"
       traefik.http.routers.api.service: "api@internal"
       traefik.http.routers.api.tls: "true"
-
-      co.elastic.logs/enabled: "true"
-      co.elastic.logs/module: "traefik"
     networks:
       glances:
       public:
@@ -115,17 +112,6 @@ services:
       traefik.http.routers.home-assistant.entryPoints: "https"
       traefik.http.routers.home-assistant.rule: "Host(`home-assistant.{{ domain_name }}`)"
       traefik.http.routers.home-assistant.tls: "true"
-
-      co.elastic.logs/enabled: "true"
-      co.elastic.logs/include_lines: "[a-zA-Z0-9]+"
-      co.elastic.logs/exclude_lines: '(linuxserver\.io|accept donations)'
-      co.elastic.logs/multiline.match: "after"
-      co.elastic.logs/multiline.pattern: "^  "
-      co.elastic.logs/processors.1.dissect.tokenizer: "%{} %{} %{level} (%{thread}) [%{component}] %{message}"
-      co.elastic.logs/processors.1.dissect.target_prefix: "homeassistant"
-      co.elastic.logs/processors.2.copy_fields.ignore_missing: "true"
-      co.elastic.logs/processors.2.copy_fields.fields.0.from: "homeassistant.level"
-      co.elastic.logs/processors.2.copy_fields.fields.0.to: "log.level"
     networks:
       public:
       ups:
@@ -152,8 +138,6 @@ services:
       traefik.tcp.routers.mosquitto.tls.certresolver: "default"
       traefik.tcp.routers.mosquitto.tls.domains[0].main: "{{ domain_name }}"
       traefik.tcp.routers.mosquitto.tls.domains[0].sans: "*.{{ domain_name }}"
-
-      co.elastic.logs/enabled: "true"
     networks:
       public:
     ports:
@@ -212,8 +196,6 @@ services:
       TZ: *timezone
     expose:
       - 3551
-    labels:
-      co.elastic.logs/enabled: "true"
     networks:
       ups:
     volumes:
@@ -235,8 +217,6 @@ services:
       traefik.http.routers.glances.rule: "Host(`glances-automate.{{ domain_name }}`)"
       traefik.http.routers.glances.middlewares: "monitoring-auth@file"
       traefik.http.routers.glances.tls: "true"
-
-      co.elastic.logs/enabled: "true"
     networks:
       glances:
     volumes:
@@ -253,12 +233,6 @@ services:
       SYNC_SRC: "/appdata"
       SYNC_DEST: "{{ rclone_gce_key }}:{{ gce_backup_bucket }}"
       SYNC_OPTS: "-v -x -L --filter-from /config/filters.txt"
-    labels:
-      co.elastic.logs/enabled: "true"
-      co.elastic.logs/include_lines: "(error|warn|fail|INFO  : |INFO: Starting|Transferred:|Errors:|Checks:|Elapsed time:)"
-      co.elastic.logs/multiline.match: "after"
-      co.elastic.logs/multiline.max_lines: 6
-      co.elastic.logs/multiline.pattern: "^(Transferred|Errors|Checks|Elapsed time):"
     networks:
       backups:
     volumes:

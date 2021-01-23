@@ -4,16 +4,23 @@
   tags: [ "system" ]
 
 - import_tasks: docker.yml
-  tags: [ "docker", "elastic", "homeassistant" ]
+  tags: [ "docker", "homeassistant" ]
 - import_tasks: homeassistant.yml
   tags: [ "docker", "homeassistant" ]
 
-- import_tasks: elastic.yml
-  tags: [ "docker", "elastic" ]
-
 - import_tasks: restore_backup.yml
   tags: [ "never", "runtime" ]
-- import_tasks: elastic_runtime.yml
-  tags: [ "never", "runtime", "elastic" ]
 - import_tasks: runtime.yml
   tags: [ "never", "runtime" ]
+
+- name: "Cleanup old files"
+  loop:
+    - { path: "/srv/docker-apps/monitoring/" }
+    - { path: "/srv/docker-apps/appdata/elasticsearch/" }
+    - { path: "/srv/docker-apps/appdata/filebeat/" }
+    - { path: "/srv/docker-apps/appdata/journalbeat/" }
+    - { path: "/srv/docker-apps/appdata/kibana/" }
+    - { path: "/srv/docker-apps/appdata/metricbeat/" }
+  ansible.builtin.file:
+    state: "absent"
+    path: "{{ item.path }}"
