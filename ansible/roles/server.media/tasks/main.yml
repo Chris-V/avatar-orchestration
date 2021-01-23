@@ -1,0 +1,19 @@
+- import_tasks: "mounts.yml"
+  tags: [ "system" ]
+
+- name: "Media"
+  tags: [ "docker", "media" ]
+  import_role:
+    name: "app.media"
+
+- name: "Minecraft"
+  tags: [ "docker", "minecraft" ]
+  import_role:
+    name: "app.minecraft"
+
+- name: "Public"
+  tags: [ "docker", "public" ]
+  vars:
+    public_external_networks: ["media", "minecraft-public"]
+  import_role:
+    name: "app.public"

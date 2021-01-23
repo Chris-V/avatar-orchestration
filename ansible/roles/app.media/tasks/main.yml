@@ -1,0 +1,185 @@
+- name: "Create download group"
+  register: "download_group"
+  ansible.builtin.group:
+    name: "download"
+    state: "present"
+    system: true
+
+- name: "Create media group"
+  register: "media_group"
+  ansible.builtin.group:
+    name: "media"
+    state: "present"
+    system: true
+
+- name: "Create app directories"
+  loop:
+    - { path: "{{ media_apps_dir }}" }
+    - { path: "{{ media_appdata_dir }}" }
+    - { path: "{{ media_fragments_dir }}" }
+    - { path: "{{ downloads_dir }}", group: "{{ download_group.name }}" }
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "{{ item.group | default('docker', True) }}"
+    mode: 0750
+
+- name: "Create networks"
+  loop:
+    - { name: "media", subnet: "{{ docker_net_media }}" }
+  include_role:
+    name: "container"
+    tasks_from: "network-fragment"
+  vars:
+    dest: "{{ media_fragments_dir }}/{{ item.name }}.network.yml"
+    interface_name: "{{ item.name }}"
+    subnet: "{{ item.subnet }}"
+
+- name: "Deluge"
+  include_role:
+    name: "container.deluge"
+  vars:
+    dest: "{{ media_fragments_dir }}/deluge.service.yml"
+    validate: false
+    deluge:
+      config_dir: "{{ media_appdata_dir }}/deluge"
+      blackhole_dir: "{{ downloads_dir }}/jackett"
+      downloads_dir: "{{ downloads_dir }}/deluge"
+      group: "{{ download_group.name }}"
+      fragment:
+        definition:
+          depends_on: ["vpn"]
+          network_mode: "service:vpn"
+          labels:
+            avatar.subdomain: "deluge"
+            traefik.docker.network: "media"
+
+- name: "Jackett"
+  include_role:
+    name: "container.jackett"
+  vars:
+    dest: "{{ media_fragments_dir }}/jackett.service.yml"
+    validate: false
+    jackett:
+      config_dir: "{{ media_appdata_dir }}/jackett"
+      downloads_dir: "{{ downloads_dir }}/jackett"
+      group: "{{ download_group.name }}"
+      fragment:
+        definition:
+          depends_on: ["vpn"]
+          network_mode: "service:vpn"
+          labels:
+            avatar.subdomain: "jackett"
+            traefik.docker.network: "media"
+
+- name: "Jellyfin"
+  include_role:
+    name: "container.jellyfin"
+  vars:
+    dest: "{{ media_fragments_dir }}/jellyfin.service.yml"
+    jellyfin:
+      config_dir: "{{ media_appdata_dir }}/jellyfin"
+      transcode_dir: "{{ data_mount }}/jellyfin"
+      series_dir: "{{ series_dir }}"
+      movies_dir: "{{ movies_dir }}"
+      extra_groups:
+        - "{{ media_group }}"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "jellyfin"
+            traefik.docker.network: "media"
+          networks:
+            media: {}
+
+- name: "Radarr"
+  include_role:
+    name: "container.radarr"
+  vars:
+    dest: "{{ media_fragments_dir }}/radarr.service.yml"
+    radarr:
+      config_dir: "{{ media_appdata_dir }}/radarr"
+      downloads_dir: "{{ downloads_dir }}/deluge"
+      movies_dir: "{{ movies_dir }}"
+      movies_group: "{{ media_group.name }}"
+      extra_groups:
+        - "{{ download_group }}"
+        - "{{ media_group }}"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "radarr"
+            traefik.docker.network: "media"
+          networks:
+            media: {}
+
+- name: "Sonarr"
+  include_role:
+    name: "container.sonarr"
+  vars:
+    dest: "{{ media_fragments_dir }}/sonarr.service.yml"
+    sonarr:
+      config_dir: "{{ media_appdata_dir }}/sonarr"
+      downloads_dir: "{{ downloads_dir }}/deluge"
+      series_dir: "{{ series_dir }}"
+      series_group: "{{ media_group.name }}"
+      extra_groups:
+        - "{{ download_group }}"
+        - "{{ media_group }}"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "sonarr"
+            traefik.docker.network: "media"
+          networks:
+            media: {}
+
+- name: "VPN"
+  include_role:
+    name: "container.vpn"
+  vars:
+    dest: "{{ media_fragments_dir }}/vpn.service.yml"
+    vpn:
+      config_file: "CA-Montreal_UDP.ovpn"
+      forwarding_port: "{{ deluge_incoming_port }}"
+      username: "{{ media_vpn_username }}"
+      fragment:
+        definition:
+          networks:
+            media: {}
+
+- name: "Appdata Backup"
+  block:
+    - name: "List appdata backup exclusions"
+      # This is a workaround until https://github.com/ansible/ansible/issues/10374 is fixed
+      ansible.builtin.set_fact:
+        media_appdata_exclusions: "{{ lookup('file', 'appdata_backup/exclusions.txt').split() }}"
+    - name: "Appdata Backup"
+      include_role:
+        name: "container.tar-backup"
+      vars:
+        dest: "{{ media_fragments_dir }}/appdata-backup.service.yml"
+        tar_backup:
+          backup_dir: "{{ media_appdata_backup_dir }}"
+          config_dir: "{{ media_appdata_dir }}/appdata-backup"
+          data_dir: "{{ media_appdata_dir }}"
+          crontab: "30 3 * * *"
+          exclusions: "{{ media_appdata_exclusions }}"
+          pause_containers: ["deluge", "jackett", "jellyfin", "radarr", "sonarr"]
+          fragment:
+            name: "media_appdata_backup"
+
+- name: "Create docker-compose.yml"
+  include_role:
+    name: "container"
+    tasks_from: "merge-fragments"
+  vars:
+    src: "{{ media_fragments_dir }}/"
+    dest: "{{ media_apps_dir }}/docker-compose.yml"
+
+- name: "Copy last appdata backup"
+  ansible.builtin.unarchive:
+    creates: "{{ media_appdata_dir }}"
+    src: "{{ media_appdata_backup }}"
+    dest: "{{ media_apps_dir }}"

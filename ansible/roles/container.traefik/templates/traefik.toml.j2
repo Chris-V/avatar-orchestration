@@ -1,0 +1,29 @@
+#jinja2:variable_start_string:'<<', variable_end_string:'>>'
+[Global]
+  CheckNewVersion = false
+  SendAnonymousUsage = false
+
+[Log]
+  Level = "WARN"
+
+[AccessLog]
+
+[API]
+  Dashboard = true
+
+[Providers]
+  [Providers.File]
+    Directory = "/traefik.d"
+  [Providers.Docker]
+    constraints = "LabelRegex(`avatar.subdomain`, `[a-z0-9_-]+`)"
+    defaultRule = "Host(`{{ index .Labels \"avatar.subdomain\"}}.<< traefik.domain | default('localhost') >>`)"
+    exposedByDefault = true
+    network = "<< traefik.default_network | default('public') >>"
+    watch = true
+
+[EntryPoints]
+  [EntryPoints.http]
+    Address = ":80"
+
+    [EntryPoints.http.forwardedHeaders]
+      TrustedIPs = << ['127.0.0.1/32', traefik.trusted_ips | default([])] | flatten | tojson >>

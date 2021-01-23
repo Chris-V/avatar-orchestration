@@ -1,0 +1,19 @@
+- name: "List container fragments"
+  register: "fragment_paths"
+  ansible.builtin.find:
+    paths: "{{ [ src ] | flatten }}"
+
+- name: "Slurp container fragments"
+  register: "fragment_files"
+  loop: "{{ fragment_paths.files | map(attribute = 'path') | list }}"
+  ansible.builtin.slurp:
+    src: "{{ item }}"
+
+- name: "Combine container fragments"
+  ansible.builtin.template:
+    src: "docker-compose.yml.j2"
+    dest: "{{ dest }}"
+    owner: "root"
+    group: "docker"
+    mode: 0640
+    validate: "docker-compose -f %s config -q"

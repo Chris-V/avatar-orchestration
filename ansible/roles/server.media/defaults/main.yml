@@ -1,0 +1,3 @@
+data_mount: "/data"
+storage_mount: "/storage"
+backups_dir: "/backups"

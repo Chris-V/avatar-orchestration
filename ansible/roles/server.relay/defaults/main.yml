@@ -1,0 +1,2 @@
+docker_apps_dir: '/opt/docker-apps'
+docker_appdata_dir: '{{ docker_apps_dir }}/appdata'

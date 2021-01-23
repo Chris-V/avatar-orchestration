@@ -1,0 +1,10 @@
+media_apps_dir: "/opt/media"
+media_appdata_dir: "{{ media_apps_dir }}/appdata"
+media_fragments_dir: "{{ media_apps_dir }}/fragments"
+media_appdata_backup_dir: "{{ media_apps_dir }}/backups"
+
+downloads_dir: "{{ media_apps_dir }}/downloads"
+series_dir: "{{ media_apps_dir }}/series"
+movies_dir: "{{ media_apps_dir }}/movies"
+
+docker_net_media: "172.30.172.0/24"

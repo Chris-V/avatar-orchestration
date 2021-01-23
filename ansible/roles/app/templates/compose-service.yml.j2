@@ -1,9 +1,0 @@
-version: "3.8"
-services:
-  {{ fragment.name }}:
-    {{
-      { "container_name": fragment.name }
-          | combine(fragment.definition, recursive=True, list_merge='prepend_rp')
-          | to_nice_yaml(indent=2, width=9999)
-          | indent(4)
-    }}

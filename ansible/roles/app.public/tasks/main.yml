@@ -1,0 +1,72 @@
+- name: "Create app directories"
+  loop:
+    - { path: "{{ public_apps_dir }}" }
+    - { path: "{{ public_appdata_dir }}" }
+    - { path: "{{ public_fragments_dir }}" }
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "docker"
+    mode: 0750
+
+- name: "Create networks"
+  loop:
+    - { name: "glances", subnet: "{{ docker_net_glances }}" }
+  include_role:
+    name: "container"
+    tasks_from: "network-fragment"
+  vars:
+    dest: "{{ public_fragments_dir }}/{{ item.name }}.network.yml"
+    interface_name: "{{ item.name }}"
+    subnet: "{{ item.subnet }}"
+
+- name: "Create external network fragments"
+  loop: "{{ public_external_networks }}"
+  include_role:
+    name: "container"
+    tasks_from: "network-fragment"
+  vars:
+    dest: "{{ public_fragments_dir }}/{{ item }}.network.yml"
+    interface_name: "{{ item }}"
+    external: true
+
+- name: "Glances"
+  include_role:
+    name: "container.glances"
+  vars:
+    dest: "{{ public_fragments_dir }}/glances.service.yml"
+    glances:
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "glances"
+            traefik.docker.network: "glances"
+          networks:
+            glances: {}
+
+- name: "Traefik"
+  include_role:
+    name: "container.traefik"
+  vars:
+    dest: "{{ public_fragments_dir }}/traefik.service.yml"
+    traefik:
+      config_dir: "{{ public_appdata_dir }}/traefik"
+      domain: "{{ internal_hostname }}"
+      trusted_ips: "{{ network.servers.automate.ip }}/32"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "traefik"
+          networks: >-
+            {% set ns = namespace(networks = {"glances": {}}) -%}
+            {% for name in public_external_networks %}{% set ns.networks = ns.networks | combine({ name: {} }) %}{% endfor -%}
+            {{ ns.networks }}
+
+- name: "Create docker-compose.yml"
+  include_role:
+    name: "container"
+    tasks_from: "merge-fragments"
+  vars:
+    src: "{{ public_fragments_dir }}/"
+    dest: "{{ public_apps_dir }}/docker-compose.yml"

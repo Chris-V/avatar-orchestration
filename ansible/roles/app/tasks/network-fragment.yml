@@ -1,8 +1,0 @@
-- name: "Create network fragment: {{ fragment.name }}"
-  ansible.builtin.template:
-    src: "compose-network.yml.j2"
-    dest: "{{ dest }}"
-    owner: "root"
-    group: "docker"
-    mode: "0660"
-    validate: "docker-compose -f %s config"

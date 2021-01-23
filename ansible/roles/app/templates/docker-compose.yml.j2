@@ -1,8 +1,0 @@
-{%- set ns = namespace(combined = {}) %}
-
-{%- for file in fragment_files.results %}
-{%- set fragment = file.content | b64decode | from_yaml %}
-{%- set ns.combined = ns.combined | combine(fragment, recursive=True, list_merge='prepend_rp') %}
-{%- endfor %}
-
-{{- ns.combined | to_nice_yaml(indent=2, width=9999) }}
