@@ -23,26 +23,18 @@
     interface_name: "{{ item.name }}"
     subnet: "{{ item.subnet | default }}"
 
-- name: Configure APC
-  block:
-    - name: Create APC directories
-      loop:
-        - { path: "", mode: "u=rwx,g=rx,o=" }
-      ansible.builtin.file:
-        path: "{{ automate_appdata_dir }}/apcupsd/{{ item.path }}"
-        state: "directory"
-        owner: "docker-appdata"
-        group: "docker-appdata"
-        mode: "{{ item.mode }}"
-    - name: Copy APC files
-      loop:
-        - { path: "apcupsd.conf", mode: "u=rw,g=r,o=" }
-      ansible.builtin.copy:
-        src: "automate/apcupsd/{{ item.path }}"
-        dest: "{{ automate_appdata_dir }}/apcupsd/{{ item.path }}"
-        owner: "docker-appdata"
-        group: "docker-appdata"
-        mode: "{{ item.mode }}"
+- name: "APC UPS"
+  include_role:
+    name: "container.apcupsd"
+  vars:
+    dest: "{{ automate_fragments_dir }}/apcupsd.service.yml"
+    apcupsd:
+      config_dir: "{{ automate_appdata_dir }}/apcupsd"
+      ups_path: "/dev/ups"
+      fragment:
+        definition:
+          networks:
+            ups: {}
 
 - name: Configure appdata-backup
   block:

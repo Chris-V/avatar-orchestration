@@ -59,26 +59,6 @@ services:
     volumes:
       - "/srv/docker-apps/appdata/openzwave:/opt/ozw/config"
 
-  apcupsd:
-    container_name: apcupsd
-    restart: "unless-stopped"
-    image: "gersilex/apcupsd:latest"
-    healthcheck:
-      test: "/sbin/apcaccess status | grep -q 'STATUS *: ONLINE' || exit 1"
-      interval: 30s
-      timeout: 5s
-      retries: 5
-    devices:
-      - "/dev/ups:/dev/usb/hiddev0"
-    environment:
-      TZ: "{{ timezone }}"
-    expose:
-      - 3551
-    networks:
-      ups:
-    volumes:
-      - "{{ automate_appdata_dir }}/apcupsd/apcupsd.conf:/etc/apcupsd/apcupsd.conf:ro"
-
   appdata-backup:
     container_name: appdata-backup
     image: "bcardiff/rclone:latest"
