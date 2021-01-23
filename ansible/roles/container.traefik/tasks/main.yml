@@ -1,6 +1,7 @@
 - name: "Create directories"
   loop:
     - { path: "" }
+    - { path: "traefik.d" }
   ansible.builtin.file:
     path: "{{ traefik.config_dir }}/{{ item.path }}"
     state: "directory"
