@@ -89,5 +89,5 @@
     name: "container"
     tasks_from: "merge-fragments"
   vars:
-    src: "{{ public_fragments_dir }}/"
+    src: "{{ public_fragments_dir }}"
     dest: "{{ public_apps_dir }}/docker-compose.yml"

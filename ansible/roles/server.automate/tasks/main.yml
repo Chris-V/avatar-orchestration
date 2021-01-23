@@ -3,10 +3,8 @@
 - import_tasks: "devices.yml"
   tags: [ "system" ]
 
-- import_tasks: "docker.yml"
-  tags: [ "docker", "home-assistant" ]
-- import_tasks: "homeassistant.yml"
-  tags: [ "docker", "home-assistant" ]
+- import_tasks: "apps/automate.yml"
+  tags: [ "docker", "automate" ]
 - import_tasks: "apps/public.yml"
   tags: [ "docker", "public" ]
 

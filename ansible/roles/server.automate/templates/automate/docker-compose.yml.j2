@@ -1,16 +1,5 @@
 version: "3.7"
 
-networks:
-  automate:
-    external:
-      name: "automate"
-  backups:
-    external:
-      name: "backups"
-  ups:
-    external:
-      name: "ups"
-
 services:
   home-assistant:
     container_name: home-assistant

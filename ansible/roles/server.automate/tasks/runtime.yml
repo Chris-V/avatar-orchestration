@@ -1,6 +1,12 @@
-- name: Start docker apps
+- name: "Start automate apps"
   community.docker.docker_compose:
-    project_src: "{{ docker_apps_dir }}"
+    project_src: "{{ automate_apps_dir }}"
     state: "present"
-    build: yes
-    pull: yes
+    build: true
+    pull: true
+- name: "Start public apps"
+  community.docker.docker_compose:
+    project_src: "{{ automate_apps_dir }}"
+    state: "present"
+    build: true
+    pull: true

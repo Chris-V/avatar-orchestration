@@ -1,7 +1,7 @@
 - name: Check if backup restoration is required
   register: acl_backup
   ansible.builtin.stat:
-    path: "{{ docker_appdata_dir }}/acl.txt"
+    path: "{{ automate_appdata_dir }}/acl.txt"
 
 - name: Restore backup
   when: not acl_backup.stat.exists
@@ -21,10 +21,10 @@
           SYNC_DEST: "/appdata"
           SYNC_OPTS: "-v -x"
         volumes:
-          - "{{ docker_appdata_dir }}:/appdata"
-          - "{{ docker_appdata_dir }}/appdata-backup:/config"
+          - "{{ automate_appdata_dir }}:/appdata"
+          - "{{ automate_appdata_dir }}/appdata-backup:/config"
 
     - name: Restore backed up ACLs
       command: "getfacl --restore=acl.txt"
       args:
-        chdir: "{{ docker_appdata_dir }}"
+        chdir: "{{ automate_appdata_dir }}"

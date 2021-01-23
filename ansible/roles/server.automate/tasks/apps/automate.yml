@@ -1,8 +1,8 @@
 - name: "Create app directories"
   loop:
-    - { path: "{{ docker_apps_dir }}" }
-    - { path: "{{ docker_appdata_dir }}" }
-    - { path: "{{ docker_appdata_dir }}/fragments" }
+    - { path: "{{ automate_apps_dir }}" }
+    - { path: "{{ automate_appdata_dir }}" }
+    - { path: "{{ automate_fragments_dir }}" }
   ansible.builtin.file:
     path: "{{ item.path }}"
     state: "directory"
@@ -19,7 +19,7 @@
     name: "container"
     tasks_from: "network-fragment"
   vars:
-    dest: "{{ docker_appdata_dir }}/fragments/{{ item.name }}.network.yml"
+    dest: "{{ automate_fragments_dir }}/{{ item.name }}.network.yml"
     interface_name: "{{ item.name }}"
     subnet: "{{ item.subnet | default }}"
 
@@ -29,7 +29,7 @@
       loop:
         - { path: "", mode: "u=rwx,g=rx,o=" }
       ansible.builtin.file:
-        path: "{{ docker_appdata_dir }}/apcupsd/{{ item.path }}"
+        path: "{{ automate_appdata_dir }}/apcupsd/{{ item.path }}"
         state: "directory"
         owner: "docker-appdata"
         group: "docker-appdata"
@@ -38,8 +38,8 @@
       loop:
         - { path: "apcupsd.conf", mode: "u=rw,g=r,o=" }
       ansible.builtin.copy:
-        src: "appdata/apcupsd/{{ item.path }}"
-        dest: "{{ docker_appdata_dir }}/apcupsd/{{ item.path }}"
+        src: "automate/apcupsd/{{ item.path }}"
+        dest: "{{ automate_appdata_dir }}/apcupsd/{{ item.path }}"
         owner: "docker-appdata"
         group: "docker-appdata"
         mode: "{{ item.mode }}"
@@ -50,7 +50,7 @@
       loop:
         - { path: "", mode: "u=rwx,g=rx,o=" }
       ansible.builtin.file:
-        path: "{{ docker_appdata_dir }}/appdata-backup/{{ item.path }}"
+        path: "{{ automate_appdata_dir }}/appdata-backup/{{ item.path }}"
         state: "directory"
         owner: "docker-appdata"
         group: "docker-appdata"
@@ -61,8 +61,8 @@
         - { path: "filters.txt", mode: "u=rw,go=" }
         - { host_file: yes, path: "gcs_auth.json", mode: "u=r,go=" }
       ansible.builtin.copy:
-        src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/appdata-backup/{{ item.path }}"
-        dest: "{{ docker_appdata_dir }}/appdata-backup/{{ item.path }}"
+        src: "{{ item.host_file | default(False) | ternary(host_files, '') }}automate/appdata-backup/{{ item.path }}"
+        dest: "{{ automate_appdata_dir }}/appdata-backup/{{ item.path }}"
         owner: "docker-appdata"
         group: "docker-appdata"
         mode: "{{ item.mode }}"
@@ -70,8 +70,8 @@
       loop:
         - { path: "rclone.conf", mode: "u=rw,go=" }
       ansible.builtin.template:
-        src: "appdata/appdata-backup/{{ item.path }}.j2"
-        dest: "{{ docker_appdata_dir }}/appdata-backup/{{ item.path }}"
+        src: "automate/appdata-backup/{{ item.path }}.j2"
+        dest: "{{ automate_appdata_dir }}/appdata-backup/{{ item.path }}"
         owner: "docker-appdata"
         group: "docker-appdata"
         mode: "{{ item.mode }}"
@@ -84,7 +84,7 @@
         - { path: "config/", mode: "u=rwx,g=rx,o=" }
         - { path: "data/", mode: "u=rwx,g=rx,o=" }
       ansible.builtin.file:
-        path: "{{ docker_appdata_dir }}/mosquitto/{{ item.path }}"
+        path: "{{ automate_appdata_dir }}/mosquitto/{{ item.path }}"
         state: "directory"
         owner: "mosquitto"
         group: "mosquitto"
@@ -95,8 +95,8 @@
         - { host_file: yes, path: "config/acl", mode: "u=r,go=" }
         - { host_file: yes, path: "config/passwords", mode: "u=r,go=" }
       ansible.builtin.copy:
-        src: "{{ item.host_file | default(False) | ternary(host_files, '') }}appdata/mosquitto/{{ item.path }}"
-        dest: "{{ docker_appdata_dir }}/mosquitto/{{ item.path }}"
+        src: "{{ item.host_file | default(False) | ternary(host_files, '') }}automate/mosquitto/{{ item.path }}"
+        dest: "{{ automate_appdata_dir }}/mosquitto/{{ item.path }}"
         owner: "mosquitto"
         group: "mosquitto"
         mode: "{{ item.mode }}"
@@ -107,17 +107,27 @@
       loop:
         - { path: "", mode: "u=rwx,g=rx,o=" }
       ansible.builtin.file:
-        path: "{{ docker_appdata_dir }}/openzwave/{{ item.path }}"
+        path: "{{ automate_appdata_dir }}/openzwave/{{ item.path }}"
         state: "directory"
         owner: "root"
         group: "docker"
         mode: "{{ item.mode }}"
 
+- import_tasks: "homeassistant.yml"
+
 - name: Copy docker compose
   ansible.builtin.template:
-    src: "docker/docker-compose.yml.j2"
-    dest: "{{ docker_apps_dir }}/docker-compose.yml"
+    src: "automate/docker-compose.yml.j2"
+    dest: "{{ automate_fragments_dir }}/docker-compose.yml"
     owner: "root"
     group: "docker"
     mode: 0640
     validate: "docker-compose -f %s config"
+
+- name: "Create docker-compose.yml"
+  include_role:
+    name: "container"
+    tasks_from: "merge-fragments"
+  vars:
+    src: "{{ automate_fragments_dir }}"
+    dest: "{{ automate_apps_dir }}/docker-compose.yml"

@@ -4,8 +4,11 @@ system_appdata_gid: 875
 mosquitto_uid: 1883
 mosquitto_gid: 1883
 
-docker_apps_dir: "/srv/docker-apps"
-docker_appdata_dir: "{{ docker_apps_dir }}/appdata"
+# Automate
+
+automate_apps_dir: "/opt/automate"
+automate_appdata_dir: "{{ automate_apps_dir }}/appdata"
+automate_fragments_dir: "{{ automate_apps_dir }}/fragments"
 
 docker_net_automate: "172.30.174.0/24"
 
@@ -19,7 +22,7 @@ openzwave_usb_path: "/dev/zwave"
 
 rclone_gce_key: "GCS"
 
-#######
+# Public
 
 public_apps_dir: "/opt/public"
 public_appdata_dir: "{{ public_apps_dir }}/appdata"
