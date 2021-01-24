@@ -1,0 +1,5 @@
+{% for filter in rclone_backup.allow_filters | default([]) | sort %}
++ {{ filter }}
+{% endfor %}
++ /acl.txt
+- *
