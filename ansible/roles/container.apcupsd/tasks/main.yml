@@ -1,0 +1,50 @@
+- name: "Create config directories"
+  loop:
+    - { path: "" }
+  ansible.builtin.file:
+    <<: &owner_group
+      owner: "root"
+      group: "root"
+    path: "{{ apcupsd.config_dir }}/{{ item.path }}"
+    state: "directory"
+    mode: 0750
+
+- name: "Copy config files"
+  loop:
+    - { path: "apcupsd.conf" }
+  ansible.builtin.copy:
+    <<: *owner_group
+    src: "{{ item.path }}"
+    dest: "{{ apcupsd.config_dir }}/{{ item.path }}"
+    mode: 0640
+
+- name: "Create service fragment"
+  include_role:
+    name: "container"
+    tasks_from: "service-fragment"
+  vars:
+    default_fragment:
+      name: "apcupsd"
+      definition:
+        image: "gersilex/apcupsd:latest"
+        restart: "unless-stopped"
+        stdin_open: true
+        tty: true
+        devices:
+          - "{{ apcupsd.ups_path }}:/dev/usb/hiddev0"
+        environment:
+          TZ: "{{ timezone }}"
+        expose: [3551]
+        healthcheck:
+          test: "/sbin/apcaccess status | grep -q 'STATUS *: ONLINE' || exit 1"
+          interval: "30s"
+          timeout: "5s"
+          retries: 5
+        volumes:
+          - "{{ apcupsd.config_dir }}/apcupsd.conf:/etc/apcupsd/apcupsd.conf:ro"
+    fragment: |
+      {{
+        default_fragment
+          | combine(apcupsd.fragment | default({}), recursive=True, list_merge='append_rp')
+          | to_json
+      }}

@@ -1,0 +1,59 @@
+- name: "Create user"
+  register: "mosquitto_user"
+  ansible.builtin.user:
+    append: false
+    create_home: false
+    group: "{{ mosquitto.group | default(omit) }}"
+    name: "mosquitto"
+    shell: "/usr/bin/nologin"
+    state: "present"
+    system: true
+
+- name: "Create config directories"
+  loop:
+    - { path: "" }
+    - { path: "config/" }
+    - { path: "data/" }
+  ansible.builtin.file:
+    <<: &owner_group
+      owner: "{{ mosquitto_user.name }}"
+      group: "{{ mosquitto.group | default(mosquitto_user.name) }}"
+    path: "{{ mosquitto.config_dir }}/{{ item.path }}"
+    state: "directory"
+    mode: 0750
+
+- name: "Copy config files"
+  loop:
+    - { path: "mosquitto.conf" }
+    - { path: "acl", mode: "400" }
+    - { path: "passwords", mode: "400" }
+  ansible.builtin.template:
+    <<: *owner_group
+    src: "{{ item.path }}.j2"
+    dest: "{{ mosquitto.config_dir }}/config/{{ item.path }}"
+    mode: "{{ item.mode | default('640') }}"
+
+- name: "Create service fragment"
+  include_role:
+    name: "container"
+    tasks_from: "service-fragment"
+  vars:
+    default_fragment:
+      name: "mosquitto"
+      definition:
+        image: "eclipse-mosquitto:2"
+        restart: "unless-stopped"
+        user: "{{ mosquitto_user.uid }}:{{ mosquitto_user.group }}"
+        environment:
+          TZ: "{{ timezone }}"
+        labels:
+          traefik.tcp.services.mosquitto.loadbalancer.server.port: 1883
+        volumes:
+          - "{{ mosquitto.config_dir }}/config:/mosquitto/config"
+          - "{{ mosquitto.config_dir }}/data:/mosquitto/data"
+    fragment: |
+      {{
+        default_fragment
+          | combine(mosquitto.fragment | default({}), recursive=True, list_merge='append_rp')
+          | to_json
+      }}

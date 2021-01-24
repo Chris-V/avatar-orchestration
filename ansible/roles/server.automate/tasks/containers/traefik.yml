@@ -1,0 +1,64 @@
+- name: "Create directories"
+  loop:
+    - { path: "" }
+    - { path: "acme", mode: "700" }
+    - { path: "traefik.d" }
+  ansible.builtin.file:
+    path: "{{ traefik.config_dir }}/{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "root"
+    mode: "{{ mode | default(750) }}"
+
+- name: "Configure Traefik"
+  block:
+    - name: "Copy credentials"
+      loop:
+        - { host_file: true, path: "acme/gce_service_account.json" }
+        - { host_file: true, path: "traefik.d/monitoring.htpasswd" }
+      ansible.builtin.copy:
+        src: "{{ item.host_file | default(False) | ternary(host_files, '') }}public/traefik/{{ item.path }}"
+        dest: "{{ traefik.config_dir }}/{{ item.path }}"
+        owner: "root"
+        group: "root"
+        mode: 0400
+    - name: "Copy configurations"
+      with_filetree: "{{ '../templates/public/traefik/' }}"
+      when: "item.state == 'file' "
+      ansible.builtin.template:
+        src: "{{ item.src }}"
+        dest: "{{ traefik.config_dir }}/{{ item.path | replace('.j2', '') }}"
+        owner: "root"
+        group: "root"
+        mode: 0640
+
+- name: "Create service fragment"
+  include_role:
+    name: "container"
+    tasks_from: "service-fragment"
+  vars:
+    default_fragment:
+      name: "traefik"
+      definition:
+        image: "traefik:2.4"
+        environment:
+          TZ: "{{ timezone }}"
+          GCE_SERVICE_ACCOUNT_FILE: "/etc/traefik/acme/gce_service_account.json"
+        labels:
+          traefik.http.routers.traefik.service: "api@internal"
+        ports:
+          - "80:80"
+          - "443:443"
+          - "8883:8883"
+        restart: "unless-stopped"
+        volumes:
+          - "/var/run/docker.sock:/var/run/docker.sock:ro"
+          - "{{ traefik.config_dir }}/traefik.toml:/traefik.toml:ro"
+          - "{{ traefik.config_dir }}/traefik.d:/traefik.d:ro"
+          - "{{ traefik.config_dir }}/acme:/etc/traefik/acme"
+    fragment: |
+      {{
+        default_fragment
+          | combine(traefik.fragment | default({}), recursive=True, list_merge='append_rp')
+          | to_json
+      }}

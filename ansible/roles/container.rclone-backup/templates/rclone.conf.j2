@@ -1,0 +1,11 @@
+[{{ rclone_backup.gce_key | default(gce_key) }}]
+type = google cloud storage
+env_auth = false
+region = us-east1
+client_id =
+client_secret =
+service_account_file = /config/gce_auth.json
+project_number =
+bucket_policy_only = true
+bucket_acl = private
+storage_class = REGIONAL

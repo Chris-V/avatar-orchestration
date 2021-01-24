@@ -1,0 +1,164 @@
+- name: "Create app directories"
+  loop:
+    - { path: "{{ automate_apps_dir }}" }
+    - { path: "{{ automate_appdata_dir }}" }
+    - { path: "{{ automate_fragments_dir }}" }
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "directory"
+    owner: "root"
+    group: "docker"
+    mode: 0755
+
+- name: "Create networks"
+  loop:
+    - { name: "automate", subnet: "{{ docker_net_automate }}" }
+    - { name: "backups" }
+    - { name: "ups" }
+  include_role:
+    name: "container"
+    tasks_from: "network-fragment"
+  vars:
+    dest: "{{ automate_fragments_dir }}/{{ item.name }}.network.yml"
+    interface_name: "{{ item.name }}"
+    subnet: "{{ item.subnet | default }}"
+
+- name: "APC UPS"
+  include_role:
+    name: "container.apcupsd"
+  vars:
+    dest: "{{ automate_fragments_dir }}/apcupsd.service.yml"
+    apcupsd:
+      config_dir: "{{ automate_appdata_dir }}/apcupsd"
+      ups_path: "{{ ups_dev_path }}"
+      fragment:
+        definition:
+          networks:
+            ups: {}
+
+- name: "Appdata Backup"
+  block:
+    - name: "Lookup appdata backup GCE auth"
+      # FIXME: This is a workaround until https://github.com/ansible/ansible/issues/10374 is fixed
+      ansible.builtin.set_fact:
+        appdata_backup_auth: "{{ lookup('file', host_files ~ 'automate/appdata-backup/gce_auth.json') }}"
+    - name: "Appdata Backup"
+      include_role:
+        name: "container.rclone-backup"
+      vars:
+        dest: "{{ automate_fragments_dir }}/appdata-backup.service.yml"
+        rclone_backup:
+          config_dir: "{{ automate_appdata_dir }}/appdata-backup"
+          content_dir: "{{ automate_appdata_dir }}"
+          gce_auth: "{{ appdata_backup_auth }}"
+          gce_bucket: "{{ gce_backup_bucket }}"
+          gce_key: "{{ gce_backup_key }}"
+          allow_filters:
+            - "/home-assistant/config/.cloud/**"
+            - "/home-assistant/config/.custom_storage/**"
+            - "/home-assistant/config/.google.token"
+            - "/home-assistant/config/.HA_VERSION"
+            - "/home-assistant/config/.storage/**"
+            - "/home-assistant/config/google_calendars.yaml"
+            - "/home-assistant/config/html5_push_registrations.conf"
+            - "/home-assistant/config/known_devices.yaml"
+            - "/home-assistant/config/zigbee.db"
+            - "/mosquitto/data/**"
+            - "/openzwave/options.xml"
+            - "/openzwave/ozwcache_*.xml"
+            - "/openzwave/zwscene.xml"
+          fragment:
+            name: "automate-appdata-backup"
+            definition:
+              networks:
+                backups: {}
+
+- name: "Mosquitto"
+  include_role:
+    name: "container.mosquitto"
+  vars:
+    dest: "{{ automate_fragments_dir }}/mosquitto.service.yml"
+    mosquitto:
+      config_dir: "{{ automate_appdata_dir }}/mosquitto"
+      users: "{{ mosquitto_users }}"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "mqtt"
+            traefik.docker.network: "automate"
+            traefik.tcp.routers.mosquitto.entryPoints: "mqtts"
+            traefik.tcp.routers.mosquitto.rule: "HostSNI(`mqtt.{{ domain_name }}`)"
+            traefik.tcp.routers.mosquitto.tls: "true"
+            traefik.tcp.routers.mosquitto.tls.certresolver: "default"
+            traefik.tcp.routers.mosquitto.tls.domains[0].main: "{{ domain_name }}"
+            traefik.tcp.routers.mosquitto.tls.domains[0].sans: "*.{{ domain_name }}"
+          networks:
+            automate: {}
+          ports:
+            - "127.0.0.1:1883:1883"
+
+- name: "Open Z-Wave"
+  include_role:
+    name: "container.openzwave"
+  vars:
+    dest: "{{ automate_fragments_dir }}/openzwave.service.yml"
+    openzwave:
+      config_dir: "{{ automate_appdata_dir }}/openzwave"
+      admin_password: "{{ openzwave_auth_key }}"
+      mqtt:
+        host: "{{ openzwave_mqtt_server }}"
+        port: "{{ openzwave_mqtt_port }}"
+        tls: "{{ openzwave_mqtt_tls }}"
+        username: "{{ openzwave_mqtt_username }}"
+        password: "{{ openzwave_mqtt_password }}"
+      network_key: "{{ openzwave_network_key }}"
+      usb_path: "{{ zwave_dev_path }}"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "openzwave"
+            traefik.docker.network: "automate"
+            traefik.http.routers.openzwave.entryPoints: "https"
+          networks:
+            automate: {}
+          ports:
+            - "127.0.0.1:1983:1983"
+
+- name: "Home-Assistant"
+  tags: [ "home-assistant" ]
+  include_role:
+    name: "container.home-assistant"
+  vars:
+    dest: "{{ automate_fragments_dir }}/home-assistant.service.yml"
+    home_assistant:
+      config_dir: "{{ automate_appdata_dir }}/home-assistant"
+      config_secrets_src_path: "{{ (host_files, 'automate/home-assistant') | path_join }}"
+      config_secrets_files: >
+        {{
+          query('community.general.filetree', host_files ~ 'automate/home-assistant/')
+            | selectattr('state', '==', 'file')
+            | map(attribute = 'path')
+        }}
+      force_ssh_key: "{{ homeassistant_recreate_config_key | bool }}"
+      repo:
+        name: "{{ home_assistant_config_repo }}"
+        organisation: "{{ home_assistant_config_owner }}"
+        personal_access_token: "{{ github_token }}"
+      zigbee_path: "{{ zigbee_dev_path }}"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "home-assistant"
+            traefik.docker.network: "automate"
+            traefik.http.routers.home-assistant.entryPoints: "https"
+          networks:
+            automate: {}
+            ups: {}
+
+- name: "Create docker-compose.yml"
+  include_role:
+    name: "container"
+    tasks_from: "merge-fragments"
+  vars:
+    src: "{{ automate_fragments_dir }}"
+    dest: "{{ automate_apps_dir }}/docker-compose.yml"

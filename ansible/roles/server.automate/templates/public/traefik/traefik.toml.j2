@@ -1,0 +1,66 @@
+#jinja2:variable_start_string:'<<', variable_end_string:'>>'
+[Global]
+  CheckNewVersion = false
+  SendAnonymousUsage = false
+
+[Log]
+  Level = "WARN"
+
+[AccessLog]
+
+[API]
+  Dashboard = true
+
+[Providers]
+  [Providers.File]
+    Directory = "/traefik.d"
+  [Providers.Docker]
+    Constraints = "LabelRegex(`avatar.subdomain`, `[a-z0-9_-]+`)"
+    DefaultRule = "Host(`{{ index .Labels \"avatar.subdomain\"}}.<< traefik.domain >>`)"
+    ExposedByDefault = true
+    Network = "public"
+    Watch = true
+
+[ServersTransport]
+  MaxIdleConnsPerHost = 50
+  [ServersTransport.ForwardingTimeouts]
+    DialTimeout = 15
+    ResponseHeaderTimeout = 5
+
+[CertificatesResolvers.default.acme]
+  Email = "<< traefik.acme_email >>"
+  Storage = "/etc/traefik/acme/acme.json"
+  KeyType = "RSA4096"
+  [CertificatesResolvers.default.acme.dnsChallenge]
+    Provider = "gcloud"
+    DelayBeforeCheck = 60
+    Resolvers = ["1.1.1.1:53", "1.0.0.1:53"]
+
+[EntryPoints]
+  [EntryPoints.http]
+    address = ":80"
+    [EntryPoints.http.Transport]
+      [EntryPoints.http.Transport.RespondingTimeouts]
+        IdleTimeout = 5
+    [EntryPoints.http.http]
+      middlewares = ["common@file"]
+      [EntryPoints.http.http.redirections]
+        [EntryPoints.http.http.redirections.entryPoint]
+          to = "https"
+          scheme = "https"
+
+  [EntryPoints.https]
+    address = ":443"
+    [EntryPoints.https.Transport]
+      [EntryPoints.https.Transport.RespondingTimeouts]
+        IdleTimeout = 300
+    [EntryPoints.https.http]
+      middlewares = ["common@file"]
+      [EntryPoints.https.http.tls]
+        certResolver = "default"
+        [[EntryPoints.https.http.tls.domains]]
+          main = "<< traefik.domain >>"
+          sans = ["*.<< traefik.domain >>"]
+
+  [EntryPoints.mqtts]
+    address = ":8883"

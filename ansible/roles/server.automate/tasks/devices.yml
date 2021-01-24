@@ -1,20 +1,11 @@
-- name: Copy UDEV rules for HUSBZB-1
-  notify: reload udev
-  ansible.builtin.copy:
-    dest: "/etc/udev/rules.d/99-hubz.rules"
+- name: "Copy UDEV rules"
+  loop:
+    - { name: "99-husbzb.rules" }
+    - { name: "99-ups.rules" }
+  notify: "reload udev"
+  ansible.builtin.template:
+    src: "udev/{{ item.name }}.j2"
+    dest: "/etc/udev/rules.d/{{ item.name }}"
     owner: "root"
     group: "root"
     mode: 0644
-    content: |
-      SUBSYSTEM=="tty", ATTRS{interface}=="HubZ Z-Wave Com Port", SYMLINK+="zwave", GROUP="homeassistant", MODE="0660"
-      SUBSYSTEM=="tty", ATTRS{interface}=="HubZ ZigBee Com Port", SYMLINK+="zigbee", GROUP="homeassistant", MODE="0660"
-
-- name: Copy UDEV rules for UPS
-  notify: reload udev
-  ansible.builtin.copy:
-    dest: "/etc/udev/rules.d/99-ups.rules"
-    owner: "root"
-    group: "root"
-    mode: 0644
-    content: |
-      SUBSYSTEM=="usbmisc", ATTRS{manufacturer}=="American Power Conversion", ATTRS{serial}=="4B1622P31617  ", SYMLINK+="ups", OWNER="root"

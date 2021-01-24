@@ -1,26 +1,20 @@
-system_appdata_uid: 875
-system_appdata_gid: 875
+# Automate
+automate_apps_dir: "/opt/automate"
+automate_appdata_dir: "{{ automate_apps_dir }}/appdata"
+automate_fragments_dir: "{{ automate_apps_dir }}/fragments"
 
-mosquitto_uid: 1883
-mosquitto_gid: 1883
-
-docker_apps_dir: "/srv/docker-apps"
-docker_appdata_dir: "{{ docker_apps_dir }}/appdata"
-
-docker_net_public: "172.30.170.0/24"
-docker_net_public_gateway: "172.30.170.1"
-docker_ip_proxy: "172.30.170.50"
-docker_net_backups: "172.30.171.0/24"
-docker_net_glances: "172.30.172.0/24"
-docker_net_ups: "172.30.173.0/24"
-docker_net_elastic: "172.30.174.0/24"
-
-homeassistant_config_key_path: "/home/homeassistant/.ssh/github_rsa"
-homeassistant_container_config_path: "/config"
+docker_net_automate: "172.30.174.0/24"
 
 openzwave_mqtt_server: "mqtt.{{ domain_name }}"
 openzwave_mqtt_port: 8883
 openzwave_mqtt_tls: "true"
-openzwave_usb_path: "/dev/zwave"
 
-rclone_gce_key: "GCS"
+# Public
+public_apps_dir: "/opt/public"
+public_appdata_dir: "{{ public_apps_dir }}/appdata"
+public_fragments_dir: "{{ public_apps_dir }}/fragments"
+
+public_external_networks: ["automate"]
+
+docker_net_public: "172.30.170.0/24"
+docker_net_glances: "172.30.172.0/24"

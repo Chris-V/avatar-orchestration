@@ -1,0 +1,27 @@
+BatchMode yes
+StrictHostKeyChecking yes
+UserKnownHostsFile {{ local_config_path }}/.secrets/ssh_known_hosts
+
+Host router
+  HostName {{ network.servers.router.ip }}
+  Port {{ network.servers.router.ports.ssh }}
+  IdentityFile {{ local_config_path }}/.secrets/id_router_homeassistant
+  User {{ router_ssh_user }}
+
+Host media
+  HostName {{ network.servers.media.host }}
+  Port {{ network.servers.media.ports.ssh }}
+  IdentityFile {{ local_config_path }}/.secrets/id_homeassistant
+  User {{ home_assistant_user.name }}
+
+Host relay_north
+  HostName {{ network.servers.relay_north.host }}
+  Port {{ network.servers.relay_north.ports.ssh }}
+  IdentityFile {{ local_config_path }}/.secrets/id_homeassistant
+  User {{ home_assistant_user.name }}
+
+Host relay_south
+  HostName {{ network.servers.relay_south.host }}
+  Port {{ network.servers.relay_south.ports.ssh }}
+  IdentityFile {{ local_config_path }}/.secrets/id_homeassistant
+  User {{ home_assistant_user.name }}

@@ -1,0 +1,45 @@
+- name: "Create config directories"
+  loop:
+    - { path: "" }
+  ansible.builtin.file:
+    owner: "root"
+    group: "root"
+    path: "{{ openzwave.config_dir }}/{{ item.path }}"
+    state: "directory"
+    mode: 0755
+
+- name: "Create service fragment"
+  include_role:
+    name: "container"
+    tasks_from: "service-fragment"
+  vars:
+    default_fragment:
+      name: "openzwave"
+      definition:
+        image: "openzwave/ozwdaemon:allinone-build-182"
+        restart: "unless-stopped"
+        devices:
+          - "{{ openzwave.usb_path }}:/dev/zwave"
+        environment:
+          TZ: "{{ timezone }}"
+          MQTT_SERVER: "{{ openzwave.mqtt.host }}"
+          MQTT_PORT: "{{ openzwave.mqtt.port }}"
+          MQTT_TLS: "{{ openzwave.mqtt.tls }}"
+          MQTT_USERNAME: "{{ openzwave.mqtt.username }}"
+          MQTT_PASSWORD: "{{ openzwave.mqtt.password }}"
+          USB_PATH: "/dev/zwave"
+          OZW_AUTH_KEY: "{{ openzwave.admin_password }}"
+          OZW_NETWORK_KEY: "{{ openzwave.network_key }}"
+          QT_LOGGING_RULES: "*.debug=false"
+        labels:
+          traefik.http.services.openzwave.loadbalancer.server.port: 7800
+        security_opt:
+          - "seccomp:unconfined"
+        volumes:
+          - "{{ openzwave.config_dir }}:/opt/ozw/config"
+    fragment: |
+      {{
+        default_fragment
+          | combine(openzwave.fragment | default({}), recursive=True, list_merge='append_rp')
+          | to_json
+      }}

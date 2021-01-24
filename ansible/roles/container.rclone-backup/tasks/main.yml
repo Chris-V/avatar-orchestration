@@ -1,0 +1,57 @@
+- name: "Create config directories"
+  loop:
+    - { path: "" }
+  ansible.builtin.file:
+    <<: &owner_group
+      owner: "root"
+      group: "root"
+    path: "{{ rclone_backup.config_dir }}/{{ item.path }}"
+    state: "directory"
+    mode: 0750
+
+- name: "Copy config files"
+  loop:
+    - { path: "backup_acl.sh" }
+  ansible.builtin.copy:
+    <<: *owner_group
+    src: "{{ item.path }}"
+    dest: "{{ rclone_backup.config_dir }}/{{ item.path }}"
+    mode: 0640
+
+- name: "Populate config files"
+  loop:
+    - { path: "filters.txt" }
+    - { path: "rclone.conf" }
+    - { path: "gce_auth.json" }
+  ansible.builtin.template:
+    <<: *owner_group
+    src: "{{ item.path }}.j2"
+    dest: "{{ rclone_backup.config_dir }}/{{ item.path }}"
+    mode: 0400
+
+- name: "Create service fragment"
+  include_role:
+    name: "container"
+    tasks_from: "service-fragment"
+  vars:
+    default_fragment:
+      name: "rclone-backup"
+      definition:
+        image: "bcardiff/rclone:latest"
+        restart: "always"
+        environment:
+          TZ: "{{ timezone }}"
+          CRON: "0 5 * * * /config/backup_acl.sh && "
+          CRON_ABORT: "0 6 * * *"
+          SYNC_SRC: "/content"
+          SYNC_DEST: "{{ rclone_backup.gce_key | default(gce_key) }}:{{ rclone_backup.gce_bucket }}"
+          SYNC_OPTS: "-v -x -L --filter-from /config/filters.txt"
+        volumes:
+          - "{{ rclone_backup.content_dir }}:/content"
+          - "{{ rclone_backup.config_dir }}:/config:ro"
+    fragment: |
+      {{
+        default_fragment
+          | combine(rclone_backup.fragment | default({}), recursive=True, list_merge='append_rp')
+          | to_json
+      }}

@@ -74,13 +74,3 @@
   ansible.builtin.systemd:
     name: "systemd-networkd.service"
     state: "restarted"
-
-- name: "Cleanup old files"
-  loop:
-    - { path: "/etc/modprobe.d/noiptables.conf" }
-    - { path: "/usr/local/sbin/iptables" }
-    - { path: "/etc/systemd/network/15-wired.link" }
-    - { path: "/etc/systemd/network/20-all.network" }
-  ansible.builtin.file:
-    state: "absent"
-    path: "{{ item.path }}"

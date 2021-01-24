@@ -1,19 +1,12 @@
-- import_tasks: users.yml
-  tags: [ "system" ]
-- import_tasks: devices.yml
+- import_tasks: "devices.yml"
   tags: [ "system" ]
 
-- import_tasks: docker.yml
-  tags: [ "docker", "elastic", "homeassistant" ]
-- import_tasks: homeassistant.yml
-  tags: [ "docker", "homeassistant" ]
+- import_tasks: "apps/automate.yml"
+  tags: [ "docker", "automate" ]
+- import_tasks: "apps/public.yml"
+  tags: [ "docker", "public" ]
 
-- import_tasks: elastic.yml
-  tags: [ "docker", "elastic" ]
-
-- import_tasks: restore_backup.yml
+- import_tasks: "restore_backup.yml"
   tags: [ "never", "runtime" ]
-- import_tasks: elastic_runtime.yml
-  tags: [ "never", "runtime", "elastic" ]
-- import_tasks: runtime.yml
+- import_tasks: "runtime.yml"
   tags: [ "never", "runtime" ]

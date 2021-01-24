@@ -1,0 +1,25 @@
+[http.routers]
+
+  [http.routers.relay-north-glances]
+    entryPoints = ["https"]
+    rule = "Host(`glances-relay-north.{{ domain_name }}`)"
+    middlewares = ["monitoring-auth"]
+    service = "relay-north-glances"
+
+  [http.routers.relay-north-traefik]
+    entryPoints = ["https"]
+    rule = "Host(`traefik-relay-north.{{ domain_name }}`)"
+    middlewares = ["monitoring-auth"]
+    service = "relay-north-traefik"
+
+[http.services]
+
+  [http.services.relay-north-glances.LoadBalancer]
+    passHostHeader = false
+    [[http.services.relay-north-glances.LoadBalancer.servers]]
+      URL = "http://glances.{{ network.servers.relay_north.host }}/"
+
+  [http.services.relay-north-traefik.LoadBalancer]
+    passHostHeader = false
+    [[http.services.relay-north-traefik.LoadBalancer.servers]]
+      URL = "http://traefik.{{ network.servers.relay_north.host }}/"

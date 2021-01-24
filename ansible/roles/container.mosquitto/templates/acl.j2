@@ -1,0 +1,7 @@
+{% for user in mosquitto.users | default([]) %}
+user {{ user.name }}
+{% for topic in user.acl | default([]) %}
+topic {{ topic.permission }} {{ topic.topic }}
+{% endfor %}
+
+{% endfor -%}

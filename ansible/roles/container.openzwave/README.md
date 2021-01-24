@@ -1,4 +1,4 @@
-# Plant-Gateway
+# Open Z-Wave
 
 ## Variables
 
@@ -6,17 +6,17 @@
 dest: <string>
 timezone: <optional; string>
 validate: <optional; bool>
-plantgateway:
+openzwave:
   config_dir: <string>
+  admin_password: <string>
   mqtt:
-    server: <string>
+    host: <string>
     port: <number>
-    client_id: <string>
-    user: <string>
+    tls: <boolean>
+    username: <string>
     password: <string>
-  sensors:
-    - mac: <string>
-      name: <string>
+  network_key: <string>
+  usb_path: <string>
   fragment: <optional; object>
     name: <string>
     definition: <object>

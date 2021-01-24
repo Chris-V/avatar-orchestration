@@ -1,0 +1,160 @@
+- name: "Install ansible requirements"
+  community.general.pacman:
+    name:
+      - "python-requests"
+      - "unzip"
+    state: "present"
+
+- name: "Create config directories"
+  loop:
+    - { path: "" }
+    - { path: "config/" }
+    - { path: "docker/", owner: "root", group: "root" }
+  ansible.builtin.file:
+    <<: &owner_group
+      owner: "{{ item.owner | default(home_assistant_user.name) }}"
+      group: "{{ item.group | default(home_assistant_user.name) }}"
+    path: "{{ home_assistant.config_dir }}/{{ item.path }}"
+    state: "directory"
+    mode: 0750
+
+- name: "Copy custom entrypoint"
+  ansible.builtin.copy:
+    src: "docker/run"
+    dest: "{{ home_assistant.config_dir }}/docker/run"
+    mode: 0750
+    owner: "root"
+    group: "root"
+
+- name: "Generate GitHub key"
+  block:
+    - name: "Generate SSH key"
+      <<: &become_home_assistant
+        become: true
+        become_user: "{{ home_assistant_user.name }}"
+      community.crypto.openssh_keypair:
+        <<: *owner_group
+        force: "{{ home_assistant.force_ssh_key | default(false) | bool }}"
+        path: "{{ ssh_key_path }}"
+        size: 4096
+        state: "present"
+        type: "rsa"
+    - name: "Read public key"
+      register: "public_deploy_key"
+      ansible.builtin.slurp:
+        src: "{{ ssh_key_path }}.pub"
+    - name: "Upload public key to GitHub"
+      community.general.github_deploy_key:
+        force: "{{ home_assistant.force_ssh_key | default(false) | bool }}"
+        key: "{{ public_deploy_key['content'] | b64decode }}"
+        name: "automate-homeassistant"
+        owner: "{{ home_assistant.repo.organisation }}"
+        read_only: true
+        repo: "{{ home_assistant.repo.name }}"
+        state: "present"
+        token: "{{ home_assistant.repo.personal_access_token }}"
+
+- name: "Pull remote configuration"
+  <<: *become_home_assistant
+  ansible.builtin.git:
+    accept_hostkey: true
+    dest: "{{ home_assistant.config_dir }}/config"
+    key_file: "{{ ssh_key_path }}"
+    repo: "git@github.com:{{ home_assistant.repo.organisation }}/{{ home_assistant.repo.name }}.git"
+    umask: "0027"
+    version: "{{ home_assistant.repo.branch | default('master') }}"
+
+- name: "Configure default git options"
+  <<: *become_home_assistant
+  loop:
+    - { name: "core.sshcommand", value: "ssh -i {{ ssh_key_path }} -F /dev/null" }
+    - { name: "pull.ff", value: "only" }
+  community.general.git_config:
+    name: "{{ item.name }}"
+    repo: "{{ home_assistant.config_dir }}/config"
+    scope: "local"
+    state: "present"
+    value: "{{ item.value }}"
+
+- name: "HACS"
+  block:
+    - name: "Check HACS presence"
+      register: "hacs_installed"
+      ansible.builtin.stat:
+        path: "{{ hacs_target_path }}"
+
+    - name: "Create HACS directory"
+      when: "not hacs_installed.stat.exists"
+      ansible.builtin.file:
+        <<: *owner_group
+        path: "{{ hacs_target_path }}"
+        state: "directory"
+        mode: 0750
+
+    - name: "Install HACS"
+      when: "not hacs_installed.stat.exists"
+      ansible.builtin.unarchive:
+        <<: *owner_group
+        src: "{{ hacs_archive_url }}"
+        dest: "{{ hacs_target_path }}"
+        remote_src: true
+        mode: "u=rwX,g=rX,o="
+
+- name: "Secrets"
+  block:
+    - name: "Create secret directories"
+      loop: "{{ home_assistant.config_secrets_files | map('dirname') | unique | reject('in', ['']) }}"
+      ansible.builtin.file:
+        <<: *owner_group
+        path: "{{ home_assistant.config_dir }}/config/{{ item }}"
+        state: "directory"
+        mode: 0700
+
+    - name: "Copy secrets"
+      loop: "{{ home_assistant.config_secrets_files | reject('match', '.+\\.j2$') }}"
+      ansible.builtin.copy:
+        <<: *owner_group
+        src: "{{ home_assistant.config_secrets_src_path }}/{{ item }}"
+        dest: "{{ home_assistant.config_dir }}/config/{{ item }}"
+        mode: 0400
+
+    - name: "Populate secrets"
+      loop: "{{ home_assistant.config_secrets_files | select('match', '.+\\.j2$') }}"
+      ansible.builtin.template:
+        <<: *owner_group
+        src: "{{ home_assistant.config_secrets_src_path }}/{{ item }}"
+        dest: "{{ home_assistant.config_dir }}/config/{{ item[:-3] }}"
+        mode: 0400
+
+- name: "Create service fragment"
+  include_role:
+    name: "container"
+    tasks_from: "service-fragment"
+  vars:
+    default_fragment:
+      name: "home-assistant"
+      definition:
+        image: "homeassistant/home-assistant:2021.1.5"
+        restart: "unless-stopped"
+        devices:
+          - "{{ home_assistant.zigbee_path }}:/dev/zigbee"
+        environment:
+          TZ: "{{ timezone }}"
+          PUID: "{{ home_assistant_user.uid }}"
+          PGID: "{{ home_assistant_user.group }}"
+          UMASK: "007"
+          PACKAGES: "iputils"
+        labels:
+          traefik.http.services.home-assistant.loadbalancer.server.port: 8123
+        ports:
+          - "1400:1400" # Sonos
+          - "1443:1443" # Sonos SSL
+        volumes:
+          - "{{ home_assistant.config_dir }}/config:{{ local_config_path }}"
+          - "{{ home_assistant.config_dir }}/docker/run:/etc/services.d/home-assistant/run"
+    fragment: |
+      {{
+        default_fragment
+          | combine(home_assistant.fragment | default({}), recursive=True, list_merge='append_rp')
+          | to_json
+      }}
