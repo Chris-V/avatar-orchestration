@@ -10,11 +10,3 @@
   tags: [ "never", "runtime" ]
 - import_tasks: "runtime.yml"
   tags: [ "never", "runtime" ]
-
-- name: "Cleanup old files"
-  loop:
-    - { path: "/srv/docker-apps" }
-    - { path: "/srv/www" }
-  ansible.builtin.file:
-    state: "absent"
-    path: "{{ item.path }}"

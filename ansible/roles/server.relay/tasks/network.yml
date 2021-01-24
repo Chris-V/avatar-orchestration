@@ -7,11 +7,3 @@
     mode: 0644
     content: |
       ACTION=="add", SUBSYSTEM=="net", KERNEL=="wl*", RUN+="/usr/bin/iw dev $name set power_save off"
-
-- name: "Cleanup old files"
-  loop:
-    - { path: "/etc/systemd/network/wired.network" }
-    - { path: "/etc/systemd/network/wireless.network" }
-  ansible.builtin.file:
-    state: "absent"
-    path: "{{ item.path }}"
