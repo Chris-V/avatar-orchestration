@@ -1,12 +1,12 @@
 - import_tasks: "devices.yml"
-  tags: [ "system" ]
+  tags: ["system"]
 
 - import_tasks: "apps/automate.yml"
-  tags: [ "docker", "automate" ]
+  tags: ["docker", "automate"]
 - import_tasks: "apps/public.yml"
-  tags: [ "docker", "public" ]
+  tags: ["docker", "public"]
 
 - import_tasks: "restore_backup.yml"
-  tags: [ "never", "runtime" ]
+  tags: ["never", "runtime"]
 - import_tasks: "runtime.yml"
-  tags: [ "never", "runtime" ]
+  tags: ["never", "runtime"]

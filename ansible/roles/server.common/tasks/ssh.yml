@@ -1,21 +1,21 @@
-- name: Install packages
+- name: "Install packages"
   community.general.pacman:
     name:
-      - openssh
-    state: present
+      - "openssh"
+    state: "present"
 
-- name: Copy SSH daemon configs
+- name: "Copy SSH daemon configs"
+  notify: "reload sshd"
   ansible.builtin.template:
-    src: etc/ssh/sshd_config.j2
-    dest: /etc/ssh/sshd_config
-    force: yes
-    owner: root
-    group: root
+    src: "etc/ssh/sshd_config.j2"
+    dest: "/etc/ssh/sshd_config"
+    force: true
+    owner: "root"
+    group: "root"
     mode: 0644
-    validate: '/usr/bin/sshd -t -f %s'
-  notify: reload sshd
+    validate: "/usr/bin/sshd -t -f %s"
 
-- name: Clean up unused SSH host keys
+- name: "Clean up unused SSH host keys"
   loop:
     - { path: "/etc/ssh/ssh_host_dsa_key" }
     - { path: "/etc/ssh/ssh_host_dsa_key.pub" }
@@ -27,10 +27,10 @@
     state: "absent"
     path: "{{ item.path }}"
 
-- name: Copy SSH host keys
+- name: "Copy SSH host keys"
   loop:
-    - { host_file: yes, path: "etc/ssh/ssh_host_ed25519_key", mode: "u=rw,go=" }
-    - { host_file: yes, path: "etc/ssh/ssh_host_ed25519_key.pub", mode: "u=rw,go=r" }
+    - { host_file: true, path: "etc/ssh/ssh_host_ed25519_key", mode: "u=rw,go=" }
+    - { host_file: true, path: "etc/ssh/ssh_host_ed25519_key.pub", mode: "u=rw,go=r" }
   ansible.builtin.copy:
     src: "{{ item.host_file | default(False) | ternary(host_files, '') }}{{ item.path }}"
     dest: "/{{ item.path }}"

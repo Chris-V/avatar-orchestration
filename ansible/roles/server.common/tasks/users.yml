@@ -67,7 +67,7 @@
 - name: "Create and configure `{{ users.homeassistant.username }}`"
   block:
     - name: "Create user"
-      tags: [ "always" ]
+      tags: ["always"]
       register: "home_assistant_user"
       ansible.builtin.user:
         name: "{{ users.homeassistant.username }}"
@@ -90,7 +90,8 @@
       ansible.posix.authorized_key:
         exclusive: true
         key: "{{ users.homeassistant.pub_key }}"
-        key_options: 'restrict,from="{{ network.servers.automate.ip }}"'
+        key_options: >
+          restrict,from="{{ network.servers.automate.ip }}"
         user: "{{ home_assistant_user.name }}"
         state: "present"
 

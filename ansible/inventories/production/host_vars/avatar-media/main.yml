@@ -8,7 +8,7 @@ ssh_port: "{{ network.servers.media.ports.ssh }}"
 internal_ip: "{{ network.servers.media.ip }}"
 internal_hostname: "{{ network.servers.media.host }}"
 
-tcp_ports: [ 80 ]
+tcp_ports: [80]
 
 # Directories and mount points
 data_mount: "/data"

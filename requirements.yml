@@ -1,9 +1,9 @@
 collections:
-  - name: ansible.posix
-  - name: community.crypto
-  - name: community.docker
-  - name: community.general
+  - name: "ansible.posix"
+  - name: "community.crypto"
+  - name: "community.docker"
+  - name: "community.general"
 
 roles:
-  - name: kewlfft.aur
-    version: v0.42
+  - name: "kewlfft.aur"
+    version: "v0.42"

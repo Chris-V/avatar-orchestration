@@ -1,21 +1,21 @@
-- name: Install bluetooth packages
+- name: "Install bluetooth packages"
   community.general.pacman:
     name:
-      - bluez
-      - bluez-utils
+      - "bluez"
+      - "bluez-utils"
     state: "present"
 
 # https://aur.archlinux.org/packages/pi-bluetooth/#comment-765002
-- name: Configure Raspberry Pi's boot options to support bluetooth
+- name: "Configure Raspberry Pi's boot options to support bluetooth"
   block:
-    - name: Configure UART
+    - name: "Configure UART"
       ansible.builtin.lineinfile:
         path: "/boot/config.txt"
         regexp: "^enable_uart="
         insertafter: "EOF"
         line: "enable_uart=0"
         state: "present"
-    - name: Configure device tree param
+    - name: "Configure device tree param"
       ansible.builtin.lineinfile:
         path: "/boot/config.txt"
         regexp: "^dtparam="
@@ -23,25 +23,25 @@
         line: "dtparam=krnbt=on"
         state: "present"
 
-- name: Enable bluetooth on boot
+- name: "Enable bluetooth on boot"
   register: "bluetooth_autoenable"
   ansible.builtin.lineinfile:
     path: "/etc/bluetooth/main.conf"
     regexp: "^AutoEnable="
-    insertafter: '^#AutoEnable='
+    insertafter: "^#AutoEnable="
     line: "AutoEnable=true"
     state: "present"
 
-- name: Enable bluetoothd experimental flag
+- name: "Enable bluetoothd experimental flag"
   block:
-    - name: Create systemd bluetooth config directory
+    - name: "Create systemd bluetooth config directory"
       ansible.builtin.file:
         state: "directory"
         path: "/etc/systemd/system/bluetooth.service.d"
         owner: "root"
         group: "root"
         mode: 0755
-    - name: Copy bluetooth service unit overrides
+    - name: "Copy bluetooth service unit overrides"
       register: "bluetooth_service_override"
       ansible.builtin.copy:
         src: "etc/systemd/system/bluetooth.service.d/override.conf"
@@ -50,16 +50,16 @@
         group: "root"
         mode: "0644"
 
-- name: Enable bluetooth
+- name: "Enable bluetooth"
   register: "bluetooth_service"
   ansible.builtin.systemd:
     name: "bluetooth.service"
-    daemon_reload: yes
+    daemon_reload: true
     state: "started"
-    enabled: yes
-- name: Restart bluetooth
+    enabled: true
+- name: "Restart bluetooth"
   when: "(bluetooth_autoenable.changed or bluetooth_service_override.changed) and not bluetooth_service.changed"
   ansible.builtin.systemd:
     name: "bluetooth.service"
-    daemon_reload: yes
+    daemon_reload: true
     state: "restarted"

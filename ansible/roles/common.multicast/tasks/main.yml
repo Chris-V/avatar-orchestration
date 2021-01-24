@@ -12,7 +12,7 @@
   ansible.builtin.lineinfile:
     path: "/etc/systemd/resolved.conf"
     regexp: "^MulticastDNS="
-    insertafter: '^#MulticastDNS='
+    insertafter: "^#MulticastDNS="
     line: "MulticastDNS=no"
     state: "present"
 
@@ -33,14 +33,14 @@
   ansible.builtin.lineinfile:
     path: "/etc/avahi/avahi-daemon.conf"
     regexp: "^allow-interfaces="
-    insertafter: '^#allow-interfaces=eth0'
-    line: "allow-interfaces={{ (reflector_interfaces + [ wan_interface ]) | join(',') }}"
+    insertafter: "^#allow-interfaces=eth0"
+    line: "allow-interfaces={{ (reflector_interfaces + [wan_interface]) | join(',') }}"
     state: "present"
 - name: "Disable IPv6"
   register: "avahi_config_2"
   ansible.builtin.lineinfile:
     path: "/etc/avahi/avahi-daemon.conf"
-    insertafter: '^\[server\]$'
+    insertafter: "^\\[server\\]$"
     regexp: "^use-ipv6="
     line: "use-ipv6=no"
     state: "present"
@@ -49,7 +49,7 @@
   ansible.builtin.lineinfile:
     path: "/etc/avahi/avahi-daemon.conf"
     regexp: "^enable-reflector="
-    insertafter: '^#enable-reflector='
+    insertafter: "^#enable-reflector="
     line: "enable-reflector=yes"
     state: "present"
 

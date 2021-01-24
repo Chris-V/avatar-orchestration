@@ -1,14 +1,14 @@
 - import_tasks: "rpi-clock.yml"
-  tags: [ "system" ]
+  tags: ["system"]
 - import_tasks: "bluetooth.yml"
-  tags: [ "system" ]
+  tags: ["system"]
 - import_tasks: "network.yml"
-  tags: [ "system", "network" ]
+  tags: ["system", "network"]
 
 - import_tasks: "plant-gateway.yml"
-  tags: [ "docker", "dockerapps" ]
+  tags: ["docker", "dockerapps"]
 
 - name: "Public"
-  tags: [ "docker", "public" ]
+  tags: ["docker", "public"]
   import_role:
     name: "app.public"
