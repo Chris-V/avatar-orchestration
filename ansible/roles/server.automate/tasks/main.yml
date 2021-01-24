@@ -1,5 +1,3 @@
-- import_tasks: "users.yml"
-  tags: [ "system" ]
 - import_tasks: "devices.yml"
   tags: [ "system" ]
 
@@ -15,17 +13,8 @@
 
 - name: "Cleanup old files"
   loop:
-    - { path: "/srv/docker-apps/monitoring" }
-    - { path: "/srv/docker-apps/appdata/elasticsearch" }
-    - { path: "/srv/docker-apps/appdata/filebeat" }
-    - { path: "/srv/docker-apps/appdata/journalbeat" }
-    - { path: "/srv/docker-apps/appdata/kibana" }
-    - { path: "/srv/docker-apps/appdata/metricbeat" }
+    - { path: "/srv/docker-apps" }
     - { path: "/srv/www" }
-    - { path: "/srv/docker-apps/appdata/home-assistant/openzwave" }
-    - { path: "/srv/docker-apps/appdata/home-assistant/s6/setup-and-run" }
-    - { path: "/srv/docker-apps/appdata/home-assistant/s6" }
-    - { path: "/srv/docker-apps/appdata/traefik" }
   ansible.builtin.file:
     state: "absent"
     path: "{{ item.path }}"

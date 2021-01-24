@@ -1,5 +1,6 @@
+home_assistant_config_owner: ""
+home_assistant_config_repo: ""
 homeassistant_recreate_config_key: false
-homeassistant_hacs_repo: "git@github.com:hacs/integration.git"
 
 openzwave_mqtt_server: ""
 openzwave_mqtt_port: ""
@@ -9,5 +10,3 @@ openzwave_mqtt_password: ""
 openzwave_usb_path: ""
 openzwave_auth_key: ""
 openzwave_network_key: ""
-
-router_ssh_user: "user"

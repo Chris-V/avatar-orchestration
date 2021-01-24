@@ -1,15 +1,9 @@
-system_appdata_uid: 875
-system_appdata_gid: 875
-
 # Automate
 automate_apps_dir: "/opt/automate"
 automate_appdata_dir: "{{ automate_apps_dir }}/appdata"
 automate_fragments_dir: "{{ automate_apps_dir }}/fragments"
 
 docker_net_automate: "172.30.174.0/24"
-
-homeassistant_config_key_path: "/home/homeassistant/.ssh/github_rsa"
-homeassistant_container_config_path: "/config"
 
 openzwave_mqtt_server: "mqtt.{{ domain_name }}"
 openzwave_mqtt_port: 8883

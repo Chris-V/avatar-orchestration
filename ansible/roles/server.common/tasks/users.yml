@@ -16,6 +16,7 @@
 - name: "Create and configure `{{ users.ansible.username }}`"
   block:
     - name: "Create user"
+      register: "ansible_user"
       ansible.builtin.user:
         name: "{{ users.ansible.username }}"
         groups:
@@ -26,15 +27,16 @@
 
     - name: "Create .ssh/ directory"
       ansible.builtin.file:
-        path: "/home/{{ users.ansible.username }}/.ssh"
+        path: "{{ ansible_user.home }}/.ssh"
         state: "directory"
-        owner: "{{ users.ansible.username }}"
-        group: "{{ users.ansible.username }}"
+        owner: "{{ ansible_user.name }}"
+        group: "{{ ansible_user.name }}"
         mode: 0740
 
 - name: "Create and configure `{{ users.avatar.username }}`"
   block:
     - name: "Create user"
+      register: "avatar_user"
       ansible.builtin.user:
         name: "{{ users.avatar.username }}"
         groups:
@@ -49,22 +51,24 @@
 
     - name: "Create .ssh/ directory"
       ansible.builtin.file:
-        path: "/home/{{ users.avatar.username }}/.ssh"
+        path: "{{ avatar_user.home }}/.ssh"
         state: "directory"
-        owner: "{{ users.avatar.username }}"
-        group: "{{ users.avatar.username }}"
+        owner: "{{ avatar_user.name }}"
+        group: "{{ avatar_user.name }}"
         mode: 0740
 
     - name: "Add authorized keys"
       ansible.posix.authorized_key:
         exclusive: true
         key: "{{ users.avatar.pub_key }}"
-        user: "{{ users.avatar.username }}"
+        user: "{{ avatar_user.name }}"
         state: "present"
 
 - name: "Create and configure `{{ users.homeassistant.username }}`"
   block:
     - name: "Create user"
+      tags: [ "always" ]
+      register: "home_assistant_user"
       ansible.builtin.user:
         name: "{{ users.homeassistant.username }}"
         groups:
@@ -76,10 +80,10 @@
 
     - name: "Create .ssh/ directory"
       ansible.builtin.file:
-        path: "/home/{{ users.homeassistant.username }}/.ssh"
+        path: "{{ home_assistant_user.home }}/.ssh"
         state: "directory"
-        owner: "{{ users.homeassistant.username }}"
-        group: "{{ users.homeassistant.username }}"
+        owner: "{{ home_assistant_user.name }}"
+        group: "{{ home_assistant_user.name }}"
         mode: 0740
 
     - name: "Add authorized keys"
@@ -87,29 +91,13 @@
         exclusive: true
         key: "{{ users.homeassistant.pub_key }}"
         key_options: 'restrict,from="{{ network.servers.automate.ip }}"'
-        user: "{{ users.homeassistant.username }}"
+        user: "{{ home_assistant_user.name }}"
         state: "present"
-
-    - name: "Gather user facts"
-      tags: [ "always" ]
-      block:
-        - name: "Find home-assistant uid"
-          register: "homeassistant_uid_result"
-          command: "id -u {{ users.homeassistant.username }}"
-          changed_when: false
-        - name: "Find home-assistant gid"
-          register: "homeassistant_gid_result"
-          command: "id -g {{ users.homeassistant.username }}"
-          changed_when: false
-        - name: "Register home-assistant user facts"
-          ansible.builtin.set_fact:
-            homeassistant_uid: "{{ homeassistant_uid_result.stdout }}"
-            homeassistant_gid: "{{ homeassistant_gid_result.stdout }}"
 
 - name: "Create sudoer rules"
   loop:
     - path: "/etc/sudoers.d/10-ansible"
-      line: "ansible ALL=(ALL) NOPASSWD: ALL"
+      line: "{{ ansible_user.name }} ALL=(ALL) NOPASSWD: ALL"
     - path: "/etc/sudoers.d/20-wheel"
       line: "%wheel ALL=(ALL) ALL"
     - path: "/etc/sudoers.d/30-poweroff"
