@@ -92,17 +92,32 @@
           ports:
             - "127.0.0.1:1883:1883"
 
-- name: Configure OpenZWave
-  block:
-    - name: Create OpenZWave directories
-      loop:
-        - { path: "", mode: "u=rwx,g=rx,o=" }
-      ansible.builtin.file:
-        path: "{{ automate_appdata_dir }}/openzwave/{{ item.path }}"
-        state: "directory"
-        owner: "root"
-        group: "docker"
-        mode: "{{ item.mode }}"
+- name: "Open Z-Wave"
+  include_role:
+    name: "container.openzwave"
+  vars:
+    dest: "{{ automate_fragments_dir }}/openzwave.service.yml"
+    openzwave:
+      config_dir: "{{ automate_appdata_dir }}/openzwave"
+      admin_password: "{{ openzwave_auth_key }}"
+      mqtt:
+        host: "{{ openzwave_mqtt_server }}"
+        port: "{{ openzwave_mqtt_port }}"
+        tls: "{{ openzwave_mqtt_tls }}"
+        username: "{{ openzwave_mqtt_username }}"
+        password: "{{ openzwave_mqtt_password }}"
+      network_key: "{{ openzwave_network_key }}"
+      usb_path: "{{ openzwave_usb_path }}"
+      fragment:
+        definition:
+          labels:
+            avatar.subdomain: "openzwave"
+            traefik.docker.network: "automate"
+            traefik.http.routers.openzwave.entryPoints: "https"
+          networks:
+            automate: {}
+          ports:
+            - "127.0.0.1:1983:1983"
 
 - import_tasks: "homeassistant.yml"
 
