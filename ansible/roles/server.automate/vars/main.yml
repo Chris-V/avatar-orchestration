@@ -8,7 +8,6 @@ docker_net_automate: "172.30.174.0/24"
 openzwave_mqtt_server: "mqtt.{{ domain_name }}"
 openzwave_mqtt_port: 8883
 openzwave_mqtt_tls: "true"
-openzwave_usb_path: "/dev/zwave"
 
 # Public
 public_apps_dir: "/opt/public"

@@ -19,7 +19,7 @@
         image: "openzwave/ozwdaemon:allinone-build-182"
         restart: "unless-stopped"
         devices:
-          - "{{ openzwave.usb_path }}:{{ openzwave.usb_path }}"
+          - "{{ openzwave.usb_path }}:/dev/zwave"
         environment:
           TZ: "{{ timezone }}"
           MQTT_SERVER: "{{ openzwave.mqtt.host }}"
@@ -27,7 +27,7 @@
           MQTT_TLS: "{{ openzwave.mqtt.tls }}"
           MQTT_USERNAME: "{{ openzwave.mqtt.username }}"
           MQTT_PASSWORD: "{{ openzwave.mqtt.password }}"
-          USB_PATH: "{{ openzwave.usb_path }}"
+          USB_PATH: "/dev/zwave"
           OZW_AUTH_KEY: "{{ openzwave.admin_password }}"
           OZW_NETWORK_KEY: "{{ openzwave.network_key }}"
           QT_LOGGING_RULES: "*.debug=false"

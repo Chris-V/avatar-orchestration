@@ -1,3 +1,7 @@
+ups_dev_path: "/dev/ups"
+zigbee_dev_path: "/dev/zigbee"
+zwave_dev_path: "/dev/zwave"
+
 home_assistant_config_owner: ""
 home_assistant_config_repo: ""
 homeassistant_recreate_config_key: false
@@ -7,6 +11,5 @@ openzwave_mqtt_port: ""
 openzwave_mqtt_tls: ""
 openzwave_mqtt_username: ""
 openzwave_mqtt_password: ""
-openzwave_usb_path: ""
 openzwave_auth_key: ""
 openzwave_network_key: ""

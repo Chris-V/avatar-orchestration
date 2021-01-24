@@ -30,7 +30,7 @@
     dest: "{{ automate_fragments_dir }}/apcupsd.service.yml"
     apcupsd:
       config_dir: "{{ automate_appdata_dir }}/apcupsd"
-      ups_path: "/dev/ups"
+      ups_path: "{{ ups_dev_path }}"
       fragment:
         definition:
           networks:
@@ -112,7 +112,7 @@
         username: "{{ openzwave_mqtt_username }}"
         password: "{{ openzwave_mqtt_password }}"
       network_key: "{{ openzwave_network_key }}"
-      usb_path: "{{ openzwave_usb_path }}"
+      usb_path: "{{ zwave_dev_path }}"
       fragment:
         definition:
           labels:
@@ -144,6 +144,7 @@
         name: "{{ home_assistant_config_repo }}"
         organisation: "{{ home_assistant_config_owner }}"
         personal_access_token: "{{ github_token }}"
+      zigbee_path: "{{ zigbee_dev_path }}"
       fragment:
         definition:
           labels:

@@ -137,7 +137,7 @@
         image: "homeassistant/home-assistant:2021.1.5"
         restart: "unless-stopped"
         devices:
-          - "/dev/zigbee:/dev/zigbee"
+          - "{{ home_assistant.zigbee_path }}:/dev/zigbee"
         environment:
           TZ: "{{ timezone }}"
           PUID: "{{ home_assistant_user.uid }}"

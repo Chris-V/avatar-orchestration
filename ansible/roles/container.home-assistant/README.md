@@ -15,6 +15,7 @@ home_assistant:
     name: <string>
     organisation: <string>
     personal_access_token: <string>
+  zigbee_path: <string>
   fragment: <optional; object>
     name: <string>
     definition: <object>
