@@ -3,17 +3,17 @@ avatar:
 
     automate:
       hosts:
-        avatar-automate:
+        avatar-automate: {}
 
     media:
       hosts:
-        avatar-media:
+        avatar-media: {}
 
     relays:
       children:
         relay-north:
           hosts:
-            avatar-relay-north:
+            avatar-relay-north: {}
         relay-south:
           hosts:
-            avatar-relay-south:
+            avatar-relay-south: {}

@@ -2,7 +2,7 @@
   become: true
   become_user: "root"
   tasks:
-    - tags: [ "common" ]
+    - tags: ["common"]
       import_role:
         name: "server.common"
 

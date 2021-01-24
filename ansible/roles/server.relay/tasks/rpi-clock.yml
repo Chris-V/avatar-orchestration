@@ -1,15 +1,15 @@
-- name: Install system libraries
+- name: "Install system libraries"
   community.general.pacman:
     name:
-      - fake-hwclock
-    state: present
+      - "fake-hwclock"
+    state: "present"
 
-- name: Enable fake HW clock
+- name: "Enable fake HW clock"
   ansible.builtin.systemd:
     name: "fake-hwclock.service"
     state: "started"
-    enabled: yes
-- name: Enable fake HW clock
+    enabled: true
+- name: "Enable fake HW clock"
   ansible.builtin.systemd:
     name: "fake-hwclock-save.timer"
-    enabled: yes
+    enabled: true

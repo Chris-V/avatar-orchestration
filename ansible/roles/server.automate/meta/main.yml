@@ -7,4 +7,4 @@ galaxy_info:
     - name: "Arch Linux"
       versions: ["all"]
 dependencies:
-  - role: kewlfft.aur
+  - role: "kewlfft.aur"

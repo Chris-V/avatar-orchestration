@@ -125,11 +125,11 @@
             - "127.0.0.1:1983:1983"
 
 - name: "Home-Assistant"
-  tags: [ "home-assistant" ]
+  tags: ["home-assistant"]
   include_role:
     name: "container.home-assistant"
     apply:
-      tags: [ "home-assistant" ]
+      tags: ["home-assistant"]
   vars:
     dest: "{{ automate_fragments_dir }}/home-assistant.service.yml"
     home_assistant:

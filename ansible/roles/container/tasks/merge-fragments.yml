@@ -1,7 +1,7 @@
 - name: "List container fragments"
   register: "fragment_paths"
   ansible.builtin.find:
-    paths: "{{ [ src ] | flatten }}"
+    paths: "{{ [src] | flatten }}"
 
 - name: "Slurp container fragments"
   register: "fragment_files"

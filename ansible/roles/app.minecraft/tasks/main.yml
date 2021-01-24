@@ -165,10 +165,10 @@
         restart: "always"
         network_mode: "service:minecraft"
         environment:
-          BACKUP_INTERVAL: 1d
+          BACKUP_INTERVAL: "1d"
           BACKUP_NAME: "Ultimate"
           GID: "{{ minecraft_user.group }}"
-          INITIAL_DELAY: 12h
+          INITIAL_DELAY: "12h"
           LEVEL: "Ultimate"
           PRUNE_BACKUPS_DAYS: 21
           RCON_PASSWORD: "{{ minecraft_rcon_password }}"

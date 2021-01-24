@@ -7,14 +7,14 @@
 - name: "Setup multicast"
   import_role:
     name: "common.multicast"
-  tags: [ "network", "system" ]
+  tags: ["network", "system"]
 
 - name: "Setup NFTables"
   import_role:
     name: "common.nftables"
-  tags: [ "security", "system" ]
+  tags: ["security", "system"]
 
 - name: "Setup Docker"
   import_role:
     name: "common.docker"
-  tags: [ "docker", "system" ]
+  tags: ["docker", "system"]
