@@ -11,7 +11,7 @@
 - name: "Copy www files"
   ansible.builtin.copy:
     src: "public/error-pages/www"
-    dest: "{{ error_pages.config_dir }}/www"
+    dest: "{{ error_pages.config_dir }}"
     owner: "root"
     group: "root"
     directory_mode: 0755
@@ -32,7 +32,7 @@
         labels:
           traefik.http.services.error-pages.loadbalancer.server.port: 8080
         volumes:
-          - "{{ error_pages.config_dir }}/www/error_pages:/usr/share/nginx/html:ro"
+          - "{{ error_pages.config_dir }}/www:/usr/share/nginx/html:ro"
     fragment: |
       {{
         default_fragment

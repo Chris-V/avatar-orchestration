@@ -14,6 +14,7 @@
 [Providers]
   [Providers.File]
     Directory = "/traefik.d"
+    Watch = true
   [Providers.Docker]
     Constraints = "LabelRegex(`avatar.subdomain`, `[a-z0-9_-]+`)"
     DefaultRule = "Host(`{{ index .Labels \"avatar.subdomain\"}}.<< traefik.domain >>`)"
