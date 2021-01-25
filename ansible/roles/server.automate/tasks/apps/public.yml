@@ -41,6 +41,7 @@
       fragment:
         definition:
           labels:
+            avatar.subdomain: "error"
             traefik.http.routers.error-pages.entryPoints: "https"
             traefik.http.routers.error-pages.rule: "HostRegexp(`{catchall:.+}`)"
             traefik.http.routers.error-pages.priority: 1
