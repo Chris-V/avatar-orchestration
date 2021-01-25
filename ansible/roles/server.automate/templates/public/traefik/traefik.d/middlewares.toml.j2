@@ -6,12 +6,9 @@
   [http.middlewares.whitelist-home.IPWhitelist]
     sourceRange = ["127.0.0.1/32", "{{ network.definition.cidr }}"]
 
-  [http.middlewares.common.Chain]
-    middlewares = ["compress", "harden-headers", "harden-headers-custom"]
-
   [http.middlewares.compress.Compress]
 
-  [http.middlewares.harden-headers.Headers]
+  [http.middlewares.secure-headers.Headers]
     SSLRedirect = true
     STSSeconds = 63072000
     STSIncludeSubdomains = true
@@ -20,9 +17,13 @@
     BrowserXssFilter = true
     ContentSecurityPolicy = "frame-ancestors https://*.{{ domain_name }}"
     ReferrerPolicy = "no-referrer"
-
-  [http.middlewares.harden-headers-custom.Headers.CustomResponseHeaders]
+  [http.middlewares.secure-headers.Headers.CustomResponseHeaders]
     Cache-Control = "private"
+    server = ""
+    X-Robots-Tag = "noindex, nofollow"
+
+  [http.middlewares.common.Chain]
+    middlewares = ["compress", "secure-headers"]
 
   [http.middlewares.error-pages.errors]
     status = ["502-504"]
