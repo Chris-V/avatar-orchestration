@@ -1,2 +1,2 @@
-  SUBSYSTEM=="tty", ATTRS{interface}=="HubZ Z-Wave Com Port", SYMLINK+="{{ zwave_dev_path | basename }}", GROUP="{{ home_assistant_user.name }}", MODE="0660"
-  SUBSYSTEM=="tty", ATTRS{interface}=="HubZ ZigBee Com Port", SYMLINK+="{{ zigbee_dev_path | basename }}", GROUP="{{ home_assistant_user.name }}", MODE="0660"
+SUBSYSTEM=="tty", ATTRS{interface}=="HubZ Z-Wave Com Port", SYMLINK+="{{ zwave_dev_path | basename }}", GROUP="{{ home_assistant_user.name }}", MODE="0660"
+SUBSYSTEM=="tty", ATTRS{interface}=="HubZ ZigBee Com Port", SYMLINK+="{{ zigbee_dev_path | basename }}", GROUP="{{ home_assistant_user.name }}", MODE="0660"
