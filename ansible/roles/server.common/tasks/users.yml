@@ -13,26 +13,6 @@
     name: "{{ item }}"
     state: "present"
 
-- name: "Create and configure `{{ users.ansible.username }}`"
-  block:
-    - name: "Create user"
-      register: "ansible_user"
-      ansible.builtin.user:
-        name: "{{ users.ansible.username }}"
-        groups:
-          - "ssh"
-        append: false
-        shell: "/usr/bin/bash"
-        state: "present"
-
-    - name: "Create .ssh/ directory"
-      ansible.builtin.file:
-        path: "{{ ansible_user.home }}/.ssh"
-        state: "directory"
-        owner: "{{ ansible_user.name }}"
-        group: "{{ ansible_user.name }}"
-        mode: 0740
-
 - name: "Create and configure `{{ users.avatar.username }}`"
   block:
     - name: "Create user"
@@ -55,7 +35,7 @@
         state: "directory"
         owner: "{{ avatar_user.name }}"
         group: "{{ avatar_user.name }}"
-        mode: 0740
+        mode: 0750
 
     - name: "Add authorized keys"
       ansible.posix.authorized_key:
@@ -84,7 +64,7 @@
         state: "directory"
         owner: "{{ home_assistant_user.name }}"
         group: "{{ home_assistant_user.name }}"
-        mode: 0740
+        mode: 0750
 
     - name: "Add authorized keys"
       ansible.posix.authorized_key:
@@ -98,7 +78,7 @@
 - name: "Create sudoer rules"
   loop:
     - path: "/etc/sudoers.d/10-ansible"
-      line: "{{ ansible_user.name }} ALL=(ALL) NOPASSWD: ALL"
+      line: "{{ users.ansible.username }} ALL=(ALL) NOPASSWD: ALL"
     - path: "/etc/sudoers.d/20-wheel"
       line: "%wheel ALL=(ALL) ALL"
     - path: "/etc/sudoers.d/30-poweroff"
