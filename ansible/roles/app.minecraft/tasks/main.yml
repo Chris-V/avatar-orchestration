@@ -53,7 +53,7 @@
 - name: "Create networks"
   loop:
     - { name: "minecraft", subnet: "{{ docker_net_minecraft }}" }
-    - { name: "minecraft-public" }
+    - { name: "mc-public" }
   include_role:
     name: "container"
     tasks_from: "network-fragment"
@@ -120,10 +120,10 @@
           TZ: "{{ timezone }}"
         labels:
           avatar.subdomain: "minecraft-map"
-          traefik.docker.network: "minecraft-public"
+          traefik.docker.network: "mc-public"
           traefik.http.services.minecraft-map.loadbalancer.server.port: 8080
         networks:
-          minecraft-public: {}
+          mc-public: {}
         volumes:
           - "{{ minecraft_appdata_dir }}/map:/usr/share/nginx/html:ro"
 

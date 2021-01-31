@@ -14,5 +14,8 @@ tcp_ports:
   - 1443  # sonos ssl
   - 8333  # mqtts
 
+reflector_interfaces:
+  - "br-automate"
+
 home_assistant_config_owner: "Chris-V"
 home_assistant_config_repo: "homeassistant-config"
