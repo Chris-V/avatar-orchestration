@@ -45,7 +45,7 @@
     default_fragment:
       name: "sonarr"
       definition:
-        image: "ghcr.io/linuxserver/sonarr:preview"
+        image: "ghcr.io/linuxserver/sonarr:latest"
         environment:
           TZ: "{{ timezone }}"
           PUID: "{{ sonarr_user.uid }}"
