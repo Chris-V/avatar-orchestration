@@ -17,7 +17,7 @@
     Watch = true
   [Providers.Docker]
     Constraints = "LabelRegex(`avatar.subdomain`, `[a-z0-9_-]+`)"
-    DefaultRule = "Host(`{{ index .Labels \"avatar.subdomain\"}}.<< traefik.domain >>`)"
+    DefaultRule = "Host(`{{ index .Labels \"avatar.subdomain\" }}.<< traefik.domain >>`)"
     ExposedByDefault = true
     Network = "public"
     Watch = true

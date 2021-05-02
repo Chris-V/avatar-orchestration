@@ -64,9 +64,7 @@
             - "/home-assistant/config/known_devices.yaml"
             - "/home-assistant/config/zigbee.db"
             - "/mosquitto/data/**"
-            - "/openzwave/options.xml"
-            - "/openzwave/ozwcache_*.xml"
-            - "/openzwave/zwscene.xml"
+            - "/zwavejs2mqtt/**"
           fragment:
             name: "automate-appdata-backup"
             definition:
@@ -97,32 +95,24 @@
           ports:
             - "127.0.0.1:1883:1883"
 
-- name: "Open Z-Wave"
+- name: "ZWaveJS2MQTT"
   include_role:
-    name: "container.openzwave"
+    name: "container.zwavejs2mqtt"
   vars:
-    dest: "{{ automate_fragments_dir }}/openzwave.service.yml"
-    openzwave:
-      config_dir: "{{ automate_appdata_dir }}/openzwave"
-      admin_password: "{{ openzwave_auth_key }}"
-      mqtt:
-        host: "{{ openzwave_mqtt_server }}"
-        port: "{{ openzwave_mqtt_port }}"
-        tls: "{{ openzwave_mqtt_tls }}"
-        username: "{{ openzwave_mqtt_username }}"
-        password: "{{ openzwave_mqtt_password }}"
-      network_key: "{{ openzwave_network_key }}"
+    dest: "{{ automate_fragments_dir }}/zwavejs2mqtt.service.yml"
+    zwavejs2mqtt:
+      config_dir: "{{ automate_appdata_dir }}/zwavejs2mqtt"
+      network_key: "{{ zwavejs2mqtt_network_key }}"
+      session_secret_salt: "{{ zwavejs2mqtt_session_secret }}"
       usb_path: "{{ zwave_dev_path }}"
+      proxy:
+        subdomain: "zwave"
+        network: "automate"
+        entrypoint: "https"
       fragment:
         definition:
-          labels:
-            avatar.subdomain: "openzwave"
-            traefik.docker.network: "automate"
-            traefik.http.routers.openzwave.entryPoints: "https"
           networks:
             automate: {}
-          ports:
-            - "127.0.0.1:1983:1983"
 
 - name: "Home-Assistant"
   tags: ["home-assistant"]
@@ -156,6 +146,14 @@
           networks:
             automate: {}
             ups: {}
+
+- name: "Cleanup old configs"
+  loop:
+    - { path: "{{ automate_appdata_dir }}/openzwave" }
+    - { path: "{{ automate_fragments_dir }}/openzwave.service.yml" }
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: "absent"
 
 - name: "Create docker-compose.yml"
   include_role:
