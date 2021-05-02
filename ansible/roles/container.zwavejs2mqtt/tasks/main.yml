@@ -1,0 +1,56 @@
+- name: "Create config directories"
+  loop:
+    - { path: "" }
+  ansible.builtin.file:
+    owner: "root"
+    group: "root"
+    path: "{{ zwavejs2mqtt.config_dir }}/{{ item.path }}"
+    state: "directory"
+    mode: 0750
+
+- name: "Create service fragment"
+  include_role:
+    name: "container"
+    tasks_from: "service-fragment"
+  vars:
+    default_fragment:
+      name: "zwavejs2mqtt"
+      definition:
+        image: "zwavejs/zwavejs2mqtt:4.0.0"
+        restart: "unless-stopped"
+        devices:
+          - "{{ zwavejs2mqtt.usb_path }}:/dev/zwave"
+        environment:
+          TZ: "{{ timezone }}"
+          NETWORK_KEY: "{{ zwavejs2mqtt.network_key }}"
+          SESSION_SECRET: "{{ zwavejs2mqtt.session_secret_salt }}"
+        volumes:
+          - "{{ zwavejs2mqtt.config_dir }}:/usr/src/app/store"
+    fragment: |
+      {% set name = zwavejs2mqtt.fragment.name | default(default_fragment.name, True) -%}
+
+      {% if zwavejs2mqtt.proxy is mapping -%}
+      {%
+        set proxy_labels = {
+          "avatar.subdomain": zwavejs2mqtt.proxy.subdomain,
+          "traefik.docker.network": zwavejs2mqtt.proxy.network,
+
+          "traefik.http.routers." ~ name ~ ".entryPoints": zwavejs2mqtt.proxy.entrypoint,
+          "traefik.http.routers." ~ name ~ ".rule": "Host(`" ~ zwavejs2mqtt.proxy.subdomain ~ "." ~ domain_name ~ "`)",
+          "traefik.http.routers." ~ name ~ ".service": name,
+          "traefik.http.services." ~ name ~ ".loadbalancer.server.port": 8091,
+
+          "traefik.http.routers." ~ name ~ "_ws.entryPoints": zwavejs2mqtt.proxy.entrypoint,
+          "traefik.http.routers." ~ name ~ "_ws.rule": "Host(`" ~ zwavejs2mqtt.proxy.subdomain ~ "." ~ domain_name ~ "`) && Header(`Upgrade`, `websocket`)",
+          "traefik.http.routers." ~ name ~ "_ws.service": name ~ "_ws",
+          "traefik.http.services." ~ name ~ "_ws.loadbalancer.server.port": 3000,
+        }
+      %}
+      {%- endif -%}
+
+      {{
+        default_fragment
+          | combine({"definition": {"labels": proxy_labels | default({})}}, recursive=True, list_merge='append_rp')
+          | combine(zwavejs2mqtt.fragment | default({}), recursive=True, list_merge='append_rp')
+          | to_json
+      }}
