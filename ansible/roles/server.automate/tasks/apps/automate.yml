@@ -105,11 +105,11 @@
       network_key: "{{ zwavejs2mqtt_network_key }}"
       session_secret_salt: "{{ zwavejs2mqtt_session_secret }}"
       usb_path: "{{ zwave_dev_path }}"
-      proxy:
-        subdomain: "zwave"
-        network: "automate"
-        entrypoint: "https"
       fragment:
+        proxy:
+          subdomain: "zwave"
+          network: "automate"
+          entrypoint: "https"
         definition:
           networks:
             automate: {}
@@ -138,11 +138,11 @@
         personal_access_token: "{{ github_token }}"
       zigbee_path: "{{ zigbee_dev_path }}"
       fragment:
+        proxy:
+          subdomain: "home-assistant"
+          network: "automate"
+          entrypoint: "https"
         definition:
-          labels:
-            avatar.subdomain: "home-assistant"
-            traefik.docker.network: "automate"
-            traefik.http.routers.home-assistant.entryPoints: "https"
           networks:
             automate: {}
             ups: {}

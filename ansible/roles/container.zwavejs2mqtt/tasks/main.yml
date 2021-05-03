@@ -27,30 +27,28 @@
         volumes:
           - "{{ zwavejs2mqtt.config_dir }}:/usr/src/app/store"
     fragment: |
-      {% set name = zwavejs2mqtt.fragment.name | default(default_fragment.name, True) -%}
-
-      {% if zwavejs2mqtt.proxy is mapping -%}
-      {%
-        set proxy_labels = {
-          "avatar.subdomain": zwavejs2mqtt.proxy.subdomain,
-          "traefik.docker.network": zwavejs2mqtt.proxy.network,
-
-          "traefik.http.routers." ~ name ~ ".entryPoints": zwavejs2mqtt.proxy.entrypoint,
-          "traefik.http.routers." ~ name ~ ".rule": "Host(`" ~ zwavejs2mqtt.proxy.subdomain ~ "." ~ domain_name ~ "`)",
-          "traefik.http.routers." ~ name ~ ".service": name,
-          "traefik.http.services." ~ name ~ ".loadbalancer.server.port": 8091,
-
-          "traefik.http.routers." ~ name ~ "_ws.entryPoints": zwavejs2mqtt.proxy.entrypoint,
-          "traefik.http.routers." ~ name ~ "_ws.rule": "Host(`" ~ zwavejs2mqtt.proxy.subdomain ~ "." ~ domain_name ~ "`) && Header(`Upgrade`, `websocket`)",
-          "traefik.http.routers." ~ name ~ "_ws.service": name ~ "_ws",
-          "traefik.http.services." ~ name ~ "_ws.loadbalancer.server.port": 3000,
-        }
-      %}
-      {%- endif -%}
+      {% if zwavejs2mqtt.fragment.proxy is mapping -%}
+        {% set name = zwavejs2mqtt.fragment.name | default(default_fragment.name, True) -%}
+        {%
+          set default_proxy = {
+            "proxy": {
+              "port": 8091,
+            },
+            "definition": {
+              "labels": {
+                "traefik.http.routers." ~ name ~ "_ws.entryPoints": zwavejs2mqtt.fragment.proxy.entrypoint,
+                "traefik.http.routers." ~ name ~ "_ws.rule": "Host(`" ~ zwavejs2mqtt.fragment.proxy.subdomain ~ "." ~ domain_name ~ "`) && Header(`Upgrade`, `websocket`)",
+                "traefik.http.routers." ~ name ~ "_ws.service": name ~ "_ws",
+                "traefik.http.services." ~ name ~ "_ws.loadbalancer.server.port": 3000,
+              },
+            },
+          }
+        -%}
+      {% endif -%}
 
       {{
         default_fragment
-          | combine({"definition": {"labels": proxy_labels | default({})}}, recursive=True, list_merge='append_rp')
+          | combine(default_proxy | default({}), recursive=True, list_merge='append_rp')
           | combine(zwavejs2mqtt.fragment | default({}), recursive=True, list_merge='append_rp')
           | to_json
       }}

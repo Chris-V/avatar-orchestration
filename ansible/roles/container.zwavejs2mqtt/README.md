@@ -11,11 +11,11 @@ zwavejs2mqtt:
   network_key: <string>
   session_secret_salt: <string>
   usb_path: <string>
-  proxy: <optional; object>
-    entrypoint: <string>
-    network: <string>
-    subdomain: <string>
   fragment: <optional; object>
     name: <string>
     definition: <object>
+    proxy: <optional; object>
+      entrypoint: <string>
+      network: <string>
+      subdomain: <string>
 ```

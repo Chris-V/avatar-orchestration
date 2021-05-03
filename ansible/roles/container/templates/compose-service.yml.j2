@@ -1,8 +1,21 @@
+{% if fragment.proxy is mapping -%}
+  {%
+    set proxy_labels = {
+      "avatar.subdomain": fragment.proxy.subdomain,
+      "traefik.docker.network": fragment.proxy.network,
+      "traefik.http.routers." ~ fragment.name ~ ".entryPoints": fragment.proxy.entrypoint,
+      "traefik.http.routers." ~ fragment.name ~ ".service": fragment.name,
+      "traefik.http.services." ~ fragment.name ~ ".loadbalancer.server.port": fragment.proxy.port,
+    }
+  -%}
+{% endif -%}
+
 version: "{{ compose_version }}"
 services:
   {{ fragment.name }}:
     {{
-      { "container_name": fragment.name }
+      {"container_name": fragment.name}
+          | combine(proxy_labels | default({}), recursive=True, list_merge='prepend_rp')
           | combine(fragment.definition, recursive=True, list_merge='prepend_rp')
           | to_nice_yaml(indent=2, width=9999)
           | indent(4)
