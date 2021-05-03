@@ -9,7 +9,6 @@
         cap_add: ["NET_ADMIN"]
         image: "microbug/cryptostorm-client:latest"
         environment:
-          TZ: "{{ timezone }}"
           CRYPTOSTORM_USERNAME: "{{ vpn.username }}"
           CRYPTOSTORM_CONFIG_FILE: "{{ vpn.config_file | default('Balancer_UDP.ovpn') }}"
           CONNECTION_PORT: 443

@@ -16,7 +16,6 @@
         name: "rclone_restore_backup"
         state: "started"
         env:
-          TZ: "{{ timezone }}"
           SYNC_SRC: "{{ gce_backup_key }}:{{ gce_backup_bucket }}"
           SYNC_DEST: "/content"
           SYNC_OPTS: "-v -x"

@@ -47,7 +47,6 @@
         image: "ghcr.io/linuxserver/jellyfin:latest"
         devices: ["/dev/dri:/dev/dri"]
         environment:
-          TZ: "{{ timezone }}"
           PUID: "{{ jellyfin_user.uid }}"
           PGID: "{{ jellyfin_user.group }}"
           EXTRA_GID: "{{ jellyfin.extra_groups | default([]) | map(attribute = 'gid') | join(' ') }}"

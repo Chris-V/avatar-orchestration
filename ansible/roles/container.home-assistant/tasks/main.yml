@@ -139,7 +139,6 @@
         devices:
           - "{{ home_assistant.zigbee_path }}:/dev/zigbee"
         environment:
-          TZ: "{{ timezone }}"
           PUID: "{{ home_assistant_user.uid }}"
           PGID: "{{ home_assistant_user.group }}"
           UMASK: "007"

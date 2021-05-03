@@ -37,8 +37,6 @@
       name: "plant-gateway"
       definition:
         image: "ghcr.io/chris-v/plantgateway:latest"
-        environment:
-          TZ: "{{ timezone }}"
         network_mode: "host"
         restart: "unless-stopped"
         volumes:

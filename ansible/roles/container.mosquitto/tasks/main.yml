@@ -44,8 +44,6 @@
         image: "eclipse-mosquitto:2"
         restart: "unless-stopped"
         user: "{{ mosquitto_user.uid }}:{{ mosquitto_user.group }}"
-        environment:
-          TZ: "{{ timezone }}"
         volumes:
           - "{{ mosquitto.config_dir }}/config:/mosquitto/config"
           - "{{ mosquitto.config_dir }}/data:/mosquitto/data"

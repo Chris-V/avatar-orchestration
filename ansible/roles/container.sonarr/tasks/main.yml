@@ -47,7 +47,6 @@
       definition:
         image: "ghcr.io/linuxserver/sonarr:latest"
         environment:
-          TZ: "{{ timezone }}"
           PUID: "{{ sonarr_user.uid }}"
           PGID: "{{ sonarr_user.group }}"
           EXTRA_GID: "{{ sonarr.extra_groups | default([]) | map(attribute = 'gid') | join(' ') }}"

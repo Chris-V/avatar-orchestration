@@ -42,7 +42,6 @@
       definition:
         image: "traefik:2.4"
         environment:
-          TZ: "{{ timezone }}"
           GCE_SERVICE_ACCOUNT_FILE: "/etc/traefik/acme/gce_service_account.json"
         labels:
           traefik.http.routers.traefik.service: "api@internal"

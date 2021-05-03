@@ -42,7 +42,6 @@
       definition:
         image: "ghcr.io/chris-v/tar-backup:latest"
         environment:
-          TZ: "{{ timezone }}"
           PUID: 0
           PGID: 0
           UMASK_SET: "027"

@@ -50,7 +50,6 @@
       definition:
         image: "ghcr.io/linuxserver/deluge:latest"
         environment:
-          TZ: "{{ timezone }}"
           PUID: "{{ deluge_user.uid }}"
           PGID: "{{ deluge_user.group }}"
           EXTRA_GID: "{{ deluge.extra_groups | default([]) | map(attribute = 'gid') | join(' ') }}"

@@ -32,8 +32,6 @@
         tty: true
         devices:
           - "{{ apcupsd.ups_path }}:/dev/usb/hiddev0"
-        environment:
-          TZ: "{{ timezone }}"
         expose: [3551]
         healthcheck:
           test: "/sbin/apcaccess status | grep -q 'STATUS *: ONLINE' || exit 1"

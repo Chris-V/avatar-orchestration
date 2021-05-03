@@ -21,7 +21,6 @@
         devices:
           - "{{ zwavejs2mqtt.usb_path }}:/dev/zwave"
         environment:
-          TZ: "{{ timezone }}"
           NETWORK_KEY: "{{ zwavejs2mqtt.network_key }}"
           SESSION_SECRET: "{{ zwavejs2mqtt.session_secret_salt }}"
         volumes:

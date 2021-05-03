@@ -40,7 +40,6 @@
         image: "bcardiff/rclone:latest"
         restart: "always"
         environment:
-          TZ: "{{ timezone }}"
           CRON: "0 5 * * * /config/backup_acl.sh && "
           CRON_ABORT: "0 6 * * *"
           SYNC_SRC: "/content"

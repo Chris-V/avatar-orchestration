@@ -24,6 +24,7 @@ services:
   {{ fragment.name }}:
     {{
       {"container_name": fragment.name}
+          | combine({"environment": {"TZ": timezone}} if timezone is defined else {}, recursive=True, list_merge='prepend_rp')
           | combine({"labels": proxy_labels | default({})}, recursive=True, list_merge='prepend_rp')
           | combine(fragment.definition, recursive=True, list_merge='prepend_rp')
           | to_nice_yaml(indent=2, width=9999)

@@ -28,8 +28,6 @@
       name: "traefik"
       definition:
         image: "traefik:2.4"
-        environment:
-          TZ: "{{ timezone }}"
         ports: ["80:80"]
         restart: "unless-stopped"
         volumes:

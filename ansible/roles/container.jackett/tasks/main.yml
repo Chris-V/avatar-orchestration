@@ -40,7 +40,6 @@
       definition:
         image: "ghcr.io/linuxserver/jackett:latest"
         environment:
-          TZ: "{{ timezone }}"
           PUID: "{{ jackett_user.uid }}"
           PGID: "{{ jackett_user.group }}"
           EXTRA_GID: "{{ jackett.extra_groups | default([]) | map(attribute = 'gid') | join(' ') }}"

@@ -27,8 +27,6 @@
       definition:
         image: "nginxinc/nginx-unprivileged:alpine"
         restart: "unless-stopped"
-        environment:
-          TZ: "{{ timezone }}"
         volumes:
           - "{{ error_pages.config_dir }}/www:/usr/share/nginx/html:ro"
     fragment: |

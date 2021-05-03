@@ -47,7 +47,6 @@
       definition:
         image: "ghcr.io/linuxserver/radarr:latest"
         environment:
-          TZ: "{{ timezone }}"
           PUID: "{{ radarr_user.uid }}"
           PGID: "{{ radarr_user.group }}"
           EXTRA_GID: "{{ radarr.extra_groups | default([]) | map(attribute = 'gid') | join(' ') }}"

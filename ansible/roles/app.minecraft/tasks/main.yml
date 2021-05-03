@@ -92,7 +92,6 @@
           SERVER_NAME: "Ultimate"
           SNOOPER_ENABLED: "false"
           TYPE: "fabric"
-          TZ: "{{ timezone }}"
           UID: "{{ minecraft_user.uid }}"
           VERSION: "{{ minecraft_version }}"
           VIEW_DISTANCE: 12
@@ -143,7 +142,6 @@
           MINECRAFT_VERSION: "{{ minecraft_version }}"
           RENDER_MAP: "true"
           RENDER_POI: "true"
-          TZ: "{{ timezone }}"
         networks:
           minecraft: {}
         volumes:
