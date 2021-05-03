@@ -7,14 +7,25 @@
       - "avahi"
     state: "present"
 
-- name: "Disable multicast from systemd-resolved"
-  register: "resolved_config"
-  ansible.builtin.lineinfile:
-    path: "/etc/systemd/resolved.conf"
-    regexp: "^MulticastDNS="
-    insertafter: "^#MulticastDNS="
-    line: "MulticastDNS=no"
-    state: "present"
+- name: "Disable systemd multicast"
+  block:
+    - name: "Create resolved config directory"
+      ansible.builtin.file:
+        state: "directory"
+        path: "/etc/systemd/resolved.conf.d"
+        owner: "root"
+        group: "root"
+        mode: 0755
+    - name: "Create resolved config file"
+      register: "resolved_config"
+      ansible.builtin.copy:
+        dest: "/etc/systemd/resolved.conf.d/10-no_multicast.conf"
+        owner: "root"
+        group: "root"
+        mode: 0644
+        content: |
+          [Resolve]
+          MulticastDNS=no
 
 - name: "Enable systemd-resolved"
   register: "resolved_service"

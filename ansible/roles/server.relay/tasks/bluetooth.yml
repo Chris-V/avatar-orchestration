@@ -48,7 +48,7 @@
         dest: "/etc/systemd/system/bluetooth.service.d/override.conf"
         owner: "root"
         group: "root"
-        mode: "0644"
+        mode: 0644
 
 - name: "Enable bluetooth"
   register: "bluetooth_service"
