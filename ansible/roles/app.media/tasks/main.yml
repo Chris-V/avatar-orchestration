@@ -48,12 +48,12 @@
       downloads_dir: "{{ downloads_dir }}/deluge"
       group: "{{ download_group.name }}"
       fragment:
+        proxy:
+          network: "media"
+          subdomain: "deluge"
         definition:
           depends_on: ["vpn"]
           network_mode: "service:vpn"
-          labels:
-            avatar.subdomain: "deluge"
-            traefik.docker.network: "media"
 
 - name: "Jackett"
   include_role:
@@ -66,12 +66,12 @@
       downloads_dir: "{{ downloads_dir }}/jackett"
       group: "{{ download_group.name }}"
       fragment:
+        proxy:
+          network: "media"
+          subdomain: "jackett"
         definition:
           depends_on: ["vpn"]
           network_mode: "service:vpn"
-          labels:
-            avatar.subdomain: "jackett"
-            traefik.docker.network: "media"
 
 - name: "Jellyfin"
   include_role:
@@ -86,10 +86,10 @@
       extra_groups:
         - "{{ media_group }}"
       fragment:
+        proxy:
+          network: "media"
+          subdomain: "jellyfin"
         definition:
-          labels:
-            avatar.subdomain: "jellyfin"
-            traefik.docker.network: "media"
           networks:
             media: {}
 
@@ -107,10 +107,10 @@
         - "{{ download_group }}"
         - "{{ media_group }}"
       fragment:
+        proxy:
+          network: "media"
+          subdomain: "radarr"
         definition:
-          labels:
-            avatar.subdomain: "radarr"
-            traefik.docker.network: "media"
           networks:
             media: {}
 
@@ -128,10 +128,10 @@
         - "{{ download_group }}"
         - "{{ media_group }}"
       fragment:
+        proxy:
+          network: "media"
+          subdomain: "sonarr"
         definition:
-          labels:
-            avatar.subdomain: "sonarr"
-            traefik.docker.network: "media"
           networks:
             media: {}
 

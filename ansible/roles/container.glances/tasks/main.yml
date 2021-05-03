@@ -10,15 +10,17 @@
         environment:
           TZ: "{{ timezone }}"
           GLANCES_OPT: "-w --enable-plugin sensors"
-        labels:
-          traefik.http.services.glances.loadbalancer.server.port: 61208
         pid: "host"
         restart: "unless-stopped"
         volumes:
           - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    default_fragment_with_proxy:
+      proxy:
+        port: 61208
     fragment: |
       {{
         default_fragment
+          | combine(default_fragment_with_proxy if glances.fragment.proxy is mapping else {}, recursive=True, list_merge='append_rp')
           | combine(glances.fragment | default({}), recursive=True, list_merge='append_rp')
           | to_json
       }}

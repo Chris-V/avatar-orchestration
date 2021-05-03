@@ -52,16 +52,18 @@
           PGID: "{{ sonarr_user.group }}"
           EXTRA_GID: "{{ sonarr.extra_groups | default([]) | map(attribute = 'gid') | join(' ') }}"
           UMASK_SET: "027"
-        labels:
-          traefik.http.services.sonarr.loadbalancer.server.port: 8989
         restart: "unless-stopped"
         volumes:
           - "{{ sonarr.config_dir }}:/config"
           - "{{ sonarr.downloads_dir }}:/downloads:ro"
           - "{{ sonarr.series_dir }}:/tv"
+    default_fragment_with_proxy:
+      proxy:
+        port: 8989
     fragment: |
       {{
         default_fragment
+          | combine(default_fragment_with_proxy if sonarr.fragment.proxy is mapping else {}, recursive=True, list_merge='append_rp')
           | combine(sonarr.fragment | default({}), recursive=True, list_merge='append_rp')
           | to_json
       }}

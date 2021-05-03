@@ -30,17 +30,19 @@
         image: "traefik:2.4"
         environment:
           TZ: "{{ timezone }}"
-        labels:
-          traefik.http.routers.traefik.service: "api@internal"
         ports: ["80:80"]
         restart: "unless-stopped"
         volumes:
           - "/var/run/docker.sock:/var/run/docker.sock:ro"
           - "{{ traefik.config_dir }}/traefik.toml:/traefik.toml:ro"
           - "{{ traefik.config_dir }}/traefik.d:/traefik.d:ro"
+    default_fragment_with_proxy:
+      proxy:
+        service: "api@internal"
     fragment: |
       {{
         default_fragment
+          | combine(default_fragment_with_proxy if traefik.fragment.proxy is mapping else {}, recursive=True, list_merge='append_rp')
           | combine(traefik.fragment | default({}), recursive=True, list_merge='append_rp')
           | to_json
       }}

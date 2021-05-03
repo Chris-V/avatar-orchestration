@@ -29,13 +29,29 @@
         restart: "unless-stopped"
         environment:
           TZ: "{{ timezone }}"
-        labels:
-          traefik.http.services.error-pages.loadbalancer.server.port: 8080
         volumes:
           - "{{ error_pages.config_dir }}/www:/usr/share/nginx/html:ro"
     fragment: |
+      {% if error_pages.fragment.proxy is mapping -%}
+        {% set name = error_pages.fragment.name | default(default_fragment.name, True) -%}
+        {%
+          set default_proxy = {
+            "proxy": {
+              "port": 8080,
+            },
+            "definition": {
+              "labels": {
+                "traefik.http.routers." ~ name ~ ".rule": "HostRegexp(`{catchall:.+}`)",
+                "traefik.http.routers." ~ name ~ ".priority": 1,
+              },
+            },
+          }
+        -%}
+      {% endif -%}
+
       {{
         default_fragment
+          | combine(default_proxy | default({}), recursive=True, list_merge='append_rp')
           | combine(error_pages.fragment | default({}), recursive=True, list_merge='append_rp')
           | to_json
       }}

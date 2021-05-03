@@ -46,14 +46,35 @@
         user: "{{ mosquitto_user.uid }}:{{ mosquitto_user.group }}"
         environment:
           TZ: "{{ timezone }}"
-        labels:
-          traefik.tcp.services.mosquitto.loadbalancer.server.port: 1883
         volumes:
           - "{{ mosquitto.config_dir }}/config:/mosquitto/config"
           - "{{ mosquitto.config_dir }}/data:/mosquitto/data"
+    # TODO: The TLS config here is specific to automate. This should be abstracted.
     fragment: |
+      {% if mosquitto.fragment.proxy is mapping -%}
+        {% set name = mosquitto.fragment.name | default(default_fragment.name, True) -%}
+        {%
+          set default_proxy = {
+            "definition": {
+              "labels": {
+                "avatar.subdomain": mosquitto.fragment.proxy.subdomain,
+                "traefik.docker.network": mosquitto.fragment.proxy.network,
+                "traefik.tcp.routers." ~ name ~ ".entryPoints": mosquitto.fragment.proxy.entrypoint,
+                "traefik.tcp.routers." ~ name ~ ".rule": "HostSNI(`" ~ mosquitto.fragment.proxy.subdomain ~ "." ~ domain_name ~ "`)",
+                "traefik.tcp.routers." ~ name ~ ".tls": "true"
+                "traefik.tcp.routers." ~ name ~ ".tls.certresolver": "default"
+                "traefik.tcp.routers." ~ name ~ ".tls.domains[0].main": domain_name
+                "traefik.tcp.routers." ~ name ~ ".tls.domains[0].sans": "*." ~ domain_name
+                "traefik.tcp.services." ~ name ~ ".loadbalancer.server.port": 1883,
+              },
+            },
+          }
+        -%}
+      {% endif -%}
+
       {{
         default_fragment
           | combine(mosquitto.fragment | default({}), recursive=True, list_merge='append_rp')
+          | combine({"proxy": None}, recursive=True, list_merge='append_rp')
           | to_json
       }}

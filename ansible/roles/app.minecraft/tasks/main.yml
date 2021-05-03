@@ -112,16 +112,16 @@
     dest: "{{ minecraft_fragments_dir }}/map.service.yml"
     fragment:
       name: "minecraft-map"
+      proxy:
+        network: "mc-public"
+        port: 8080
+        subdomain: "minecraft-map"
       definition:
         image: "nginxinc/nginx-unprivileged:alpine"
         restart: "unless-stopped"
         user: "{{ minecraft_user.uid }}:{{ minecraft_user.group }}"
         environment:
           TZ: "{{ timezone }}"
-        labels:
-          avatar.subdomain: "minecraft-map"
-          traefik.docker.network: "mc-public"
-          traefik.http.services.minecraft-map.loadbalancer.server.port: 8080
         networks:
           mc-public: {}
         volumes:

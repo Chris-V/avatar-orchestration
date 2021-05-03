@@ -52,16 +52,18 @@
           PGID: "{{ radarr_user.group }}"
           EXTRA_GID: "{{ radarr.extra_groups | default([]) | map(attribute = 'gid') | join(' ') }}"
           UMASK_SET: "027"
-        labels:
-          traefik.http.services.radarr.loadbalancer.server.port: 7878
         restart: "unless-stopped"
         volumes:
           - "{{ radarr.config_dir }}:/config"
           - "{{ radarr.downloads_dir }}:/downloads:ro"
           - "{{ radarr.movies_dir }}:/movies"
+    default_fragment_with_proxy:
+      proxy:
+        port: 7878
     fragment: |
       {{
         default_fragment
+          | combine(default_fragment_with_proxy if radarr.fragment.proxy is mapping else {}, recursive=True, list_merge='append_rp')
           | combine(radarr.fragment | default({}), recursive=True, list_merge='append_rp')
           | to_json
       }}

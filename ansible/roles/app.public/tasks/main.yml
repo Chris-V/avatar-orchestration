@@ -38,10 +38,10 @@
     dest: "{{ public_fragments_dir }}/glances.service.yml"
     glances:
       fragment:
+        proxy:
+          network: "glances"
+          subdomain: "glances"
         definition:
-          labels:
-            avatar.subdomain: "glances"
-            traefik.docker.network: "glances"
           networks:
             glances: {}
 
@@ -55,9 +55,9 @@
       domain: "{{ internal_hostname }}"
       trusted_ips: "{{ network.servers.automate.ip }}/32"
       fragment:
+        proxy:
+          subdomain: "traefik"
         definition:
-          labels:
-            avatar.subdomain: "traefik"
           networks: >-
             {% set ns = namespace(networks = {"glances": {}}) -%}
             {% for name in public_external_networks %}{% set ns.networks = ns.networks | combine({ name: {} }) %}{% endfor -%}

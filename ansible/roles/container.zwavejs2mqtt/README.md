@@ -15,7 +15,9 @@ zwavejs2mqtt:
     name: <string>
     definition: <object>
     proxy: <optional; object>
-      entrypoint: <string>
-      network: <string>
+      entrypoint: <optional; string>
+      middlewares: <optional; string>
+      network: <optional; string>
+      port: <optional; number>
       subdomain: <string>
 ```

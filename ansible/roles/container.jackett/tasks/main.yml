@@ -45,15 +45,17 @@
           PGID: "{{ jackett_user.group }}"
           EXTRA_GID: "{{ jackett.extra_groups | default([]) | map(attribute = 'gid') | join(' ') }}"
           UMASK_SET: "027"
-        labels:
-          traefik.http.services.jackett.loadbalancer.server.port: 9117
         restart: "unless-stopped"
         volumes:
           - "{{ jackett.config_dir }}:/config"
           - "{{ jackett.downloads_dir }}:/downloads"
+    default_fragment_with_proxy:
+      proxy:
+        port: 9117
     fragment: |
       {{
         default_fragment
+          | combine(default_fragment_with_proxy if jackett.fragment.proxy is mapping else {}, recursive=True, list_merge='append_rp')
           | combine(jackett.fragment | default({}), recursive=True, list_merge='append_rp')
           | to_json
       }}

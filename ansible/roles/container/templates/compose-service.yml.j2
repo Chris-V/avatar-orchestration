@@ -2,11 +2,20 @@
   {%
     set proxy_labels = {
       "avatar.subdomain": fragment.proxy.subdomain,
-      "traefik.docker.network": fragment.proxy.network,
-      "traefik.http.routers." ~ fragment.name ~ ".entryPoints": fragment.proxy.entrypoint,
-      "traefik.http.routers." ~ fragment.name ~ ".service": fragment.name,
-      "traefik.http.services." ~ fragment.name ~ ".loadbalancer.server.port": fragment.proxy.port,
+      "traefik.http.routers." ~ fragment.name ~ ".service": fragment.proxy.service | default(fragment.name),
     }
+      | combine({
+          "traefik.docker.network": fragment.proxy.network,
+        } if fragment.proxy.network is defined else {}, recursive=True, list_merge='prepend_rp')
+      | combine({
+          "traefik.http.routers." ~ fragment.name ~ ".entryPoints": fragment.proxy.entrypoint,
+        } if fragment.proxy.entrypoint is defined else {}, recursive=True, list_merge='prepend_rp')
+      | combine({
+          "traefik.http.routers." ~ fragment.name ~ ".middlewares": fragment.proxy.middlewares,
+        } if fragment.proxy.middlewares is defined else {}, recursive=True, list_merge='prepend_rp')
+      | combine({
+          "traefik.http.services." ~ fragment.name ~ ".loadbalancer.server.port": fragment.proxy.port,
+        } if fragment.proxy.port is defined else {}, recursive=True, list_merge='prepend_rp')
   -%}
 {% endif -%}
 
@@ -15,7 +24,7 @@ services:
   {{ fragment.name }}:
     {{
       {"container_name": fragment.name}
-          | combine(proxy_labels | default({}), recursive=True, list_merge='prepend_rp')
+          | combine({"labels": proxy_labels | default({})}, recursive=True, list_merge='prepend_rp')
           | combine(fragment.definition, recursive=True, list_merge='prepend_rp')
           | to_nice_yaml(indent=2, width=9999)
           | indent(4)

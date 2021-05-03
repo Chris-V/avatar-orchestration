@@ -39,12 +39,11 @@
     error_pages:
       config_dir: "{{ public_appdata_dir }}/error-pages"
       fragment:
+        proxy:
+          entrypoint: "https"
+          network: "public"
+          subdomain: "error"
         definition:
-          labels:
-            avatar.subdomain: "error"
-            traefik.http.routers.error-pages.entryPoints: "https"
-            traefik.http.routers.error-pages.rule: "HostRegexp(`{catchall:.+}`)"
-            traefik.http.routers.error-pages.priority: 1
           networks:
             public: {}
 
@@ -55,12 +54,12 @@
     dest: "{{ public_fragments_dir }}/glances.service.yml"
     glances:
       fragment:
+        proxy:
+          entrypoint: "https"
+          network: "glances"
+          middlewares: "monitoring-auth@file"
+          subdomain: "traefik-automate"
         definition:
-          labels:
-            avatar.subdomain: "glances-automate"
-            traefik.docker.network: "glances"
-            traefik.http.routers.glances.entryPoints: "https"
-            traefik.http.routers.glances.middlewares: "monitoring-auth@file"
           networks:
             glances: {}
 
@@ -73,13 +72,12 @@
       acme_email: "{{ acme_email }}"
       domain: "{{ domain_name }}"
       fragment:
+        proxy:
+          entrypoint: "https"
+          network: "public"
+          middlewares: "monitoring-auth@file"
+          subdomain: "traefik-automate"
         definition:
-          labels:
-            avatar.subdomain: "traefik-automate"
-            traefik.http.routers.traefik.entryPoints: "https"
-            traefik.http.routers.traefik.middlewares: "monitoring-auth@file"
-            traefik.http.routers.traefik.service: "api@internal"
-
           networks: >-
             {% set ns = namespace(networks = {"glances": {}, "public": {}}) -%}
             {% for name in public_external_networks %}{% set ns.networks = ns.networks | combine({ name: {} }) %}{% endfor -%}

@@ -52,17 +52,19 @@
           PGID: "{{ jellyfin_user.group }}"
           EXTRA_GID: "{{ jellyfin.extra_groups | default([]) | map(attribute = 'gid') | join(' ') }}"
           UMASK_SET: "027"
-        labels:
-          traefik.http.services.jellyfin.loadbalancer.server.port: 8096
         restart: "unless-stopped"
         volumes:
           - "{{ jellyfin.config_dir }}:/config"
           - "{{ jellyfin.series_dir }}:/media/series:ro"
           - "{{ jellyfin.movies_dir }}:/media/movies:ro"
           - "{{ jellyfin.transcode_dir }}:/transcode"
+    default_fragment_with_proxy:
+      proxy:
+        port: 8096
     fragment: |
       {{
         default_fragment
+          | combine(default_fragment_with_proxy if jellyfin.fragment.proxy is mapping else {}, recursive=True, list_merge='append_rp')
           | combine(jellyfin.fragment | default({}), recursive=True, list_merge='append_rp')
           | to_json
       }}

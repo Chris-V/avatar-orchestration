@@ -80,16 +80,11 @@
       config_dir: "{{ automate_appdata_dir }}/mosquitto"
       users: "{{ mosquitto_users }}"
       fragment:
+        proxy:
+          subdomain: "mqtt"
+          network: "automate"
+          entrypoint: "mqtts"
         definition:
-          labels:
-            avatar.subdomain: "mqtt"
-            traefik.docker.network: "automate"
-            traefik.tcp.routers.mosquitto.entryPoints: "mqtts"
-            traefik.tcp.routers.mosquitto.rule: "HostSNI(`mqtt.{{ domain_name }}`)"
-            traefik.tcp.routers.mosquitto.tls: "true"
-            traefik.tcp.routers.mosquitto.tls.certresolver: "default"
-            traefik.tcp.routers.mosquitto.tls.domains[0].main: "{{ domain_name }}"
-            traefik.tcp.routers.mosquitto.tls.domains[0].sans: "*.{{ domain_name }}"
           networks:
             automate: {}
           ports:

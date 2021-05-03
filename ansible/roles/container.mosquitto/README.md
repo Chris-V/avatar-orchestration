@@ -18,4 +18,8 @@ mosquitto:
   fragment: <optional; object>
     name: <string>
     definition: <object>
+    proxy: <optional; object>
+      entrypoint: <string>
+      network: <string>
+      subdomain: <string>
 ```

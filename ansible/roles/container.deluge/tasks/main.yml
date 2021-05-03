@@ -55,16 +55,18 @@
           PGID: "{{ deluge_user.group }}"
           EXTRA_GID: "{{ deluge.extra_groups | default([]) | map(attribute = 'gid') | join(' ') }}"
           UMASK_SET: "027"
-        labels:
-          traefik.http.services.deluge.loadbalancer.server.port: 8112
         restart: "unless-stopped"
         volumes:
           - "{{ deluge.config_dir }}:/config"
           - "{{ deluge.blackhole_dir }}:/blackhole:ro"
           - "{{ deluge.downloads_dir }}:/downloads"
+    default_fragment_with_proxy:
+      proxy:
+        port: 8112
     fragment: |
       {{
         default_fragment
+          | combine(default_fragment_with_proxy if deluge.fragment.proxy is mapping else {}, recursive=True, list_merge='append_rp')
           | combine(deluge.fragment | default({}), recursive=True, list_merge='append_rp')
           | to_json
       }}

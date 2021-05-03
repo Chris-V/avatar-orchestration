@@ -17,9 +17,9 @@
     Watch = true
   [Providers.Docker]
     Constraints = "LabelRegex(`avatar.subdomain`, `[a-z0-9_-]+`)"
-    DefaultRule = "Host(`{{ index .Labels \"avatar.subdomain\" }}.<< traefik.domain >>`)"
+    DefaultRule = "Host(`{{ index .Labels \"avatar.subdomain\" }}.<< traefik.domain | default('localhost') >>`)"
     ExposedByDefault = true
-    Network = "public"
+    network = "<< traefik.default_network | default('public') >>"
     Watch = true
 
 [ServersTransport]
