@@ -13,7 +13,7 @@
         path: "/boot/config.txt"
         regexp: "^enable_uart="
         insertafter: "EOF"
-        line: "enable_uart=0"
+        line: "enable_uart=1"
         state: "present"
     - name: "Configure device tree param"
       ansible.builtin.lineinfile:
