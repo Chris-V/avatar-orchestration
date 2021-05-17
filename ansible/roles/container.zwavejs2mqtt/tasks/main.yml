@@ -16,7 +16,7 @@
     default_fragment:
       name: "zwavejs2mqtt"
       definition:
-        image: "zwavejs/zwavejs2mqtt:4.0.0"
+        image: "ghcr.io/zwave-js/zwavejs2mqtt:{{ zwavejs2mqtt_version }}"
         restart: "unless-stopped"
         devices:
           - "{{ zwavejs2mqtt.usb_path }}:/dev/zwave"
