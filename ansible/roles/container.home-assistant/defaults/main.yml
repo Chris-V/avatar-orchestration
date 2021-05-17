@@ -1,4 +1,5 @@
 hacs_archive_url: "https://github.com/hacs/integration/releases/latest/download/hacs.zip"
 hacs_target_path: "{{ home_assistant.config_dir }}/config/custom_components/hacs"
+home_assistant_version: "2021.5.4"
 local_config_path: "/config"
 ssh_key_path: "{{ home_assistant_user.home }}/.ssh/github_rsa"

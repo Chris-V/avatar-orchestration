@@ -134,7 +134,7 @@
     default_fragment:
       name: "home-assistant"
       definition:
-        image: "homeassistant/home-assistant:2021.4.6"
+        image: "ghcr.io/home-assistant/home-assistant:dev:{{ home_assistant_version }}"
         restart: "unless-stopped"
         devices:
           - "{{ home_assistant.zigbee_path }}:/dev/zigbee"
